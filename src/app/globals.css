@@ -1,0 +1,116 @@
+@import "tailwindcss";
+
+@plugin "tailwindcss-animate";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+  --color-background: var(--bg-primary);
+  --color-foreground: var(--text-primary);
+
+  --color-card: var(--bg-primary);
+  --color-card-foreground: var(--text-primary);
+
+  --color-popover: var(--bg-primary);
+  --color-popover-foreground: var(--text-primary);
+
+  --color-primary: var(--accent-blue-600);
+  --color-primary-foreground: #FFFFFF;
+
+  --color-secondary: var(--bg-secondary);
+  --color-secondary-foreground: var(--text-primary);
+
+  --color-muted: var(--bg-tertiary);
+  --color-muted-foreground: var(--text-secondary);
+
+  --color-accent: var(--bg-tertiary);
+  --color-accent-foreground: var(--text-primary);
+
+  --color-destructive: var(--accent-red-600);
+  --color-destructive-foreground: #FFFFFF;
+
+  --color-border: var(--border-default);
+  --color-input: var(--border-default);
+  --color-ring: var(--accent-blue-600);
+
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
+
+  --font-sans: var(--font-inter), var(--font-noto-malayalam), sans-serif;
+}
+
+@utility font-cooper {
+  font-family: var(--font-cooper-next), serif;
+}
+
+:root {
+  --bg-primary: #F8FAFC;
+  --bg-secondary: #F1F5F9;
+  --bg-tertiary: #F1F5F9;
+
+  --text-primary: #0F172A;
+  --text-secondary: #64748B;
+  --text-tertiary: #94A3B8;
+
+  --accent-green-600: #16A34A;
+  --accent-green-500: #22C55E;
+  --accent-green-50: #F0FDF4;
+
+  --accent-blue-600: #2563EB;
+  --accent-blue-500: #3B82F6;
+  --accent-blue-50: #EFF6FF;
+
+  --accent-gold-500: #C8A96B;
+
+  --accent-red-600: #DC2626;
+  --accent-red-50: #FEF2F2;
+
+  --border-default: #E2E8F0;
+  --border-strong: #CBD5E1;
+  
+  --radius: 12px;
+}
+
+.dark {
+  /* No dark mode specific overrides for now, relying on spec */
+}
+
+@utility container {
+  margin-inline: auto;
+  padding-inline: 2rem;
+  @media (width >= --theme(--breakpoint-sm)) {
+    max-width: none;
+  }
+  @media (width >= 1400px) {
+    max-width: 1400px;
+  }
+}
+
+/*
+  The default border color has changed to `currentColor` in Tailwind CSS v4,
+  so we've added these base styles to restore the v3 behavior.
+*/
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-border, currentColor);
+  }
+}
+
+@layer base {
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    @apply font-sans;
+  }
+  
+  /* tabular-figure style for numerals */
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+  }
+}
