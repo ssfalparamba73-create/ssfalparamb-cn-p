@@ -5,13 +5,14 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { ArrowLeft, CreditCard, Banknote, ShieldCheck, Smartphone, QrCode } from "lucide-react"
+import { ArrowLeft, CreditCard, Banknote, ShieldCheck, Smartphone, QrCode, ChevronDown } from "lucide-react"
 import Link from "next/link"
 
 export default function PayNowPage() {
   const [paymentMethod, setPaymentMethod] = useState<"upi" | "cash">("upi");
   const [selectedUpiApp, setSelectedUpiApp] = useState<string | null>(null);
   const [selectedAdmin, setSelectedAdmin] = useState<string>("");
+  const [isAdminDropdownOpen, setIsAdminDropdownOpen] = useState(false);
 
   const admins = [
     { id: "1", name: "Farhan", role: "President" },
@@ -134,24 +135,54 @@ export default function PayNowPage() {
 
               {/* Cash Handover Options (Admin Dropdown) */}
               {paymentMethod === "cash" && (
-                <div className="mt-4 p-4 rounded-xl border bg-secondary/30 space-y-3 animate-in fade-in slide-in-from-top-2 duration-200">
-                  <Label htmlFor="admin-select" className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                <div className="mt-4 p-4 rounded-xl border bg-secondary/30 space-y-3 animate-in fade-in slide-in-from-top-2 duration-200 relative">
+                  <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                     Received By
                   </Label>
-                  <select
-                    id="admin-select"
-                    className="flex h-12 w-full rounded-xl border border-[#E5EAF3] bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-0 focus-visible:border-primary transition-all text-foreground"
-                    value={selectedAdmin}
-                    onChange={(e) => setSelectedAdmin(e.target.value)}
-                    required
-                  >
-                    <option value="" disabled>Select Admin</option>
-                    {admins.map((admin) => (
-                      <option key={admin.id} value={admin.name}>
-                        {admin.name} ({admin.role})
-                      </option>
-                    ))}
-                  </select>
+                  
+                  <div className="relative">
+                    <button
+                      type="button"
+                      className="flex h-12 w-full items-center justify-between rounded-xl border border-[#E5EAF3] bg-background px-4 py-2 text-base text-left transition-all hover:bg-slate-50/50 focus:outline-none focus:ring-1 focus:ring-primary"
+                      onClick={() => setIsAdminDropdownOpen(!isAdminDropdownOpen)}
+                    >
+                      <span className={selectedAdmin ? "text-foreground font-medium" : "text-muted-foreground"}>
+                        {selectedAdmin 
+                          ? `${selectedAdmin} (${admins.find(a => a.name === selectedAdmin)?.role})` 
+                          : "Select Admin"}
+                      </span>
+                      <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform duration-200 ${isAdminDropdownOpen ? "rotate-180" : ""}`} />
+                    </button>
+
+                    {isAdminDropdownOpen && (
+                      <>
+                        <div 
+                          className="fixed inset-0 z-20" 
+                          onClick={() => setIsAdminDropdownOpen(false)}
+                        />
+                        <div className="absolute left-0 right-0 mt-2 z-30 max-h-60 overflow-auto rounded-xl border border-[#E5EAF3] bg-white p-1 shadow-lg animate-in fade-in slide-in-from-top-2 duration-150">
+                          {admins.map((admin) => (
+                            <button
+                              key={admin.id}
+                              type="button"
+                              className={`w-full text-left px-4 py-2.5 rounded-lg transition-colors flex flex-col ${
+                                selectedAdmin === admin.name 
+                                  ? "bg-primary/10 text-primary font-medium" 
+                                  : "text-slate-700 hover:bg-slate-50"
+                              }`}
+                              onClick={() => {
+                                setSelectedAdmin(admin.name);
+                                setIsAdminDropdownOpen(false);
+                              }}
+                            >
+                              <span className="font-semibold text-[15px]">{admin.name}</span>
+                              <span className="text-[12px] text-slate-400 font-normal">{admin.role}</span>
+                            </button>
+                          ))}
+                        </div>
+                      </>
+                    )}
+                  </div>
                 </div>
               )}
             </div>
