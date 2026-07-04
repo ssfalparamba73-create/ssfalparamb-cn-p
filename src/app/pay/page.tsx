@@ -260,7 +260,7 @@ export default function PayNowPage() {
             {/* Modal Header */}
             <div className="bg-[#F6F8FC] border-b border-[#E5EAF3] p-4 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <img src="/logo/logo.webp" alt="SSF Logo" className="h-7 w-auto object-contain" style={{ mixBlendMode: "multiply", filter: "contrast(1.05) grayscale(100%)" }} />
+                <img src="/logo/logo.webp" alt="SSF Logo" className="h-7 w-auto object-contain" style={{ mixBlendMode: "multiply", filter: "contrast(1.05)" }} />
                 <span className="text-sm font-semibold text-slate-900">
                   <span className="font-cooper font-normal">SSF</span> Alparamba Unit
                 </span>
