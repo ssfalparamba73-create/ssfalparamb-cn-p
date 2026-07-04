@@ -15,6 +15,7 @@ export default function PayNowPage() {
   const [isAdminDropdownOpen, setIsAdminDropdownOpen] = useState(false);
   const [showQrModal, setShowQrModal] = useState(false);
   const [isQrInlineOpen, setIsQrInlineOpen] = useState(false);
+  const [memberQuery, setMemberQuery] = useState("");
 
   const admins = [
     { id: "1", name: "Farhan", role: "President" },
@@ -32,6 +33,8 @@ export default function PayNowPage() {
       setIsQrInlineOpen(!isQrInlineOpen);
     }
   };
+
+  const isButtonDisabled = !memberQuery.trim() || (paymentMethod === "cash" && !selectedAdmin);
 
   const MockQrCodeSvg = () => (
     <svg width="180" height="180" viewBox="0 0 29 29" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-40 h-40 mx-auto text-slate-800">
@@ -62,7 +65,13 @@ export default function PayNowPage() {
           <CardContent className="space-y-5">
             <div className="space-y-2">
               <Label htmlFor="phone">Phone Number or Member ID</Label>
-              <Input id="phone" placeholder="Enter your 10 digit number" type="tel" />
+              <Input 
+                id="phone" 
+                placeholder="Enter your 10 digit number" 
+                type="tel" 
+                value={memberQuery}
+                onChange={(e) => setMemberQuery(e.target.value)}
+              />
             </div>
             
             {/* Mock Itemized Dues */}
@@ -232,13 +241,13 @@ export default function PayNowPage() {
           </CardContent>
           <CardFooter className="flex-col gap-4">
             <Link 
-              href={paymentMethod === "cash" && !selectedAdmin ? "#" : "/success"} 
-              className={`w-full ${paymentMethod === "cash" && !selectedAdmin ? "pointer-events-none" : ""}`}
+              href={isButtonDisabled ? "#" : "/success"} 
+              className={`w-full ${isButtonDisabled ? "pointer-events-none" : ""}`}
             >
               <Button 
                 size="lg" 
                 className="w-full text-lg h-14 rounded-xl"
-                disabled={paymentMethod === "cash" && !selectedAdmin}
+                disabled={isButtonDisabled}
               >
                 {paymentMethod === "upi" ? "Pay ₹100 via UPI" : "Record ₹100 Cash"}
               </Button>
