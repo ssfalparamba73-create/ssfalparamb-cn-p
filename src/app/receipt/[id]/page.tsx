@@ -1,14 +1,24 @@
+"use client";
+
+import React from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Printer, Share2, HeartHandshake, QrCode, ArrowLeft } from "lucide-react"
 import Link from "next/link"
+import { useSearchParams } from "next/navigation"
 
-export default function ReceiptPage({ params }: { params: { id: string } }) {
-  // Mock data based on the ID
-  const receiptId = params.id || "TXN-8924719"
-  const amount = "300"
+export default function ReceiptPage({ params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = React.use(params)
+  const searchParams = useSearchParams()
+  
+  const receiptId = resolvedParams.id || "TXN-8924719"
   const date = "02 Jul 2026, 18:35"
+  
+  const method = searchParams.get("method") || "upi"
+  const admin = searchParams.get("admin") || ""
+  const phone = searchParams.get("phone") || "Guest Member"
+  const amount = searchParams.get("amount") || "100"
   
   return (
     <div className="min-h-screen bg-secondary/50 p-4 py-8 flex flex-col items-center">
@@ -16,7 +26,7 @@ export default function ReceiptPage({ params }: { params: { id: string } }) {
         
         {/* Screen-only controls */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 print:hidden">
-          <Link href="/success" className="inline-flex items-center text-sm font-medium text-muted-foreground hover:text-foreground self-start sm:self-auto">
+          <Link href={`/success?method=${method}&admin=${encodeURIComponent(admin)}&phone=${encodeURIComponent(phone)}`} className="inline-flex items-center text-sm font-medium text-muted-foreground hover:text-foreground self-start sm:self-auto">
             <ArrowLeft className="mr-2 size-4" /> Back
           </Link>
           <div className="flex items-center gap-2 w-full sm:w-auto">
@@ -61,8 +71,7 @@ export default function ReceiptPage({ params }: { params: { id: string } }) {
               <div className="space-y-6">
                 <div>
                   <p className="text-sm text-muted-foreground mb-1">Received With Thanks From</p>
-                  <p className="font-bold text-xl">Guest Member</p>
-                  <p className="text-sm text-muted-foreground">+91 98765 43210</p>
+                  <p className="font-bold text-xl">{phone}</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground mb-1">Towards</p>
@@ -83,10 +92,16 @@ export default function ReceiptPage({ params }: { params: { id: string } }) {
 
             {/* Footer / Meta */}
             <div className="flex items-end justify-between border-t border-border/50 pt-8 mt-8">
-              <div className="space-y-1">
+              <div className="space-y-1 text-left">
                 <p className="text-sm"><span className="text-muted-foreground">Date:</span> <span className="font-medium">{date}</span></p>
-                <p className="text-sm"><span className="text-muted-foreground">Payment Method:</span> <span className="font-medium">UPI</span></p>
-                <p className="text-sm"><span className="text-muted-foreground">Collected By:</span> <span className="font-medium">Digital Portal</span></p>
+                <p className="text-sm">
+                  <span className="text-muted-foreground">Payment Method:</span>{" "}
+                  <span className="font-medium">{method === "cash" ? "Cash Handover" : "UPI App"}</span>
+                </p>
+                <p className="text-sm">
+                  <span className="text-muted-foreground">{method === "cash" ? "Collected By:" : "Verified By:"}</span>{" "}
+                  <span className="font-medium">{method === "cash" ? admin : "Digital Portal"}</span>
+                </p>
               </div>
               
               <div className="flex flex-col items-center text-center gap-2">
