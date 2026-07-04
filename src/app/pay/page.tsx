@@ -11,6 +11,16 @@ import Link from "next/link"
 export default function PayNowPage() {
   const [paymentMethod, setPaymentMethod] = useState<"upi" | "cash">("upi");
   const [selectedUpiApp, setSelectedUpiApp] = useState<string | null>(null);
+  const [selectedAdmin, setSelectedAdmin] = useState<string>("");
+
+  const admins = [
+    { id: "1", name: "Farhan", role: "President" },
+    { id: "2", name: "Shafi", role: "Secretary" },
+    { id: "3", name: "Faisal", role: "Treasurer" },
+    { id: "4", name: "Yasir", role: "Joint Secretary" },
+    { id: "5", name: "Najeeb", role: "Vice President" },
+    { id: "6", name: "Anas", role: "Committee Member" },
+  ];
 
   return (
     <div className="min-h-screen bg-secondary/50 flex flex-col items-center justify-center p-4 py-12">
@@ -121,11 +131,41 @@ export default function PayNowPage() {
                   )}
                 </div>
               )}
+
+              {/* Cash Handover Options (Admin Dropdown) */}
+              {paymentMethod === "cash" && (
+                <div className="mt-4 p-4 rounded-xl border bg-secondary/30 space-y-3 animate-in fade-in slide-in-from-top-2 duration-200">
+                  <Label htmlFor="admin-select" className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                    Received By / പണം സ്വീകരിച്ച ആൾ
+                  </Label>
+                  <select
+                    id="admin-select"
+                    className="flex h-12 w-full rounded-xl border border-[#E5EAF3] bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-0 focus-visible:border-primary transition-all text-foreground"
+                    value={selectedAdmin}
+                    onChange={(e) => setSelectedAdmin(e.target.value)}
+                    required
+                  >
+                    <option value="" disabled>Select Admin / അഡ്മിനെ തിരഞ്ഞെടുക്കുക</option>
+                    {admins.map((admin) => (
+                      <option key={admin.id} value={admin.name}>
+                        {admin.name} ({admin.role})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
             </div>
           </CardContent>
           <CardFooter className="flex-col gap-4">
-            <Link href="/success" className="w-full">
-              <Button size="lg" className="w-full text-lg h-14 rounded-xl">
+            <Link 
+              href={paymentMethod === "cash" && !selectedAdmin ? "#" : "/success"} 
+              className={`w-full ${paymentMethod === "cash" && !selectedAdmin ? "pointer-events-none" : ""}`}
+            >
+              <Button 
+                size="lg" 
+                className="w-full text-lg h-14 rounded-xl"
+                disabled={paymentMethod === "cash" && !selectedAdmin}
+              >
                 {paymentMethod === "upi" ? "Pay ₹100 via UPI" : "Record ₹100 Cash"}
               </Button>
             </Link>
