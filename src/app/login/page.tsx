@@ -44,10 +44,9 @@ export default function LoginPage() {
       <div className="w-full max-w-[440px] flex flex-col items-center">
         {/* Logo Section */}
         <div className="text-center mb-8 flex flex-col items-center">
-          <img src="/logo/logo.webp" alt="SSF Logo" className="h-16 w-auto object-contain" style={{ mixBlendMode: "multiply", filter: "contrast(1.05)" }} />
-          <h1 className="text-xl font-bold text-[#0F172A] mt-3">
-            <span className="font-cooper font-normal">SSF</span> Alparamba Unit
-          </h1>
+          <img src="/logo/logo.webp" alt="SSF Logo" className="h-20 w-auto object-contain mb-3" style={{ mixBlendMode: "multiply", filter: "contrast(1.05)" }} />
+          <h1 className="font-cooper text-4xl font-bold text-slate-900 tracking-tight">SSF</h1>
+          <p className="text-slate-600 font-medium text-lg mt-1">Alparamba Unit</p>
         </div>
 
         {/* Login Card */}

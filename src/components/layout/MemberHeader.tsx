@@ -30,10 +30,10 @@ export function MemberHeader() {
         </div>
 
         {/* DESKTOP VIEW: Left Side - Brand Logo (Hidden on Mobile) */}
-        <div className="hidden md:flex items-center gap-2">
-          <img src="/logo/logo.webp" alt="SSF Logo" className="h-7 w-auto object-contain" style={{ mixBlendMode: "multiply", filter: "contrast(1.05)" }} />
-          <span className="text-sm font-semibold text-slate-900">
-            <span className="font-cooper font-normal">SSF</span> Alparamba Unit
+        <div className="hidden md:flex items-center gap-3">
+          <img src="/logo/logo.webp" alt="SSF Logo" className="h-10 w-auto object-contain" style={{ mixBlendMode: "multiply", filter: "contrast(1.05)" }} />
+          <span className="text-lg font-bold text-slate-900 tracking-tight">
+            <span className="font-cooper font-normal text-[22px] mr-1">SSF</span> Alparamba Unit
           </span>
         </div>
 
@@ -74,10 +74,10 @@ export function MemberHeader() {
           {/* Universal Notification Bell */}
           <button 
             type="button" 
-            className="relative inline-flex items-center justify-center size-10 rounded-full text-slate-500 hover:bg-slate-100 transition-colors shrink-0"
+            className="relative size-11 rounded-full bg-[#F8FAFC] border border-[#E2E8F0] shadow-[0_4px_12px_rgba(15,23,42,0.08)] text-slate-600 flex items-center justify-center transition-all hover:-translate-y-0.5 hover:bg-white hover:text-slate-900 shrink-0"
           >
             <Bell className="size-5" />
-            <span className="absolute top-2.5 right-2.5 size-2 rounded-full bg-red-500 ring-2 ring-[#F6F8FC]"></span>
+            <span className="absolute top-2.5 right-2.5 size-2.5 rounded-full bg-red-500 ring-2 ring-white"></span>
           </button>
         </div>
       </div>

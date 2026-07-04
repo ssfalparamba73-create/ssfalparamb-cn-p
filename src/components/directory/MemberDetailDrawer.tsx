@@ -1,6 +1,6 @@
 "use client";
 
-import { X, Phone, ShieldCheck } from "lucide-react";
+import { X, Phone, ShieldCheck, MessageCircle } from "lucide-react";
 import { useEffect } from "react";
 
 export interface MemberStats {
@@ -8,6 +8,7 @@ export interface MemberStats {
   name: string;
   initials: string;
   phone: string;
+  bloodGroup: string;
   targetAmount: number;
   paidPercentage: number;
 }
@@ -49,9 +50,8 @@ export function MemberDetailDrawer({ isOpen, onClose, member }: MemberDetailDraw
         
         {/* Close button */}
         <button 
-          type="button" 
           onClick={onClose}
-          className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-600 bg-slate-50 rounded-full transition-colors"
+          className="size-11 rounded-full bg-[#F8FAFC] border border-[#E2E8F0] shadow-[0_4px_12px_rgba(15,23,42,0.08)] text-slate-500 flex items-center justify-center transition-all hover:scale-105 hover:bg-white hover:text-slate-900 shrink-0 absolute top-4 right-4"
         >
           <X className="size-5" />
         </button>
@@ -62,7 +62,12 @@ export function MemberDetailDrawer({ isOpen, onClose, member }: MemberDetailDraw
             {member.initials}
           </div>
           <h2 className="text-xl font-bold text-slate-900">{member.name}</h2>
-          <p className="text-slate-500 font-medium mt-1">{member.phone}</p>
+          <div className="flex items-center gap-2 mt-1">
+            <p className="text-slate-500 font-medium">{member.phone}</p>
+            <span className="inline-flex items-center justify-center px-2 py-[2px] rounded-full bg-red-50 border border-red-200 text-red-600 text-xs font-bold tracking-wide">
+              {member.bloodGroup}
+            </span>
+          </div>
         </div>
 
         {/* Stats Panel */}
@@ -92,14 +97,23 @@ export function MemberDetailDrawer({ isOpen, onClose, member }: MemberDetailDraw
           </div>
         </div>
 
-        {/* Action Button */}
-        <div className="mt-6 mb-4 md:mb-0">
+        {/* Action Buttons */}
+        <div className="mt-6 mb-4 md:mb-0 flex items-center gap-3">
+          <a 
+            href={`https://wa.me/${member.phone.replace(/\D/g, '')}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex-1 flex items-center justify-center gap-2 h-14 bg-[#25D366] hover:bg-[#20b858] text-white rounded-xl font-bold text-lg shadow-sm transition-colors"
+          >
+            <MessageCircle className="size-5" />
+            WhatsApp
+          </a>
           <a 
             href={`tel:${member.phone}`}
-            className="w-full flex items-center justify-center gap-2 h-14 bg-green-500 hover:bg-green-600 text-white rounded-xl font-bold text-lg shadow-sm transition-colors"
+            className="flex-1 flex items-center justify-center gap-2 h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-lg shadow-sm transition-colors"
           >
             <Phone className="size-5" />
-            Call Member
+            Call
           </a>
         </div>
       </div>

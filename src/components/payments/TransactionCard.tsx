@@ -46,10 +46,10 @@ export function TransactionCard({ transaction }: TransactionCardProps) {
       {transaction.status === "COMPLETED" && transaction.receiptUrl && (
         <Link 
           href={transaction.receiptUrl}
-          className="flex flex-col items-center justify-center p-2 text-slate-400 hover:text-[#2563EB] hover:bg-blue-50 rounded-xl transition-colors"
+          className="size-11 rounded-full bg-[#F8FAFC] border border-[#E2E8F0] shadow-[0_4px_12px_rgba(15,23,42,0.08)] text-slate-500 flex items-center justify-center transition-all hover:-translate-y-0.5 hover:bg-blue-50 hover:text-blue-600 shrink-0 ml-2"
+          title="View Receipt"
         >
-          <FileText className="size-6 mb-0.5" />
-          <span className="text-[10px] font-bold">Receipt</span>
+          <FileText className="size-5" />
         </Link>
       )}
     </div>
