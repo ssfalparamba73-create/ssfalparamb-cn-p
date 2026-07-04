@@ -136,7 +136,7 @@ export default function PayNowPage() {
               {paymentMethod === "cash" && (
                 <div className="mt-4 p-4 rounded-xl border bg-secondary/30 space-y-3 animate-in fade-in slide-in-from-top-2 duration-200">
                   <Label htmlFor="admin-select" className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                    Received By / പണം സ്വീകരിച്ച ആൾ
+                    Received By
                   </Label>
                   <select
                     id="admin-select"
@@ -145,7 +145,7 @@ export default function PayNowPage() {
                     onChange={(e) => setSelectedAdmin(e.target.value)}
                     required
                   >
-                    <option value="" disabled>Select Admin / അഡ്മിനെ തിരഞ്ഞെടുക്കുക</option>
+                    <option value="" disabled>Select Admin</option>
                     {admins.map((admin) => (
                       <option key={admin.id} value={admin.name}>
                         {admin.name} ({admin.role})
