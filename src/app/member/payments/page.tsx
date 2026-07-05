@@ -57,7 +57,7 @@ export default function PaymentsPage() {
         </div>
         
         {/* Visual Graphic for desktop to fill empty space elegantly */}
-        <div className="hidden md:flex size-24 bg-blue-50 text-blue-600 rounded-full items-center justify-center shrink-0">
+        <div className="hidden md:flex size-24 bg-blue-50 border border-blue-100 shadow-[0_4px_12px_rgba(15,23,42,0.08)] text-blue-600 rounded-full items-center justify-center shrink-0 transition-all hover:-translate-y-1">
           <CalendarRange className="size-10" />
         </div>
       </div>

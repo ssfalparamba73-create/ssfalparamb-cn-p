@@ -4,7 +4,7 @@ import React, { Suspense } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Printer, Share2, HeartHandshake, QrCode, ArrowLeft } from "lucide-react"
+import { Printer, Share2, HeartHandshake, QrCode, ArrowLeft, Gift } from "lucide-react"
 import Link from "next/link"
 import { useSearchParams } from "next/navigation"
 
@@ -19,6 +19,9 @@ function ReceiptPageContent({ params }: { params: Promise<{ id: string }> }) {
   const admin = searchParams.get("admin") || ""
   const phone = searchParams.get("phone") || "Guest Member"
   const amount = searchParams.get("amount") || "100"
+  const category = searchParams.get("category") || "dues"
+  
+  const isEvent = category === "special_event"
   
   return (
     <div className="min-h-screen bg-secondary/50 p-4 py-8 flex flex-col items-center">
@@ -41,8 +44,8 @@ function ReceiptPageContent({ params }: { params: Promise<{ id: string }> }) {
 
         {/* The Receipt Document */}
         <Card className="bg-background border-none shadow-xl overflow-hidden relative print:shadow-none print:border-border">
-          {/* Subtle gold accent border & Arabesque pattern */}
-          <div className="absolute top-0 left-0 w-full h-2 bg-[#C8A96B]" />
+          {/* Subtle accent border & Arabesque pattern */}
+          <div className={`absolute top-0 left-0 w-full h-2 ${isEvent ? "bg-amber-500" : "bg-[#C8A96B]"}`} />
           <div className="absolute inset-0 opacity-[0.02] pointer-events-none" 
                style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, currentColor 1px, transparent 0)', backgroundSize: '24px 24px' }} />
           
@@ -50,8 +53,8 @@ function ReceiptPageContent({ params }: { params: Promise<{ id: string }> }) {
             {/* Header */}
             <div className="flex items-start justify-between border-b border-border/50 pb-8">
               <div className="flex items-center gap-3">
-                <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-                  <HeartHandshake className="size-6" />
+                <div className={`h-12 w-12 rounded-xl flex items-center justify-center ${isEvent ? "bg-amber-100 text-amber-600" : "bg-primary/10 text-primary"}`}>
+                  {isEvent ? <Gift className="size-6" /> : <HeartHandshake className="size-6" />}
                 </div>
                 <div>
                   <h1 className="text-2xl font-bold tracking-tight text-foreground leading-none">
@@ -75,8 +78,8 @@ function ReceiptPageContent({ params }: { params: Promise<{ id: string }> }) {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground mb-1">Towards</p>
-                  <p className="font-medium">Monthly Contribution (Varisankhya)</p>
-                  <p className="text-sm text-muted-foreground">July 2026 + 1 Month Arrears</p>
+                  <p className="font-medium">{isEvent ? "Special Event Contribution" : "Monthly Contribution (Varisankhya)"}</p>
+                  <p className="text-sm text-muted-foreground">{isEvent ? "Event Name" : "July 2026 + 1 Month Arrears"}</p>
                 </div>
               </div>
               

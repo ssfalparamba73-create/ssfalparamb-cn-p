@@ -13,6 +13,7 @@ function SuccessPageContent() {
   const admin = searchParams.get("admin") || ""
   const phone = searchParams.get("phone") || "Guest User"
   const amount = searchParams.get("amount") || "100"
+  const category = searchParams.get("category") || "dues"
 
   return (
     <div className="min-h-screen bg-green-50/30 flex flex-col items-center justify-center p-4 py-12">
@@ -76,7 +77,7 @@ function SuccessPageContent() {
           </CardContent>
           <CardFooter className="flex-col gap-3 px-8 pb-8">
             <div className="flex gap-3 w-full">
-              <Link href={`/receipt/TXN-8924719?method=${method}&admin=${encodeURIComponent(admin)}&phone=${encodeURIComponent(phone)}&amount=${amount}`} className="flex-1">
+              <Link href={`/receipt/TXN-8924719?method=${method}&admin=${encodeURIComponent(admin)}&phone=${encodeURIComponent(phone)}&amount=${amount}&category=${category}`} className="flex-1">
                 <Button variant="outline" className="w-full">
                   <Download className="mr-2 size-4" /> Receipt
                 </Button>
