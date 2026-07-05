@@ -19,10 +19,10 @@ export function TransactionCard({ transaction }: TransactionCardProps) {
     <div className="bg-white rounded-2xl border border-[#E5EAF3] p-4 flex items-center justify-between shadow-sm hover:shadow-md transition-shadow">
       <div className="flex items-center gap-4">
         {/* Icon based on method */}
-        <div className={`size-12 flex items-center justify-center rounded-full shrink-0 ${
-          transaction.method === "UPI" ? "bg-purple-50 text-purple-600" : "bg-emerald-50 text-emerald-600"
+        <div className={`size-11 rounded-full border shadow-[0_4px_12px_rgba(15,23,42,0.06)] flex items-center justify-center shrink-0 transition-all hover:-translate-y-0.5 ${
+          transaction.method === "UPI" ? "bg-purple-50 border-purple-100 text-purple-600 hover:bg-purple-100 hover:shadow-[0_4px_12px_rgba(15,23,42,0.08)]" : "bg-emerald-50 border-emerald-100 text-emerald-600 hover:bg-emerald-100 hover:shadow-[0_4px_12px_rgba(15,23,42,0.08)]"
         }`}>
-          {transaction.method === "UPI" ? <SmartphoneNfc className="size-6" /> : <Banknote className="size-6" />}
+          {transaction.method === "UPI" ? <SmartphoneNfc className="size-5" /> : <Banknote className="size-5" />}
         </div>
         
         {/* Details */}
@@ -46,7 +46,7 @@ export function TransactionCard({ transaction }: TransactionCardProps) {
       {transaction.status === "COMPLETED" && transaction.receiptUrl && (
         <Link 
           href={transaction.receiptUrl}
-          className="size-11 rounded-full bg-[#F8FAFC] border border-[#E2E8F0] shadow-[0_4px_12px_rgba(15,23,42,0.08)] text-slate-500 flex items-center justify-center transition-all hover:-translate-y-0.5 hover:bg-blue-50 hover:text-blue-600 shrink-0 ml-2"
+          className="size-11 rounded-full bg-blue-50 border border-blue-100 shadow-[0_4px_12px_rgba(15,23,42,0.08)] text-blue-600 flex items-center justify-center transition-all hover:-translate-y-0.5 hover:bg-blue-100 shrink-0 ml-2"
           title="View Receipt"
         >
           <FileText className="size-5" />

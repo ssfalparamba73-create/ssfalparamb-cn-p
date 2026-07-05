@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { MemberProfileDetails, MemberProfileData } from "@/components/profile/MemberProfileDetails";
 import { EditProfileDrawer } from "@/components/profile/EditProfileDrawer";
+import { ContactAdminsDrawer } from "@/components/profile/ContactAdminsDrawer";
 import { Fingerprint, MessageCircle, LogOut, ChevronRight, Edit3, CheckCircle2 } from "lucide-react";
 
 const INITIAL_MOCK_MEMBER: MemberProfileData = {
@@ -24,6 +25,7 @@ export default function ProfilePage() {
   const [isBiometricEnabled, setIsBiometricEnabled] = useState(false);
   const [member, setMember] = useState<MemberProfileData>(INITIAL_MOCK_MEMBER);
   const [isEditDrawerOpen, setIsEditDrawerOpen] = useState(false);
+  const [isContactDrawerOpen, setIsContactDrawerOpen] = useState(false);
   const [showToast, setShowToast] = useState(false);
 
   const handleSaveProfile = (updatedMember: MemberProfileData) => {
@@ -76,9 +78,9 @@ export default function ProfilePage() {
       <div className="bg-white rounded-2xl border border-[#E5EAF3] shadow-sm overflow-hidden mb-6">
         
         {/* Biometric Toggle */}
-        <div className="p-4 flex items-center justify-between border-b border-[#E5EAF3]">
+        <div className="p-4 flex items-center justify-between border-b border-[#E5EAF3] group">
           <div className="flex items-center gap-3">
-            <div className="bg-blue-50 text-blue-600 p-2 rounded-xl">
+            <div className="size-11 rounded-full bg-blue-50 border border-blue-100 shadow-[0_4px_12px_rgba(15,23,42,0.06)] flex items-center justify-center shrink-0 transition-all group-hover:-translate-y-0.5 text-blue-600">
               <Fingerprint className="size-5" />
             </div>
             <div>
@@ -100,22 +102,22 @@ export default function ProfilePage() {
         </div>
 
         {/* WhatsApp Support */}
-        <a href="https://wa.me/919876543210" target="_blank" rel="noreferrer" className="p-4 flex items-center justify-between border-b border-[#E5EAF3] hover:bg-slate-50 transition-colors">
+        <button onClick={() => setIsContactDrawerOpen(true)} className="w-full p-4 flex items-center justify-between border-b border-[#E5EAF3] hover:bg-slate-50 transition-colors group text-left">
           <div className="flex items-center gap-3">
-            <div className="bg-[#25D366]/10 text-[#25D366] p-2 rounded-xl">
+            <div className="size-11 rounded-full bg-[#ebf8ee] border border-[#25D366]/20 shadow-[0_4px_12px_rgba(15,23,42,0.06)] flex items-center justify-center shrink-0 transition-all group-hover:-translate-y-0.5 text-[#25D366]">
               <MessageCircle className="size-5" />
             </div>
             <div>
-              <p className="font-bold text-slate-900 text-sm">Chat with Admin</p>
-              <p className="text-xs text-slate-500 mt-0.5">Get support via WhatsApp</p>
+              <p className="font-bold text-slate-900 text-sm">Chat with Admins</p>
+              <p className="text-xs text-slate-500 mt-0.5">Contact committee members</p>
             </div>
           </div>
-          <ChevronRight className="size-5 text-slate-400" />
-        </a>
+          <ChevronRight className="size-5 text-slate-400 group-hover:translate-x-0.5 transition-transform" />
+        </button>
 
         {/* Logout */}
-        <button className="w-full p-4 flex items-center gap-3 hover:bg-red-50 transition-colors text-left">
-          <div className="bg-red-50 text-red-600 p-2 rounded-xl">
+        <button className="w-full p-4 flex items-center gap-3 hover:bg-red-50 transition-colors text-left group">
+          <div className="size-11 rounded-full bg-red-50 border border-red-100 shadow-[0_4px_12px_rgba(15,23,42,0.06)] flex items-center justify-center shrink-0 transition-all group-hover:-translate-y-0.5 text-red-600">
             <LogOut className="size-5" />
           </div>
           <div>
@@ -132,6 +134,12 @@ export default function ProfilePage() {
         onClose={() => setIsEditDrawerOpen(false)} 
         member={member} 
         onSave={handleSaveProfile} 
+      />
+
+      {/* Contact Admins Drawer */}
+      <ContactAdminsDrawer 
+        isOpen={isContactDrawerOpen}
+        onClose={() => setIsContactDrawerOpen(false)}
       />
 
     </div>

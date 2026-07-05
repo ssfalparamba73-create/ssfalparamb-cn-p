@@ -2,61 +2,40 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { PhoneIcon, User, ArrowRight, Headset, ShieldCheck } from "lucide-react";
+import { Label } from "@/components/ui/label";
+import { ShieldCheck } from "lucide-react";
+import { InlineLoginForm } from "@/components/auth/InlineLoginForm";
+import { TransparentLogo } from "@/components/TransparentLogo";
 
 export default function LoginPage() {
   const router = useRouter();
-  const [phone, setPhone] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!phone) return;
-    
-    setIsLoading(true);
-    // Simulate API call for sending OTP
-    setTimeout(() => {
-      setIsLoading(false);
-      // Redirect to OTP verification page
-      router.push(`/otp-verification?phone=${encodeURIComponent(phone)}`);
-    }, 800);
-  };
 
   return (
-    <div className="min-h-screen bg-[#F6F8FC] flex flex-col justify-center items-center p-4 relative overflow-hidden">
-      {/* Decorative background dots */}
-      <div className="absolute inset-0 pointer-events-none opacity-40"
-        style={{
-          backgroundImage: 'radial-gradient(#D7E4FF 2px, transparent 2px)',
-          backgroundSize: '30px 30px',
-          zIndex: -1,
-        }}
-      />
-      {/* Subtle background waves/gradients */}
-      <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none" style={{ zIndex: -1 }}>
-        <div className="absolute -top-[10%] -left-[10%] w-[50%] h-[50%] rounded-full bg-[rgba(255,255,255,0.35)] blur-3xl" />
-        <div className="absolute top-[60%] -right-[10%] w-[60%] h-[60%] rounded-full bg-[rgba(255,255,255,0.35)] blur-3xl" />
-      </div>
+    <div className="min-h-screen flex flex-col justify-center items-center p-4 relative overflow-hidden bg-[radial-gradient(circle_at_18%_18%,rgba(59,130,246,0.24),transparent_24rem),radial-gradient(circle_at_86%_24%,rgba(34,197,94,0.24),transparent_20rem),linear-gradient(135deg,#f8fbff_0%,#eef8ff_48%,#effdf7_100%)]">
+      
+      {/* Decorative background gradients from landing page */}
+      <div className="pointer-events-none absolute inset-0 opacity-70 [background-image:radial-gradient(circle_at_1px_1px,rgba(37,99,235,0.16)_1px,transparent_0)] [background-size:34px_34px]" />
+      <div className="pointer-events-none absolute -bottom-32 -left-24 h-80 w-[72rem] rotate-[-7deg] rounded-[100%] bg-gradient-to-r from-blue-500/30 via-cyan-300/28 to-emerald-300/30 blur-2xl" />
+      <div className="pointer-events-none absolute -top-24 left-1/3 h-52 w-[58rem] rotate-[15deg] rounded-[100%] bg-white/40 blur-xl" />
 
-      <div className="w-full max-w-[440px] flex flex-col items-center">
+      <div className="w-full max-w-[440px] flex flex-col items-center relative z-10">
         {/* Logo Section */}
         <div className="text-center mb-8 flex flex-col items-center">
-          <img src="/logo/logo.webp" alt="SSF Logo" className="h-20 w-auto object-contain mb-3" style={{ mixBlendMode: "multiply", filter: "contrast(1.05)" }} />
+          <TransparentLogo src="/logo/logo.webp" alt="SSF Logo" className="h-16 w-auto object-contain mb-3 drop-shadow-sm" />
           <h1 className="font-cooper text-4xl font-bold text-slate-900 tracking-tight">SSF</h1>
-          <p className="text-slate-600 font-medium text-lg mt-1">Alparamba Unit</p>
+          <p className="text-slate-900 font-bold text-lg mt-1">Alparamba Unit</p>
         </div>
 
         {/* Login Card */}
-        <Card className="w-full border-0 shadow-[0_8px_30px_rgb(0,0,0,0.04)] bg-white rounded-2xl overflow-hidden p-2 sm:p-4">
-          <CardContent className="pt-6 px-4 sm:px-6 pb-6">
+        <Card className="w-full border-0 shadow-xl bg-white rounded-[2.5rem] overflow-hidden p-4 sm:p-6 transition-all duration-300">
+          <CardContent className="pt-4 px-2 sm:px-4 pb-4">
             
-            {/* Avatar Icon */}
             <div className="flex justify-center mb-6">
               <div className="h-16 w-16 bg-[#EEF3FA] rounded-full flex items-center justify-center">
-                <User className="h-8 w-8 text-[#2563EB]" strokeWidth={1.5} />
+                <ShieldCheck className="h-8 w-8 text-[#2563EB]" strokeWidth={1.5} />
               </div>
             </div>
 
@@ -67,52 +46,7 @@ export default function LoginPage() {
               </p>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="space-y-2">
-                <label htmlFor="phone" className="text-[11px] font-bold uppercase tracking-wider text-[#2563EB]">
-                  Mobile Number
-                </label>
-                <div className="relative group">
-                  <PhoneIcon className="absolute left-4 top-3.5 h-5 w-5 text-[#2563EB]" strokeWidth={2} />
-                  <Input
-                    id="phone"
-                    type="tel"
-                    placeholder="Enter 10-digit number"
-                    className="h-12 text-base bg-transparent border-[#E5EAF3] focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-[#2563EB] transition-all rounded-xl text-slate-900 placeholder:text-slate-400"
-                    style={{ paddingLeft: "3.25rem" }}
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    disabled={isLoading}
-                    required
-                  />
-                </div>
-              </div>
-
-              <Button 
-                type="submit" 
-                className="w-full h-12 text-base font-semibold rounded-xl bg-[#2563EB] hover:bg-[#2563EB]/90 text-white shadow-md hover:shadow-lg transition-all active:scale-[0.98] flex items-center justify-center group" 
-                disabled={isLoading}
-              >
-                {isLoading ? "Sending OTP..." : "Get OTP"}
-                {!isLoading && <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />}
-              </Button>
-            </form>
-
-            <div className="relative my-8">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-[#E5EAF3]"></div>
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-white px-3 text-slate-400 font-medium">Or</span>
-              </div>
-            </div>
-
-            <div className="flex justify-center items-center">
-              <p className="text-[14px] text-slate-500 flex items-center gap-1.5">
-                <Headset className="h-5 w-5 text-[#22C55E]" />
-                Having trouble? <a href="#" className="text-[#22C55E] font-semibold hover:underline">Contact Unit Admin</a>
-              </p>
-            </div>
+            <InlineLoginForm isGlass={false} />
 
           </CardContent>
         </Card>

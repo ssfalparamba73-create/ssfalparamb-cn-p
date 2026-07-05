@@ -41,7 +41,7 @@ export function RecentActivityCard() {
           mockActivities.map((activity) => (
             <div key={activity.id} className="p-4 flex items-center justify-between hover:bg-slate-50 transition-colors">
               <div className="flex items-center gap-3">
-                <div className="size-10 rounded-full bg-blue-50 flex items-center justify-center text-[#2563EB]">
+                <div className="size-11 rounded-full bg-blue-50 border border-blue-100 shadow-[0_4px_12px_rgba(15,23,42,0.08)] text-blue-600 flex items-center justify-center hover:bg-blue-100 transition-all hover:-translate-y-0.5">
                   <ReceiptText className="size-5" />
                 </div>
                 <div>

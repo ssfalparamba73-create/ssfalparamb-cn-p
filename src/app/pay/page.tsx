@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { ArrowLeft, CreditCard, Banknote, ShieldCheck, Smartphone, QrCode, ChevronDown } from "lucide-react"
+import { ArrowLeft, CreditCard, Banknote, ShieldCheck, Smartphone, QrCode, ChevronDown, AlertCircle } from "lucide-react"
 import Link from "next/link"
 
 export default function PayNowPage() {
@@ -16,6 +16,40 @@ export default function PayNowPage() {
   const [showQrModal, setShowQrModal] = useState(false);
   const [isQrInlineOpen, setIsQrInlineOpen] = useState(false);
   const [memberQuery, setMemberQuery] = useState("");
+
+  // New states for Dues & Events
+  const [activeTab, setActiveTab] = useState<"dues" | "event">("dues");
+  const [selectedMonths, setSelectedMonths] = useState<string[]>(["current"]);
+  const [duesTier, setDuesTier] = useState<50 | 100>(50);
+  const [customAmount, setCustomAmount] = useState<string>("");
+  
+  // Admin toggle for Special Event
+  const isSpecialEventActive = true; 
+
+  const mockPendingMonths = [
+    { id: "current", label: "July 2026 (Current Month)" },
+    { id: "arrear_1", label: "June 2026 (Arrears)" },
+    { id: "arrear_2", label: "May 2026 (Arrears)" },
+  ];
+
+  const handleMonthToggle = (id: string) => {
+    setSelectedMonths(prev => 
+      prev.includes(id) ? prev.filter(m => m !== id) : [...prev, id]
+    );
+  };
+
+  let finalAmount = 0;
+  if (activeTab === "dues") {
+    finalAmount = selectedMonths.length * duesTier;
+  } else {
+    finalAmount = parseInt(customAmount) || 0;
+  }
+
+  const isButtonDisabled = 
+    !memberQuery.trim() || 
+    (paymentMethod === "cash" && !selectedAdmin) ||
+    (activeTab === "dues" && selectedMonths.length === 0) ||
+    (activeTab === "event" && finalAmount < 30);
 
   const admins = [
     { id: "1", name: "Farhan", role: "President" },
@@ -34,7 +68,7 @@ export default function PayNowPage() {
     }
   };
 
-  const isButtonDisabled = !memberQuery.trim() || (paymentMethod === "cash" && !selectedAdmin);
+  // Removed old isButtonDisabled
 
   const MockQrCodeSvg = () => (
     <svg width="180" height="180" viewBox="0 0 29 29" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-40 h-40 mx-auto text-slate-800">
@@ -74,20 +108,96 @@ export default function PayNowPage() {
               />
             </div>
             
-            {/* Mock Itemized Dues */}
-            <div className="rounded-lg border bg-accent/50 p-4 space-y-3">
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Current Month</span>
-                <span className="font-medium">₹50</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Arrears (1 Month)</span>
-                <span className="font-medium text-destructive">₹50</span>
-              </div>
-              <div className="pt-3 border-t border-border/50 flex justify-between font-bold text-lg">
-                <span>Total Due</span>
-                <span>₹100</span>
-              </div>
+            {/* Category Tabs */}
+            <div className="bg-secondary/50 p-1 rounded-xl flex items-center mb-2">
+              <button
+                type="button"
+                onClick={() => setActiveTab("dues")}
+                className={`flex-1 text-sm font-medium py-2.5 rounded-lg transition-all ${activeTab === "dues" ? "bg-white text-primary shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+              >
+                Monthly Dues
+              </button>
+              {isSpecialEventActive && (
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("event")}
+                  className={`flex-1 text-sm font-medium py-2.5 rounded-lg transition-all ${activeTab === "event" ? "bg-white text-primary shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+                >
+                  Special Event
+                </button>
+              )}
+            </div>
+            
+            {/* Tab Contents */}
+            <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+              {activeTab === "dues" ? (
+                <div className="rounded-xl border bg-accent/30 p-4 space-y-4">
+                  <div className="space-y-3">
+                    <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Select Pending Months</Label>
+                    <div className="space-y-2">
+                      {mockPendingMonths.map((month) => (
+                        <label key={month.id} className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all ${selectedMonths.includes(month.id) ? "bg-white border-primary shadow-sm" : "bg-white/50 border-border/50 hover:bg-white"}`}>
+                          <div className={`size-5 rounded-md border flex items-center justify-center transition-colors ${selectedMonths.includes(month.id) ? "bg-primary border-primary text-white" : "border-slate-300 bg-white"}`}>
+                            {selectedMonths.includes(month.id) && <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="size-3.5"><polyline points="20 6 9 17 4 12"></polyline></svg>}
+                          </div>
+                          <span className={`text-sm font-medium ${selectedMonths.includes(month.id) ? "text-slate-900" : "text-slate-600"}`}>{month.label}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="pt-2">
+                    <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 block">Contribution Tier</Label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button type="button" onClick={() => setDuesTier(50)} className={`p-3 rounded-xl border flex flex-col items-center justify-center gap-0.5 transition-all ${duesTier === 50 ? "bg-primary/5 border-primary text-primary" : "bg-white border-slate-200 text-slate-500 hover:border-primary/40"}`}>
+                        <span className="font-bold text-lg leading-none">₹50</span>
+                        <span className="text-[10px] uppercase tracking-wider">Base / Month</span>
+                      </button>
+                      <button type="button" onClick={() => setDuesTier(100)} className={`p-3 rounded-xl border flex flex-col items-center justify-center gap-0.5 transition-all ${duesTier === 100 ? "bg-primary/5 border-primary text-primary" : "bg-white border-slate-200 text-slate-500 hover:border-primary/40"}`}>
+                        <span className="font-bold text-lg leading-none">₹100</span>
+                        <span className="text-[10px] uppercase tracking-wider">Premium / Month</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="pt-3 border-t border-border/50 flex justify-between items-baseline mt-2">
+                    <span className="text-slate-500 font-medium">Total Dues</span>
+                    <span className="font-bold text-2xl text-slate-900">₹{finalAmount}</span>
+                  </div>
+                </div>
+              ) : (
+                <div className="rounded-xl border bg-accent/30 p-4 space-y-4">
+                  <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200/50 rounded-xl p-3 flex items-start gap-3">
+                    <div className="bg-amber-100 p-1.5 rounded-lg text-amber-600 mt-0.5">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-bold text-amber-900">Ramadan Relief Fund</h4>
+                      <p className="text-xs text-amber-700/80 mt-0.5 leading-snug">Your generous contributions help those in need during this special month.</p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Enter Custom Amount</Label>
+                    <div className="relative">
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-slate-400 text-lg">₹</span>
+                      <Input 
+                        type="number" 
+                        placeholder="0" 
+                        className="pl-9 h-14 text-lg font-bold bg-white" 
+                        value={customAmount}
+                        onChange={(e) => setCustomAmount(e.target.value)}
+                        min="30"
+                      />
+                    </div>
+                    {activeTab === "event" && finalAmount > 0 && finalAmount < 30 && (
+                      <p className="text-xs text-red-500 font-medium flex items-center gap-1">
+                        <AlertCircle className="size-3" /> Minimum amount is ₹30
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="space-y-3">
@@ -241,7 +351,7 @@ export default function PayNowPage() {
           </CardContent>
           <CardFooter className="flex-col gap-4">
             <Link 
-              href={isButtonDisabled ? "#" : `/success?method=${paymentMethod}&admin=${encodeURIComponent(selectedAdmin)}&phone=${encodeURIComponent(memberQuery)}&amount=100`} 
+              href={isButtonDisabled ? "#" : `/success?method=${paymentMethod}&admin=${encodeURIComponent(selectedAdmin)}&phone=${encodeURIComponent(memberQuery)}&amount=${finalAmount}${activeTab === 'event' ? '&category=special_event' : ''}`} 
               className={`w-full ${isButtonDisabled ? "pointer-events-none" : ""}`}
             >
               <Button 
@@ -249,7 +359,7 @@ export default function PayNowPage() {
                 className="w-full text-lg h-14 rounded-xl"
                 disabled={isButtonDisabled}
               >
-                {paymentMethod === "upi" ? "Pay ₹100 via UPI" : "Record ₹100 Cash"}
+                {paymentMethod === "upi" ? `Pay ₹${finalAmount || 0} via UPI` : `Record ₹${finalAmount || 0} Cash`}
               </Button>
             </Link>
             <p className="text-xs text-muted-foreground flex items-center justify-center gap-1 font-medium">

@@ -52,10 +52,10 @@ export function MemberProfileDetails({ member }: MemberProfileDetailsProps) {
           Personal Information
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-8 mb-8">
-          <DetailItem icon={<Droplet className="size-4 text-red-500" />} label="Blood Group" value={member.bloodGroup} />
-          <DetailItem icon={<Calendar className="size-4 text-slate-400" />} label="Age" value={`${member.age} Years`} />
-          <DetailItem icon={<Briefcase className="size-4 text-slate-400" />} label="Occupation" value={member.occupation} />
-          <DetailItem icon={<MapPin className="size-4 text-slate-400" />} label="Address" value={member.address} />
+          <DetailItem colorScheme="red" icon={<Droplet className="size-5" />} label="Blood Group" value={member.bloodGroup} />
+          <DetailItem colorScheme="purple" icon={<Calendar className="size-5" />} label="Age" value={`${member.age} Years`} />
+          <DetailItem colorScheme="amber" icon={<Briefcase className="size-5" />} label="Occupation" value={member.occupation} />
+          <DetailItem colorScheme="emerald" icon={<MapPin className="size-5" />} label="Address" value={member.address} />
         </div>
 
         <div className="h-px bg-[#E5EAF3] w-full mb-8" />
@@ -65,8 +65,8 @@ export function MemberProfileDetails({ member }: MemberProfileDetailsProps) {
           Contact Details
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-8 mb-8">
-          <DetailItem icon={<Phone className="size-4 text-slate-400" />} label="Phone Number" value={member.phone} />
-          <DetailItem icon={<MessageCircle className="size-4 text-[#25D366]" />} label="WhatsApp" value={member.whatsapp} />
+          <DetailItem colorScheme="blue" icon={<Phone className="size-5" />} label="Phone Number" value={member.phone} />
+          <DetailItem colorScheme="whatsapp" icon={<MessageCircle className="size-5" />} label="WhatsApp" value={member.whatsapp} />
         </div>
 
         <div className="h-px bg-[#E5EAF3] w-full mb-8" />
@@ -76,9 +76,9 @@ export function MemberProfileDetails({ member }: MemberProfileDetailsProps) {
           Organization
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-8">
-          <DetailItem icon={<CreditCard className="size-4 text-slate-400" />} label="Membership ID" value={member.id} />
-          <DetailItem icon={<MapPin className="size-4 text-slate-400" />} label="Unit & Sector" value={`${member.unit}, ${member.sector}`} />
-          <DetailItem icon={<Calendar className="size-4 text-slate-400" />} label="Joined Year" value={member.joinedYear} />
+          <DetailItem colorScheme="indigo" icon={<CreditCard className="size-5" />} label="Membership ID" value={member.id} />
+          <DetailItem colorScheme="teal" icon={<MapPin className="size-5" />} label="Unit & Sector" value={`${member.unit}, ${member.sector}`} />
+          <DetailItem colorScheme="orange" icon={<Calendar className="size-5" />} label="Joined Year" value={member.joinedYear} />
         </div>
       </div>
       
@@ -86,10 +86,25 @@ export function MemberProfileDetails({ member }: MemberProfileDetailsProps) {
   );
 }
 
-function DetailItem({ icon, label, value }: { icon: React.ReactNode, label: string, value: string }) {
+type ColorScheme = "slate" | "red" | "blue" | "emerald" | "amber" | "purple" | "indigo" | "teal" | "orange" | "whatsapp";
+
+function DetailItem({ icon, label, value, colorScheme = "slate" }: { icon: React.ReactNode, label: string, value: string, colorScheme?: ColorScheme }) {
+  const colors = {
+    slate: "bg-slate-50 text-slate-500 border-slate-200",
+    red: "bg-red-50 text-red-500 border-red-100",
+    blue: "bg-blue-50 text-blue-500 border-blue-100",
+    emerald: "bg-emerald-50 text-emerald-500 border-emerald-100",
+    amber: "bg-amber-50 text-amber-500 border-amber-100",
+    purple: "bg-purple-50 text-purple-500 border-purple-100",
+    indigo: "bg-indigo-50 text-indigo-500 border-indigo-100",
+    teal: "bg-teal-50 text-teal-500 border-teal-100",
+    orange: "bg-orange-50 text-orange-500 border-orange-100",
+    whatsapp: "bg-[#ebf8ee] text-[#25D366] border-[#25D366]/20"
+  };
+
   return (
-    <div className="flex items-start gap-3">
-      <div className="mt-0.5 bg-slate-50 p-1.5 rounded-lg border border-slate-100">
+    <div className="flex items-center gap-3 group">
+      <div className={`size-11 rounded-full border shadow-[0_4px_12px_rgba(15,23,42,0.06)] flex items-center justify-center shrink-0 transition-all group-hover:-translate-y-0.5 ${colors[colorScheme]}`}>
         {icon}
       </div>
       <div className="flex flex-col">

@@ -1,128 +1,156 @@
+"use client";
+
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
-import { Card, CardContent } from "@/components/ui/card"
-import { ShieldCheck, Users, ArrowRight, HeartHandshake } from "lucide-react"
+import {
+  Droplet,
+  LockKeyhole,
+  Phone,
+  Send,
+  ShieldCheck,
+  SmartphoneNfc,
+  Sparkles,
+  Users,
+  Zap,
+  ArrowRight
+} from "lucide-react"
+import { motion } from "framer-motion"
+import { InteractiveBenefits } from "@/components/landing/InteractiveBenefits"
+import { Header } from "@/components/layout/Header"
+import { TransparentLogo } from "@/components/TransparentLogo"
+import { InlineLoginForm } from "@/components/auth/InlineLoginForm"
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-secondary/50 flex flex-col">
-      {/* Header / Nav */}
-      <header className="sticky top-0 z-50 w-full border-b bg-[#F6F8FC]">
-        <div className="container flex h-16 items-center justify-between">
-          <div className="flex items-center gap-2 font-semibold">
-            <img src="/logo/logo.webp" alt="SSF Logo" className="h-10 w-auto object-contain" style={{ mixBlendMode: "multiply", filter: "contrast(1.05)" }} />
-            <span className="hidden sm:inline-block text-lg">
-              <span className="font-cooper font-normal">SSF</span> Alparamba Unit
-            </span>
-          </div>
-          <nav className="flex items-center gap-2 sm:gap-4">
-            <Link href="/login">
-              <Button size="sm" className="rounded-full px-4">Member Login</Button>
-            </Link>
-          </nav>
-        </div>
-      </header>
+    <div className="min-h-screen flex flex-col overflow-hidden bg-[#eef7ff] text-slate-950 selection:bg-cyan-100 selection:text-blue-950">
+      <Header />
 
-      <main className="flex-1">
+      <main className="flex-1 flex flex-col bg-[radial-gradient(circle_at_18%_18%,rgba(59,130,246,0.24),transparent_24rem),radial-gradient(circle_at_86%_24%,rgba(34,197,94,0.24),transparent_20rem),linear-gradient(135deg,#f8fbff_0%,#eef8ff_48%,#effdf7_100%)]">
         {/* Hero Section */}
-        <section className="relative overflow-hidden bg-background pt-16 md:pt-24 pb-20 md:pb-32 border-b">
-          {/* Subtle Geometric Pattern */}
-          <div className="absolute inset-0 opacity-[0.03] pointer-events-none" 
-               style={{ 
-                 backgroundImage: 'radial-gradient(circle at 2px 2px, currentColor 1px, transparent 0)', 
-                 backgroundSize: '32px 32px' 
-               }}>
+        <section className="relative grid md:min-h-[calc(100vh-5rem)] py-8 md:py-0 grid-cols-1 overflow-hidden lg:grid-cols-2">
+          <div className="pointer-events-none absolute inset-0 opacity-70 [background-image:radial-gradient(circle_at_1px_1px,rgba(37,99,235,0.16)_1px,transparent_0)] [background-size:34px_34px]" />
+          <div className="pointer-events-none absolute -bottom-32 -left-24 h-80 w-[72rem] rotate-[-7deg] rounded-[100%] bg-gradient-to-r from-blue-500/30 via-cyan-300/28 to-emerald-300/30 blur-2xl" />
+          <div className="pointer-events-none absolute -bottom-24 left-1/3 h-52 w-[58rem] rotate-[-15deg] rounded-[100%] bg-white/40 blur-xl" />
+          <div className="pointer-events-none absolute -right-28 top-24 h-64 w-64 rounded-full bg-emerald-400/18 blur-3xl" />
+          <div className="pointer-events-none absolute bottom-0 left-0 h-[31rem] w-[19rem] opacity-30">
+            <div className="absolute bottom-0 left-8 h-72 w-24 rounded-t-full border border-blue-300/30 bg-gradient-to-b from-white/50 to-blue-200/45 blur-[1px]" />
+            <div className="absolute bottom-72 left-17 h-14 w-4 rounded-full bg-blue-300/35" />
+            <div className="absolute bottom-84 left-15 h-9 w-9 rounded-full border-l-4 border-blue-300/40" />
+            <div className="absolute bottom-0 left-0 h-36 w-40 rounded-t-full border border-blue-300/25 bg-blue-200/35" />
           </div>
-          
-          <div className="container relative z-10 flex flex-col items-center text-center space-y-10">
-            <div className="space-y-5 max-w-3xl">
-              <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-foreground leading-tight">
-                <span className="font-cooper font-normal tracking-wide">SSF</span> Alparamba <br /> Varisankhya Portal
+          <div className="pointer-events-none absolute inset-0 z-[1] bg-white/10 backdrop-blur-sm" />
+
+          {/* Left Column: Brand & Value */}
+          <div className="relative z-10 flex flex-col justify-center overflow-hidden px-4 py-6 md:px-12 lg:px-20 md:py-16 text-center md:text-left items-center md:items-start">
+            <motion.div 
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, ease: "easeOut" }}
+              className="relative z-10 w-full max-w-xl space-y-6 md:space-y-8 p-2 sm:p-8 mt-2 md:mt-0 flex flex-col items-center md:items-start"
+            >
+              
+              <div className="inline-flex items-center gap-2 rounded-full border border-blue-200/80 bg-blue-50/70 px-3 md:px-4 py-1.5 md:py-2 text-[10px] md:text-xs font-extrabold uppercase tracking-[0.15em] text-blue-700 shadow-sm backdrop-blur-xl">
+                <ShieldCheck className="size-3 md:size-4" /> Official Platform
+              </div>
+
+              <h1 className="text-[2.5rem] leading-[1.1] font-black tracking-[-0.04em] text-slate-950 sm:text-6xl lg:text-[4.25rem]">
+                <span className="hidden md:inline">Member <br /></span>
+                <span className="bg-gradient-to-r from-blue-500 via-cyan-500 to-emerald-500 bg-clip-text text-transparent drop-shadow-sm">Contribution</span> <br className="hidden md:block" />
+                Portal.
               </h1>
-              <p className="text-lg md:text-xl text-muted-foreground font-medium max-w-2xl mx-auto">
-                A trust-first digital collection portal. Fostering transparency and accountability in our community contributions.
+
+              <div className="h-1 w-16 md:w-20 rounded-full bg-gradient-to-r from-blue-500 via-cyan-400 to-emerald-400" />
+
+              <p className="max-w-md text-base md:text-lg font-medium leading-relaxed text-slate-600">
+                Welcome to SSF Alparamba. Uniting our community digitally and empowering members with a seamless, transparent experience.
               </p>
-            </div>
-            
-            <Card className="w-full max-w-sm sm:max-w-md border-primary/20 shadow-lg shadow-primary/5">
-              <CardContent className="p-6 sm:p-8 flex flex-col items-center text-center space-y-6">
-                <div className="space-y-1">
-                  <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Current Month</p>
-                  <div className="text-5xl font-bold tabular-nums tracking-tight">₹50</div>
-                </div>
-                <Link href="/pay" className="w-full">
-                  <Button size="lg" className="w-full text-lg h-14 rounded-xl shadow-md">
-                    Pay Now <ArrowRight className="ml-2 size-5" />
+
+              {/* Mobile CTA (Hidden on desktop) */}
+              <div className="lg:hidden pt-8 w-full flex justify-center">
+                <Link href="/login" className="block w-full max-w-sm group">
+                  <Button size="lg" className="h-14 w-full rounded-full bg-slate-950 hover:bg-slate-900 text-base font-bold text-white shadow-[0_12px_30px_rgba(15,23,42,0.25)] transition-all flex items-center justify-center gap-2">
+                    Access Portal
+                    <ArrowRight className="size-4 opacity-80 transition-transform group-hover:translate-x-1" />
                   </Button>
                 </Link>
-                <p className="text-xs text-muted-foreground flex items-center justify-center gap-1.5 font-medium">
-                  <ShieldCheck className="size-4 text-green-600" /> Secure UPI & Cash Acknowledgement
+              </div>
+
+            </motion.div>
+          </div>
+
+          {/* Right Column: Login/Signup Form */}
+          <div className="relative z-10 hidden lg:flex items-center justify-center pt-8 pb-0 px-20 w-full">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
+              className="relative z-10 w-full max-w-[420px] shrink-0 self-center"
+            >
+              <div id="login-card" className="relative rounded-[2.5rem] border border-white/60 bg-white/40 p-6 shadow-[0_32px_80px_rgba(37,99,235,0.12)] backdrop-blur-3xl sm:p-8">
+                
+                {/* User Avatar Group */}
+                <div className="mb-8 flex justify-center">
+                  <div className="flex -space-x-4">
+                    <img className="inline-block size-12 rounded-full border-2 border-white object-cover shadow-sm" src="https://i.pravatar.cc/100?img=1" alt="" />
+                    <img className="inline-block size-12 rounded-full border-2 border-white object-cover shadow-sm" src="https://i.pravatar.cc/100?img=2" alt="" />
+                    <img className="inline-block size-12 rounded-full border-2 border-white object-cover shadow-sm" src="https://i.pravatar.cc/100?img=3" alt="" />
+                    <div className="flex size-12 items-center justify-center rounded-full border-2 border-white bg-slate-100 text-xs font-bold text-slate-600 shadow-sm">+99</div>
+                  </div>
+                </div>
+
+                <div className="space-y-3 text-center">
+                  <h2 className="text-3xl font-black tracking-[-0.03em] text-slate-950">Join SSF <br/> Alparamba Unit</h2>
+                  <p className="mx-auto max-w-xs text-sm font-medium leading-6 text-slate-500">Enter your 10-digit mobile number to sign up or log in to your account.</p>
+                </div>
+
+                <div className="mt-7">
+                  <InlineLoginForm isGlass={true} />
+                </div>
+
+                <p className="mt-6 flex items-start justify-center gap-2 text-center text-xs font-semibold leading-6 text-slate-500">
+                  <LockKeyhole className="mt-1 size-4 shrink-0 text-slate-400" />
+                  <span>By continuing, you agree to the community guidelines and privacy policy.</span>
                 </p>
-              </CardContent>
-            </Card>
+              </div>
+            </motion.div>
           </div>
         </section>
 
-        {/* Social Proof Strip */}
-        <section className="bg-primary text-primary-foreground">
-          <div className="container py-4 flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-12 text-sm sm:text-base font-medium">
-            <div className="flex items-center gap-2">
-              <div className="h-2.5 w-2.5 rounded-full bg-green-400 animate-pulse shadow-[0_0_8px_rgba(74,222,128,0.6)]" />
-              <span className="tabular-nums">₹12,450 collected this month</span>
-            </div>
-            <div className="hidden sm:block w-px h-4 bg-primary-foreground/20" />
-            <div className="flex items-center gap-2">
-              <Users className="size-4 opacity-80" />
-              <span className="tabular-nums">82% of members paid</span>
-            </div>
-          </div>
-        </section>
+        {/* Member Benefits Section */}
+        <section className="relative border-t border-white/60 bg-white/60 py-20 backdrop-blur-2xl md:py-28 overflow-hidden">
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_22%_18%,rgba(59,130,246,0.14),transparent_24rem),radial-gradient(circle_at_78%_36%,rgba(16,185,129,0.16),transparent_22rem)]" />
+          <div className="container relative space-y-16">
+            <motion.div 
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{ duration: 0.7 }}
+              className="mx-auto max-w-2xl space-y-4 text-center"
+            >
+              <div className="mx-auto inline-flex items-center gap-2 rounded-full border border-cyan-200/80 bg-white/65 px-4 py-2 text-xs font-extrabold uppercase tracking-[0.14em] text-blue-700 shadow-sm backdrop-blur-xl">
+                <Sparkles className="size-4" />
+                Member Benefits
+              </div>
+              <h2 className="text-4xl font-black tracking-[-0.04em] text-slate-950">Why use the portal?</h2>
+              <p className="text-lg font-medium text-slate-500">Designed exclusively for our members to stay connected and updated.</p>
+            </motion.div>
 
-        {/* How it Works & Benefits */}
-        <section className="py-20 md:py-28 container space-y-16">
-          <div className="text-center space-y-4">
-            <h2 className="text-3xl font-bold tracking-tight">How it works</h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto text-lg">Simple, transparent, and completely digital. Pay your monthly contribution in seconds.</p>
-          </div>
-
-          <div className="grid sm:grid-cols-3 gap-8 md:gap-12 max-w-5xl mx-auto">
-            <div className="flex flex-col items-center text-center space-y-5">
-              <div className="h-14 w-14 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center shadow-sm border border-blue-100">
-                <span className="text-2xl font-bold">1</span>
-              </div>
-              <h3 className="font-semibold text-xl">Enter Details</h3>
-              <p className="text-muted-foreground">Enter your phone number or member ID to securely view your pending dues.</p>
-            </div>
-            <div className="flex flex-col items-center text-center space-y-5">
-              <div className="h-14 w-14 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center shadow-sm border border-blue-100">
-                <span className="text-2xl font-bold">2</span>
-              </div>
-              <h3 className="font-semibold text-xl">Make Payment</h3>
-              <p className="text-muted-foreground">Pay instantly via UPI apps like GPay, PhonePe, or log a physical cash payment.</p>
-            </div>
-            <div className="flex flex-col items-center text-center space-y-5">
-              <div className="h-14 w-14 rounded-2xl bg-green-50 text-green-600 flex items-center justify-center shadow-sm border border-green-100">
-                <span className="text-2xl font-bold">3</span>
-              </div>
-              <h3 className="font-semibold text-xl">Instant Receipt</h3>
-              <p className="text-muted-foreground">Get a verified digital receipt instantly on your WhatsApp for your records.</p>
-            </div>
+            <InteractiveBenefits />
           </div>
         </section>
       </main>
 
       {/* Footer */}
-      <footer className="border-t bg-background py-10">
-        <div className="container flex flex-col md:flex-row items-center justify-between gap-6">
+      <footer className="border-t border-white/70 bg-white/70 py-10 backdrop-blur-2xl">
+        <div className="container flex flex-col items-center justify-between gap-6 md:flex-row">
           <div className="flex items-center gap-2 font-semibold">
-            <img src="/logo/logo.webp" alt="SSF Logo" className="h-6 w-auto object-contain" style={{ mixBlendMode: "multiply", filter: "contrast(1.05)" }} />
-            <span className="text-sm">
-              <span className="font-cooper font-normal">SSF</span> Alparamba Unit
+            <img src="/logo/logo.webp" alt="SSF Logo" className="h-8 w-auto object-contain opacity-90" style={{ mixBlendMode: "multiply" }} />
+            <span className="text-sm font-bold text-slate-500">
+              <span className="font-cooper font-normal text-slate-700">SSF</span> Alparamba Unit
             </span>
           </div>
-          <p className="text-sm text-muted-foreground text-center md:text-left">
-            Committed to complete financial transparency. 
-            <a href="#" className="text-primary hover:underline ml-1 font-medium">View public collection summary</a>.
+          <p className="text-sm font-semibold text-slate-400">
+            © {new Date().getFullYear()} SSF Alparamba. All rights reserved.
           </p>
         </div>
       </footer>
