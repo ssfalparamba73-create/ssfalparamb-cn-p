@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react"
+import { useState, Suspense, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -9,7 +9,7 @@ import { ArrowLeft, CreditCard, Banknote, ShieldCheck, Smartphone, QrCode, Chevr
 import Link from "next/link"
 import { useSearchParams } from "next/navigation"
 
-export default function PayNowPage() {
+function PayNowContent() {
   const searchParams = useSearchParams();
   const source = searchParams.get("source");
   const [paymentMethod, setPaymentMethod] = useState<"upi" | "cash">("upi");
@@ -19,6 +19,27 @@ export default function PayNowPage() {
   const [showQrModal, setShowQrModal] = useState(false);
   const [isQrInlineOpen, setIsQrInlineOpen] = useState(false);
   const [memberQuery, setMemberQuery] = useState("");
+
+  // Preload receipt images in the background without causing lag
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const preloadImages = () => {
+      const images = ["/recept.svg", "/logo/logo-transparent.webp"];
+      images.forEach((src) => {
+        const img = new window.Image();
+        img.src = src;
+      });
+    };
+
+    // requestIdleCallback ensures this only runs when the browser is completely free
+    if ('requestIdleCallback' in window) {
+      // @ts-ignore - TS might not know requestIdleCallback in all environments
+      window.requestIdleCallback(preloadImages);
+    } else {
+      setTimeout(preloadImages, 2500);
+    }
+  }, []);
 
   // New states for Dues & Events
   const [activeTab, setActiveTab] = useState<"dues" | "event">("dues");
@@ -441,5 +462,13 @@ export default function PayNowPage() {
         </div>
       )}
     </div>
+  )
+}
+
+export default function PayNowPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <PayNowContent />
+    </Suspense>
   )
 }

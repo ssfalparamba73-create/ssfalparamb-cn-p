@@ -1,4 +1,5 @@
 import React, { useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { 
   Download, 
   Share2, 
@@ -212,7 +213,7 @@ export function PremiumReceiptCard({
       </div>
 
       {/* Details Modal / Bottom Sheet */}
-      {isDetailsOpen && (
+      {isDetailsOpen && typeof document !== "undefined" && createPortal(
         <div className="fixed inset-0 z-[100] flex flex-col justify-end items-center p-0 md:justify-center md:p-4 font-sans">
           <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity animate-in fade-in duration-200" onClick={() => setIsDetailsOpen(false)} />
           
@@ -302,7 +303,8 @@ export function PremiumReceiptCard({
               Close Details
             </Button>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

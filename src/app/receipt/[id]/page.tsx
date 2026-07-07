@@ -22,31 +22,33 @@ function ReceiptPageContent({ params }: { params: Promise<{ id: string }> }) {
   const source = searchParams.get("source");
 
   React.useEffect(() => {
-    // Fire confetti on load
+    // Fire confetti on load without causing UI lag
     const duration = 3000;
     const end = Date.now() + duration;
 
-    const frame = () => {
+    const interval: any = setInterval(() => {
+      if (Date.now() > end) {
+        return clearInterval(interval);
+      }
+
+      // Olive Green, Blue, White
+      const customColors = ['#808000', '#2563EB', '#ffffff'];
+
       confetti({
-        particleCount: 5,
+        particleCount: 35,
         angle: 60,
         spread: 55,
         origin: { x: 0 },
-        colors: ['#063b78', '#ab2e28', '#f8d13b']
+        colors: customColors
       });
       confetti({
-        particleCount: 5,
+        particleCount: 35,
         angle: 120,
         spread: 55,
         origin: { x: 1 },
-        colors: ['#063b78', '#ab2e28', '#f8d13b']
+        colors: customColors
       });
-
-      if (Date.now() < end) {
-        requestAnimationFrame(frame);
-      }
-    };
-    frame();
+    }, 250);
   }, []);
 
   return (
