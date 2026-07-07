@@ -1,5 +1,3 @@
-"use client";
-
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import {
@@ -14,8 +12,9 @@ import {
   Zap,
   ArrowRight
 } from "lucide-react"
-import { motion } from "framer-motion"
-import { InteractiveBenefits } from "@/components/landing/InteractiveBenefits"
+import dynamic from "next/dynamic"
+
+const InteractiveBenefits = dynamic(() => import("@/components/landing/InteractiveBenefits").then(m => m.InteractiveBenefits))
 import { Header } from "@/components/layout/Header"
 import { TransparentLogo } from "@/components/TransparentLogo"
 import { InlineLoginForm } from "@/components/auth/InlineLoginForm"
@@ -42,11 +41,8 @@ export default function LandingPage() {
 
           {/* Left Column: Brand & Value */}
           <div className="relative z-10 flex flex-col justify-center overflow-hidden px-4 py-6 md:px-12 lg:px-20 md:py-16 text-center md:text-left items-center md:items-start">
-            <motion.div 
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, ease: "easeOut" }}
-              className="relative z-10 w-full max-w-xl space-y-6 md:space-y-8 p-2 sm:p-8 mt-2 md:mt-0 flex flex-col items-center md:items-start"
+            <div 
+              className="relative z-10 w-full max-w-xl space-y-6 md:space-y-8 p-2 sm:p-8 mt-2 md:mt-0 flex flex-col items-center md:items-start animate-in fade-in slide-in-from-bottom-8 duration-700 ease-out fill-mode-both"
             >
               
               <div className="inline-flex items-center gap-2 rounded-full border border-blue-200/80 bg-blue-50/70 px-3 md:px-4 py-1.5 md:py-2 text-[10px] md:text-xs font-extrabold uppercase tracking-[0.15em] text-blue-700 shadow-sm backdrop-blur-xl">
@@ -75,16 +71,13 @@ export default function LandingPage() {
                 </Link>
               </div>
 
-            </motion.div>
+            </div>
           </div>
 
           {/* Right Column: Login/Signup Form */}
           <div className="relative z-10 hidden lg:flex items-center justify-center pt-8 pb-0 px-20 w-full">
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
-              className="relative z-10 w-full max-w-[420px] shrink-0 self-center"
+            <div 
+              className="relative z-10 w-full max-w-[420px] shrink-0 self-center animate-in fade-in zoom-in-95 duration-700 delay-200 ease-out fill-mode-both"
             >
               <div id="login-card" className="relative rounded-[2.5rem] border border-white/60 bg-white/40 p-6 shadow-[0_32px_80px_rgba(37,99,235,0.12)] backdrop-blur-3xl sm:p-8">
                 
@@ -112,7 +105,7 @@ export default function LandingPage() {
                   <span>By continuing, you agree to the community guidelines and privacy policy.</span>
                 </p>
               </div>
-            </motion.div>
+            </div>
           </div>
         </section>
 
@@ -120,12 +113,8 @@ export default function LandingPage() {
         <section className="relative border-t border-white/60 bg-white/60 py-20 backdrop-blur-2xl md:py-28 overflow-hidden">
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_22%_18%,rgba(59,130,246,0.14),transparent_24rem),radial-gradient(circle_at_78%_36%,rgba(16,185,129,0.16),transparent_22rem)]" />
           <div className="container relative space-y-16">
-            <motion.div 
-              initial={{ opacity: 0, y: 40 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-100px" }}
-              transition={{ duration: 0.7 }}
-              className="mx-auto max-w-2xl space-y-4 text-center"
+            <div 
+              className="mx-auto max-w-2xl space-y-4 text-center animate-in fade-in slide-in-from-bottom-8 duration-700 delay-150 fill-mode-both"
             >
               <div className="mx-auto inline-flex items-center gap-2 rounded-full border border-cyan-200/80 bg-white/65 px-4 py-2 text-xs font-extrabold uppercase tracking-[0.14em] text-blue-700 shadow-sm backdrop-blur-xl">
                 <Sparkles className="size-4" />
@@ -133,7 +122,7 @@ export default function LandingPage() {
               </div>
               <h2 className="text-4xl font-black tracking-[-0.04em] text-slate-950">Why use the portal?</h2>
               <p className="text-lg font-medium text-slate-500">Designed exclusively for our members to stay connected and updated.</p>
-            </motion.div>
+            </div>
 
             <InteractiveBenefits />
           </div>
