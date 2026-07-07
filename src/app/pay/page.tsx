@@ -467,7 +467,7 @@ function PayNowContent() {
 
 export default function PayNowPage() {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={<div className="min-h-screen bg-secondary/50 flex items-center justify-center p-4"><p className="text-muted-foreground font-medium animate-pulse">Loading payment details...</p></div>}>
       <PayNowContent />
     </Suspense>
   )
