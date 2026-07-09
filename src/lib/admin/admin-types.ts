@@ -21,6 +21,7 @@ export interface Member {
   pinStatus: "not_issued" | "issued" | "reset_required";
   joinedAt?: string;
   lastPaidAt?: string;
+  duesPending: number;
   createdAt: string;
   updatedAt: string;
 }

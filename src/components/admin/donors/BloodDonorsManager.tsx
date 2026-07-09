@@ -7,9 +7,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Search, Droplets, Phone, Edit2, Download } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
-// Mock Data
-const MOCK_DONORS = [
+// Initial Mock Data
+const INITIAL_DONORS = [
   { id: "1", name: "Safwan", phone: "9876543210", bloodGroup: "O+", area: "Alparamba Center", isAvailable: true, lastDonated: "2025-10-15" },
   { id: "2", name: "Fawas", phone: "8765432109", bloodGroup: "B+", area: "North Zone", isAvailable: false, lastDonated: "2026-06-10" },
   { id: "3", name: "Shibili N", phone: "7654321098", bloodGroup: "A-", area: "South Zone", isAvailable: true, lastDonated: "2025-01-22" },
@@ -18,17 +19,24 @@ const MOCK_DONORS = [
 const BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"];
 
 export function BloodDonorsManager() {
+  const [donors, setDonors] = useState(INITIAL_DONORS);
   const [searchQuery, setSearchQuery] = useState("");
   const [groupFilter, setGroupFilter] = useState("all");
   const [availabilityFilter, setAvailabilityFilter] = useState("all");
 
-  const filteredDonors = MOCK_DONORS.filter(donor => {
+  const filteredDonors = donors.filter(donor => {
     const matchesSearch = donor.name.toLowerCase().includes(searchQuery.toLowerCase()) || donor.phone.includes(searchQuery);
     const matchesGroup = groupFilter === "all" || donor.bloodGroup === groupFilter;
     const matchesAvailability = availabilityFilter === "all" || (availabilityFilter === "available" ? donor.isAvailable : !donor.isAvailable);
     
     return matchesSearch && matchesGroup && matchesAvailability;
   });
+
+  const handleToggleStatus = (id: string, name: string, currentStatus: boolean) => {
+    const newStatus = !currentStatus;
+    setDonors(prev => prev.map(d => d.id === id ? { ...d, isAvailable: newStatus } : d));
+    toast.success(`${name}'s availability changed to ${newStatus ? 'Available' : 'Unavailable'}`);
+  };
 
   return (
     <div className="space-y-4">
@@ -115,7 +123,12 @@ export function BloodDonorsManager() {
                     )}
                   </td>
                   <td className="px-4 py-3 text-right">
-                    <Button variant="ghost" size="sm" className="text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20">
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => handleToggleStatus(donor.id, donor.name, donor.isAvailable)}
+                      className="text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                    >
                       <Edit2 className="w-4 h-4 mr-1.5" /> Toggle
                     </Button>
                   </td>
@@ -156,7 +169,11 @@ export function BloodDonorsManager() {
               )}
             </div>
 
-            <Button variant="outline" className="w-full text-slate-600 hover:text-blue-600 hover:bg-blue-50 dark:text-slate-400 dark:hover:bg-blue-900/20">
+            <Button 
+              variant="outline" 
+              onClick={() => handleToggleStatus(donor.id, donor.name, donor.isAvailable)}
+              className="w-full text-slate-600 hover:text-blue-600 hover:bg-blue-50 dark:text-slate-400 dark:hover:bg-blue-900/20"
+            >
               <Droplets className="w-4 h-4 mr-2" /> Change Status
             </Button>
           </Card>

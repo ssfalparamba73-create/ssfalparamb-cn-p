@@ -10,10 +10,10 @@ import { Button } from "@/components/ui/button";
 
 // Mock Data
 const MOCK_AUDIT = [
-  { id: "LOG-001", time: "2026-07-08 10:30 AM", actor: "Farhan M", action: "update", entity: "Member", target: "Safwan", summary: "Updated phone number", severity: "info", changes: { field: "Phone Number", before: "+919876543210", after: "9876543210" } },
-  { id: "LOG-002", time: "2026-07-08 11:15 AM", actor: "Shibili N", action: "create", entity: "Payment", target: "Cash Receipt REC-0012", summary: "Recorded cash handover", severity: "info", changes: { field: "Status", before: "Pending", after: "Confirmed" } },
-  { id: "LOG-003", time: "2026-07-07 04:20 PM", actor: "Farhan M", action: "delete", entity: "Support Contact", target: "Fawas", summary: "Removed support contact", severity: "warning", changes: { field: "Access", before: "Granted", after: "Revoked" } },
-  { id: "LOG-004", time: "2026-07-06 09:10 AM", actor: "System", action: "alert", entity: "Security", target: "Admin Login", summary: "Multiple failed login attempts", severity: "error", changes: { field: "IP Address", before: "Unknown", after: "Blocked (192.168.1.5)" } },
+  { id: "LOG-001", time: "2026-07-08 10:30 AM", actor: "Farhan M", action: "update", entity: "Member", target: "Safwan", summary: "Updated phone number", severity: "info", ip: "192.168.1.42", device: "Chrome / Windows 11", changes: { field: "Phone Number", before: "+919876543210", after: "9876543210" } },
+  { id: "LOG-002", time: "2026-07-08 11:15 AM", actor: "Shibili N", action: "create", entity: "Payment", target: "Cash Receipt REC-0012", summary: "Recorded cash handover", severity: "info", ip: "192.168.1.15", device: "Safari / iPhone 14", changes: { field: "Status", before: "Pending", after: "Confirmed" } },
+  { id: "LOG-003", time: "2026-07-07 04:20 PM", actor: "Farhan M", action: "delete", entity: "Support Contact", target: "Fawas", summary: "Removed support contact", severity: "warning", ip: "192.168.1.42", device: "Chrome / Windows 11", changes: { field: "Access", before: "Granted", after: "Revoked" } },
+  { id: "LOG-004", time: "2026-07-06 09:10 AM", actor: "System", action: "alert", entity: "Security", target: "Admin Login", summary: "Multiple failed login attempts", severity: "error", ip: "45.22.19.102", device: "Unknown Device", changes: { field: "IP Address", before: "Unknown", after: "Blocked" } },
 ];
 
 export function AuditLogTable() {
@@ -185,6 +185,14 @@ export function AuditLogTable() {
                   <div className="flex justify-between">
                     <span className="text-sm text-slate-500">Actor</span>
                     <span className="text-sm font-bold text-blue-600 dark:text-blue-400">{selectedLog.actor}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-slate-500">IP Address</span>
+                    <span className="text-sm font-mono text-slate-700 dark:text-slate-300">{selectedLog.ip}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-slate-500">Device</span>
+                    <span className="text-sm text-slate-700 dark:text-slate-300">{selectedLog.device}</span>
                   </div>
                 </div>
               </div>

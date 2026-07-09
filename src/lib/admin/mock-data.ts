@@ -42,6 +42,7 @@ export const MOCK_MEMBERS: Member[] = [
     monthlyAmount: 50,
     pinStatus: "issued",
     lastPaidAt: "2026-06-15T10:30:00Z",
+    duesPending: 0,
     createdAt: "2025-01-10T00:00:00Z",
     updatedAt: "2026-06-15T10:30:00Z",
   },
@@ -59,6 +60,7 @@ export const MOCK_MEMBERS: Member[] = [
     monthlyAmount: 100,
     pinStatus: "not_issued",
     lastPaidAt: "2026-05-10T14:20:00Z",
+    duesPending: 200,
     createdAt: "2025-02-15T00:00:00Z",
     updatedAt: "2026-05-10T14:20:00Z",
   },
@@ -76,6 +78,7 @@ export const MOCK_MEMBERS: Member[] = [
     monthlyAmount: 50,
     pinStatus: "reset_required",
     lastPaidAt: "2025-12-01T09:15:00Z",
+    duesPending: 350,
     createdAt: "2025-03-20T00:00:00Z",
     updatedAt: "2026-01-10T10:00:00Z",
   }
