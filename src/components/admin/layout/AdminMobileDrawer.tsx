@@ -47,7 +47,6 @@ export function AdminMobileDrawer({ isOpen, onClose }: AdminMobileDrawerProps) {
   if (!isOpen) return null;
 
   return (
-  return (
     <div className="fixed inset-0 z-50 lg:hidden flex flex-col justify-end">
       <div 
         className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity" 
