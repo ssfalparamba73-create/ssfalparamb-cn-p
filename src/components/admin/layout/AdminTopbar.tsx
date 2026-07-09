@@ -29,12 +29,6 @@ export function AdminTopbar({ onOpenMobileMenu, title = "Admin Panel" }: AdminTo
     <>
       <header className="sticky top-0 z-30 flex h-16 items-center justify-between bg-[#F6F8FC] px-4 lg:px-8 border-b border-[#E5EAF3] transition-colors duration-300 dark:border-slate-700 dark:bg-slate-900">
         <div className="flex items-center gap-4">
-          <button 
-            onClick={onOpenMobileMenu}
-            className="lg:hidden p-2 -ml-2 text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white"
-          >
-            <Menu className="w-6 h-6" />
-          </button>
           
           {/* Breadcrumbs for Desktop, Title for Mobile fallback */}
           <div className="hidden sm:block">
