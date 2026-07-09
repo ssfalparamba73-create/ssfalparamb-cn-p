@@ -22,6 +22,7 @@ interface PremiumReceiptCardProps {
   phone: string;
   amount: string | number;
   category: string;
+  customBg?: string;
 }
 
 export function PremiumReceiptCard({
@@ -31,6 +32,7 @@ export function PremiumReceiptCard({
   phone,
   amount,
   category,
+  customBg
 }: PremiumReceiptCardProps) {
   const [isDownloading, setIsDownloading] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
@@ -131,7 +133,7 @@ export function PremiumReceiptCard({
       >
         {/* Background SVG */}
         <img 
-          src="/recept.svg" 
+          src={customBg || "/recept.svg"} 
           alt="SSF Receipt Background" 
           className="absolute inset-0 w-full h-full object-cover z-0 pointer-events-none"
           crossOrigin="anonymous"

@@ -2,16 +2,37 @@
 
 import React from "react";
 import { Card } from "@/components/ui/card";
-import { ShieldCheck, Banknote, CalendarDays, Phone, ChevronRight } from "lucide-react";
+import { ShieldCheck, Banknote, CalendarDays, Phone, ChevronRight, Building, Lock } from "lucide-react";
 import Link from "next/link";
 
 const SETTINGS_PAGES = [
+  {
+    title: "Unit Settings",
+    description: "Update the unit name, logo, branch, and official contact details.",
+    icon: <Building className="w-6 h-6" />,
+    href: "/admin/settings/unit",
+    color: "text-indigo-600 bg-indigo-50 dark:text-indigo-400 dark:bg-indigo-900/20",
+  },
+  {
+    title: "Receipt Settings",
+    description: "Customize the design, layout, and background of the payment receipt.",
+    icon: <Banknote className="w-6 h-6" />,
+    href: "/admin/settings/receipt",
+    color: "text-emerald-600 bg-emerald-50 dark:text-emerald-400 dark:bg-emerald-900/20",
+  },
   {
     title: "Admin Users",
     description: "Manage admin access, assign roles, and handle Super Admin privileges.",
     icon: <ShieldCheck className="w-6 h-6" />,
     href: "/admin/settings/admins",
     color: "text-purple-600 bg-purple-50 dark:text-purple-400 dark:bg-purple-900/20",
+  },
+  {
+    title: "Security & PIN Rules",
+    description: "Configure member login PIN lengths, expiry, and authentication rules.",
+    icon: <Lock className="w-6 h-6" />,
+    href: "/admin/settings/security",
+    color: "text-rose-600 bg-rose-50 dark:text-rose-400 dark:bg-rose-900/20",
   },
   {
     title: "Payment Configuration",
