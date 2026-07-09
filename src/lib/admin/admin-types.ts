@@ -134,6 +134,8 @@ export interface AuditLogEntry {
   entityType: "member" | "payment" | "cash_handover" | "event" | "support_contact" | "admin_user" | "settings";
   entityId: string;
   summary: string;
+  ip?: string;
+  device?: string;
   before?: unknown;
   after?: unknown;
   createdAt: string;

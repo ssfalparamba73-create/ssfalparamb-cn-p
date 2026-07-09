@@ -82,17 +82,28 @@ export function AuditLogTable() {
           <table className="w-full text-sm text-left">
             <thead className="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 font-medium border-b border-slate-200 dark:border-slate-800">
               <tr>
-                <th className="px-4 py-3">Time</th>
-                <th className="px-4 py-3">Actor</th>
-                <th className="px-4 py-3">Action</th>
-                <th className="px-4 py-3">Entity & Target</th>
-                <th className="px-4 py-3">Summary</th>
-                <th className="px-4 py-3 text-right">Details</th>
+                <th scope="col" className="px-4 py-3">Time</th>
+                <th scope="col" className="px-4 py-3">Actor</th>
+                <th scope="col" className="px-4 py-3">Action</th>
+                <th scope="col" className="px-4 py-3">Entity & Target</th>
+                <th scope="col" className="px-4 py-3">Summary</th>
+                <th scope="col" className="px-4 py-3 text-right">Details</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
               {filteredLogs.map((log) => (
-                <tr key={log.id} onClick={() => setSelectedLog(log)} className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors cursor-pointer">
+                <tr 
+                  key={log.id} 
+                  onClick={() => setSelectedLog(log)} 
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      setSelectedLog(log);
+                    }
+                  }}
+                  tabIndex={0}
+                  className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors cursor-pointer focus-visible:outline-none focus-visible:bg-slate-50 dark:focus-visible:bg-slate-800/50"
+                >
                   <td className="px-4 py-3 whitespace-nowrap text-slate-500 dark:text-slate-400 text-xs font-mono">
                     {log.time}
                   </td>
@@ -113,7 +124,7 @@ export function AuditLogTable() {
                     {log.summary}
                   </td>
                   <td className="px-4 py-3 text-right">
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20" onClick={(e) => { e.stopPropagation(); setSelectedLog(log); }}>
+                    <Button variant="ghost" size="icon" aria-label={`View details for ${log.id}`} className="h-8 w-8 text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20" onClick={(e) => { e.stopPropagation(); setSelectedLog(log); }}>
                       <ChevronRight className="w-4 h-4" />
                     </Button>
                   </td>
@@ -130,7 +141,18 @@ export function AuditLogTable() {
       {/* Mobile Cards */}
       <div className="md:hidden space-y-3">
         {filteredLogs.map((log) => (
-          <Card key={log.id} onClick={() => setSelectedLog(log)} className="p-4 border-slate-200 dark:border-slate-800 shadow-sm cursor-pointer">
+          <Card 
+            key={log.id} 
+            onClick={() => setSelectedLog(log)} 
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                setSelectedLog(log);
+              }
+            }}
+            tabIndex={0}
+            className="p-4 border-slate-200 dark:border-slate-800 shadow-sm cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+          >
             <div className="flex justify-between items-start mb-3">
               <div className="flex items-center gap-2">
                 {getActionIcon(log.action)}
@@ -158,14 +180,19 @@ export function AuditLogTable() {
       {/* Drawer */}
       {selectedLog && (
         <>
-          <div className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm transition-opacity" onClick={() => setSelectedLog(null)} />
-          <div className="fixed inset-y-0 right-0 z-50 w-full max-w-md bg-white dark:bg-slate-900 shadow-2xl border-l border-slate-200 dark:border-slate-800 transform transition-transform animate-in slide-in-from-right duration-300 flex flex-col">
+          <div className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm transition-opacity" onClick={() => setSelectedLog(null)} aria-hidden="true" />
+          <div 
+            role="dialog" 
+            aria-modal="true" 
+            aria-labelledby="drawer-title"
+            className="fixed inset-y-0 right-0 z-50 w-full max-w-md bg-white dark:bg-slate-900 shadow-2xl border-l border-slate-200 dark:border-slate-800 transform transition-transform animate-in slide-in-from-right duration-300 flex flex-col"
+          >
             <div className="flex items-center justify-between p-4 border-b border-slate-100 dark:border-slate-800">
               <div className="flex items-center gap-2">
                 {getActionIcon(selectedLog.action)}
-                <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">Audit Detail</h2>
+                <h2 id="drawer-title" className="text-lg font-bold text-slate-900 dark:text-slate-100">Audit Detail</h2>
               </div>
-              <Button variant="ghost" size="icon" onClick={() => setSelectedLog(null)} className="rounded-full">
+              <Button variant="ghost" size="icon" aria-label="Close details" onClick={() => setSelectedLog(null)} className="rounded-full">
                 <X className="w-5 h-5" />
               </Button>
             </div>

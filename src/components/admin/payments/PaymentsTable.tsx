@@ -148,13 +148,13 @@ export function PaymentsTable() {
           <table className="w-full text-sm text-left">
             <thead className="bg-slate-50 dark:bg-slate-950/50 text-slate-500 dark:text-slate-400 font-medium border-b border-slate-200 dark:border-slate-800">
               <tr>
-                <th className="px-4 py-3 font-medium">Receipt ID & Date</th>
-                <th className="px-4 py-3 font-medium">Member</th>
-                <th className="px-4 py-3 font-medium">Category</th>
-                <th className="px-4 py-3 font-medium">Method</th>
-                <th className="px-4 py-3 font-medium text-right">Amount</th>
-                <th className="px-4 py-3 font-medium text-center">Status</th>
-                <th className="px-4 py-3 font-medium text-right">Actions</th>
+                <th scope="col" className="px-4 py-3 font-medium">Receipt ID & Date</th>
+                <th scope="col" className="px-4 py-3 font-medium">Member</th>
+                <th scope="col" className="px-4 py-3 font-medium">Category</th>
+                <th scope="col" className="px-4 py-3 font-medium">Method</th>
+                <th scope="col" className="px-4 py-3 font-medium text-right">Amount</th>
+                <th scope="col" className="px-4 py-3 font-medium text-center">Status</th>
+                <th scope="col" className="px-4 py-3 font-medium text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
@@ -188,13 +188,13 @@ export function PaymentsTable() {
                   <td className="px-4 py-3 text-right">
                     <div className="flex justify-end gap-2">
                       <Link href={`/receipt/${payment.id}`} target="_blank">
-                        <Button variant="ghost" size="icon" className="size-8 rounded-full text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20" title="View Public Receipt">
+                        <Button variant="ghost" size="icon" aria-label={`View public receipt for ${payment.receiptId}`} className="size-8 rounded-full text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20" title="View Public Receipt">
                           <ExternalLink className="size-4" />
                         </Button>
                       </Link>
                       <Link href={`/admin/payments/${payment.id}`}>
-                        <Button variant="ghost" size="sm" className="h-8 text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100 font-medium">
-                          Details &rarr;
+                        <Button variant="ghost" size="sm" aria-label={`View details for ${payment.receiptId}`} className="h-8 text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100 font-medium">
+                          Details
                         </Button>
                       </Link>
                     </div>
