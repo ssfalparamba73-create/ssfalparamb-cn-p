@@ -4,21 +4,22 @@ import React, { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, ChevronRight, Activity, Edit2, ShieldAlert, PlusCircle, Trash2 } from "lucide-react";
+import { Search, ChevronRight, Activity, Edit2, ShieldAlert, PlusCircle, Trash2, X, ArrowRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
 // Mock Data
 const MOCK_AUDIT = [
-  { id: "LOG-001", time: "2026-07-08 10:30 AM", actor: "Farhan M", action: "update", entity: "Member", target: "Safwan", summary: "Updated phone number", severity: "info" },
-  { id: "LOG-002", time: "2026-07-08 11:15 AM", actor: "Shibili N", action: "create", entity: "Payment", target: "Cash Receipt REC-0012", summary: "Recorded cash handover", severity: "info" },
-  { id: "LOG-003", time: "2026-07-07 04:20 PM", actor: "Farhan M", action: "delete", entity: "Support Contact", target: "Fawas", summary: "Removed support contact", severity: "warning" },
-  { id: "LOG-004", time: "2026-07-06 09:10 AM", actor: "System", action: "alert", entity: "Security", target: "Admin Login", summary: "Multiple failed login attempts", severity: "error" },
+  { id: "LOG-001", time: "2026-07-08 10:30 AM", actor: "Farhan M", action: "update", entity: "Member", target: "Safwan", summary: "Updated phone number", severity: "info", changes: { field: "Phone Number", before: "+919876543210", after: "9876543210" } },
+  { id: "LOG-002", time: "2026-07-08 11:15 AM", actor: "Shibili N", action: "create", entity: "Payment", target: "Cash Receipt REC-0012", summary: "Recorded cash handover", severity: "info", changes: { field: "Status", before: "Pending", after: "Confirmed" } },
+  { id: "LOG-003", time: "2026-07-07 04:20 PM", actor: "Farhan M", action: "delete", entity: "Support Contact", target: "Fawas", summary: "Removed support contact", severity: "warning", changes: { field: "Access", before: "Granted", after: "Revoked" } },
+  { id: "LOG-004", time: "2026-07-06 09:10 AM", actor: "System", action: "alert", entity: "Security", target: "Admin Login", summary: "Multiple failed login attempts", severity: "error", changes: { field: "IP Address", before: "Unknown", after: "Blocked (192.168.1.5)" } },
 ];
 
 export function AuditLogTable() {
   const [searchQuery, setSearchQuery] = useState("");
   const [actionFilter, setActionFilter] = useState("all");
+  const [selectedLog, setSelectedLog] = useState<any>(null);
 
   // Assuming current user is a super admin for this demo
   const isCurrentUserSuperAdmin = true;
@@ -91,7 +92,7 @@ export function AuditLogTable() {
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
               {filteredLogs.map((log) => (
-                <tr key={log.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+                <tr key={log.id} onClick={() => setSelectedLog(log)} className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors cursor-pointer">
                   <td className="px-4 py-3 whitespace-nowrap text-slate-500 dark:text-slate-400 text-xs font-mono">
                     {log.time}
                   </td>
@@ -112,7 +113,7 @@ export function AuditLogTable() {
                     {log.summary}
                   </td>
                   <td className="px-4 py-3 text-right">
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20">
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20" onClick={(e) => { e.stopPropagation(); setSelectedLog(log); }}>
                       <ChevronRight className="w-4 h-4" />
                     </Button>
                   </td>
@@ -129,7 +130,7 @@ export function AuditLogTable() {
       {/* Mobile Cards */}
       <div className="md:hidden space-y-3">
         {filteredLogs.map((log) => (
-          <Card key={log.id} className="p-4 border-slate-200 dark:border-slate-800 shadow-sm">
+          <Card key={log.id} onClick={() => setSelectedLog(log)} className="p-4 border-slate-200 dark:border-slate-800 shadow-sm cursor-pointer">
             <div className="flex justify-between items-start mb-3">
               <div className="flex items-center gap-2">
                 {getActionIcon(log.action)}
@@ -143,8 +144,9 @@ export function AuditLogTable() {
               <div className="text-sm font-medium text-slate-700 dark:text-slate-300">{log.target}</div>
             </div>
 
-            <div className="text-xs text-slate-500 bg-slate-50 dark:bg-slate-800/50 p-2 rounded">
-              {log.summary}
+            <div className="text-xs text-slate-500 bg-slate-50 dark:bg-slate-800/50 p-2 rounded flex justify-between items-center">
+              <span>{log.summary}</span>
+              <ChevronRight className="w-3 h-3" />
             </div>
           </Card>
         ))}
@@ -152,6 +154,83 @@ export function AuditLogTable() {
           <div className="p-8 text-center text-slate-500 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800">No logs found.</div>
         )}
       </div>
+
+      {/* Drawer */}
+      {selectedLog && (
+        <>
+          <div className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm transition-opacity" onClick={() => setSelectedLog(null)} />
+          <div className="fixed inset-y-0 right-0 z-50 w-full max-w-md bg-white dark:bg-slate-900 shadow-2xl border-l border-slate-200 dark:border-slate-800 transform transition-transform animate-in slide-in-from-right duration-300 flex flex-col">
+            <div className="flex items-center justify-between p-4 border-b border-slate-100 dark:border-slate-800">
+              <div className="flex items-center gap-2">
+                {getActionIcon(selectedLog.action)}
+                <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">Audit Detail</h2>
+              </div>
+              <Button variant="ghost" size="icon" onClick={() => setSelectedLog(null)} className="rounded-full">
+                <X className="w-5 h-5" />
+              </Button>
+            </div>
+            
+            <div className="flex-1 overflow-y-auto p-6 space-y-6">
+              <div>
+                <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Metadata</h3>
+                <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-4 space-y-3 border border-slate-100 dark:border-slate-800">
+                  <div className="flex justify-between">
+                    <span className="text-sm text-slate-500">Log ID</span>
+                    <span className="text-sm font-mono font-medium">{selectedLog.id}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-slate-500">Timestamp</span>
+                    <span className="text-sm font-medium">{selectedLog.time}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-slate-500">Actor</span>
+                    <span className="text-sm font-bold text-blue-600 dark:text-blue-400">{selectedLog.actor}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Action Context</h3>
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline">{selectedLog.entity}</Badge>
+                    <span className="text-sm font-medium text-slate-900 dark:text-slate-100">{selectedLog.target}</span>
+                  </div>
+                  <p className="text-sm text-slate-700 dark:text-slate-300 bg-blue-50 dark:bg-blue-900/20 p-3 rounded border border-blue-100 dark:border-blue-900/50">
+                    {selectedLog.summary}
+                  </p>
+                </div>
+              </div>
+
+              {selectedLog.changes && (
+                <div>
+                  <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Before / After Data</h3>
+                  <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden">
+                    <div className="bg-slate-100 dark:bg-slate-800 p-2 text-center text-xs font-semibold text-slate-600 dark:text-slate-300">
+                      Modified Field: {selectedLog.changes.field}
+                    </div>
+                    <div className="grid grid-cols-2 divide-x divide-slate-200 dark:divide-slate-700">
+                      <div className="p-4 space-y-1 bg-red-50/30 dark:bg-red-900/5">
+                        <p className="text-[10px] uppercase font-bold text-red-500">Before</p>
+                        <p className="text-sm font-mono text-slate-700 dark:text-slate-300 break-words">{selectedLog.changes.before}</p>
+                      </div>
+                      <div className="p-4 space-y-1 bg-green-50/30 dark:bg-green-900/5">
+                        <p className="text-[10px] uppercase font-bold text-green-600 dark:text-green-500">After</p>
+                        <p className="text-sm font-mono text-slate-700 dark:text-slate-300 break-words">{selectedLog.changes.after}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+            
+            <div className="p-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950">
+              <Button className="w-full" variant="outline" onClick={() => setSelectedLog(null)}>Close Details</Button>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }
+
