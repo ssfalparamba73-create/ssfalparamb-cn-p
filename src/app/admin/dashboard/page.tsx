@@ -55,7 +55,7 @@ export default function AdminDashboardPage() {
       {/* Mobile Glass Buttons Grid (Only visible on small screens) */}
       <div className="grid grid-cols-2 gap-3 sm:hidden">
         {/* Button 1: Total Collected */}
-        <Link href="/admin/payments" className="relative group overflow-hidden rounded-2xl bg-gradient-to-br from-white/40 to-white/10 dark:from-slate-800/40 dark:to-slate-800/10 backdrop-blur-md border border-white/20 dark:border-slate-700/50 p-4 shadow-[0_8px_30px_rgb(0,0,0,0.04)] flex flex-col items-center justify-center text-center transition-all active:scale-95">
+        <Link href="/admin/payments" className="relative group overflow-hidden rounded-2xl bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border border-slate-200 dark:border-slate-800 p-4 shadow-sm flex flex-col items-center justify-center text-center transition-all active:scale-95">
            <div className="w-12 h-12 rounded-full bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-300 flex items-center justify-center mb-3">
              <TrendingUp className="w-6 h-6" />
            </div>
@@ -66,7 +66,7 @@ export default function AdminDashboardPage() {
         </Link>
 
         {/* Button 2: Pending Amount */}
-        <Link href="/admin/defaulters" className="relative group overflow-hidden rounded-2xl bg-gradient-to-br from-white/40 to-white/10 dark:from-slate-800/40 dark:to-slate-800/10 backdrop-blur-md border border-white/20 dark:border-slate-700/50 p-4 shadow-[0_8px_30px_rgb(0,0,0,0.04)] flex flex-col items-center justify-center text-center transition-all active:scale-95">
+        <Link href="/admin/defaulters" className="relative group overflow-hidden rounded-2xl bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border border-slate-200 dark:border-slate-800 p-4 shadow-sm flex flex-col items-center justify-center text-center transition-all active:scale-95">
            <div className="w-12 h-12 rounded-full bg-red-50 text-red-600 dark:bg-red-500/10 dark:text-red-300 flex items-center justify-center mb-3">
              <AlertOctagon className="w-6 h-6" />
            </div>
@@ -77,7 +77,7 @@ export default function AdminDashboardPage() {
         </Link>
 
         {/* Button 3: Paid Members */}
-        <Link href="/admin/members" className="relative group overflow-hidden rounded-2xl bg-gradient-to-br from-white/40 to-white/10 dark:from-slate-800/40 dark:to-slate-800/10 backdrop-blur-md border border-white/20 dark:border-slate-700/50 p-4 shadow-[0_8px_30px_rgb(0,0,0,0.04)] flex flex-col items-center justify-center text-center transition-all active:scale-95">
+        <Link href="/admin/members" className="relative group overflow-hidden rounded-2xl bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border border-slate-200 dark:border-slate-800 p-4 shadow-sm flex flex-col items-center justify-center text-center transition-all active:scale-95">
            <div className="w-12 h-12 rounded-full bg-slate-100 text-slate-700 dark:bg-slate-700/50 dark:text-slate-300 flex items-center justify-center mb-3">
              <Users className="w-6 h-6" />
            </div>
@@ -88,7 +88,7 @@ export default function AdminDashboardPage() {
         </Link>
 
         {/* Button 4: Cash Handovers */}
-        <Link href="/admin/cash-entry" className="relative group overflow-hidden rounded-2xl bg-gradient-to-br from-white/40 to-white/10 dark:from-slate-800/40 dark:to-slate-800/10 backdrop-blur-md border border-white/20 dark:border-slate-700/50 p-4 shadow-[0_8px_30px_rgb(0,0,0,0.04)] flex flex-col items-center justify-center text-center transition-all active:scale-95">
+        <Link href="/admin/cash-entry" className="relative group overflow-hidden rounded-2xl bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border border-slate-200 dark:border-slate-800 p-4 shadow-sm flex flex-col items-center justify-center text-center transition-all active:scale-95">
            <div className="w-12 h-12 rounded-full bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-300 flex items-center justify-center mb-3">
              <Banknote className="w-6 h-6" />
            </div>

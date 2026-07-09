@@ -51,17 +51,30 @@ export function PaymentConfigManager() {
           <CardDescription>Set the minimum contribution amounts for monthly tiers.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="space-y-2">
-              <Label>Base Tier Amount (₹)</Label>
+              <Label>Dues Frequency</Label>
+              <Select defaultValue="monthly">
+                <SelectTrigger className="bg-slate-50 dark:bg-slate-950">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="monthly">Monthly</SelectItem>
+                  <SelectItem value="bimonthly">Bi-Monthly (2 Months)</SelectItem>
+                  <SelectItem value="quarterly">Quarterly (3 Months)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Base Tier (₹)</Label>
               <Input type="number" defaultValue="50" className="bg-slate-50 dark:bg-slate-950 font-mono" />
             </div>
             <div className="space-y-2">
-              <Label>Premium Tier Amount (₹)</Label>
+              <Label>Premium Tier (₹)</Label>
               <Input type="number" defaultValue="100" className="bg-slate-50 dark:bg-slate-950 font-mono" />
             </div>
             <div className="space-y-2">
-              <Label>Custom Minimum (₹)</Label>
+              <Label>Custom Min (₹)</Label>
               <Input type="number" defaultValue="10" className="bg-slate-50 dark:bg-slate-950 font-mono" />
             </div>
           </div>

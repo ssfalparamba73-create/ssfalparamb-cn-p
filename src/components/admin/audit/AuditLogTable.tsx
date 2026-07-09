@@ -69,8 +69,8 @@ export function AuditLogTable() {
           </Select>
         </div>
         {isCurrentUserSuperAdmin && (
-          <Button variant="outline" className="hidden sm:flex shrink-0 text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700 dark:border-red-900/50 dark:hover:bg-red-900/20 dark:text-red-400">
-            <Trash2 className="w-4 h-4 mr-2" /> Clear Old Logs
+          <Button variant="outline" className="flex shrink-0 text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700 dark:border-red-900/50 dark:hover:bg-red-900/20 dark:text-red-400">
+            <Trash2 className="w-4 h-4 mr-2" /> Purge Old Logs
           </Button>
         )}
       </div>
