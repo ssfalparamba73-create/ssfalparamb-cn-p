@@ -9,46 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 
-// Mock Data
-const MOCK_PAYMENTS = [
-  {
-    id: "pay_1",
-    receiptId: "REC-2026-07-001",
-    memberName: "Farhan M",
-    memberId: "SSF-101",
-    category: "monthly_dues",
-    method: "upi",
-    amount: 100,
-    status: "confirmed",
-    date: "04 Jul 2026",
-    months: ["July"],
-  },
-  {
-    id: "pay_2",
-    receiptId: "REC-2026-07-002",
-    memberName: "Shibili N",
-    memberId: "SSF-102",
-    category: "special_event",
-    method: "cash_handover",
-    amount: 500,
-    status: "confirmed",
-    date: "03 Jul 2026",
-    eventName: "Building Construction Fund",
-    collectedBy: "Farhan (President)"
-  },
-  {
-    id: "pay_3",
-    receiptId: "REC-2026-07-003",
-    memberName: "Safwan",
-    memberId: "SSF-103",
-    category: "monthly_dues",
-    method: "qr_code",
-    amount: 50,
-    status: "pending",
-    date: "02 Jul 2026",
-    months: ["July"],
-  }
-];
+import { MOCK_PAYMENTS } from "@/lib/admin/mock-data";
 
 export function PaymentsTable() {
   const [search, setSearch] = useState("");
@@ -77,7 +38,21 @@ export function PaymentsTable() {
     return method.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
   };
 
-  const filteredPayments = MOCK_PAYMENTS.filter(payment => {
+  // Map central MOCK_PAYMENTS to the shape expected by the table
+  const tablePayments = MOCK_PAYMENTS.map(p => ({
+    id: p.id,
+    receiptId: p.receiptId,
+    memberName: p.payerName || "Unknown",
+    memberId: p.memberId || "N/A",
+    category: p.category,
+    method: p.method,
+    amount: p.amount,
+    status: p.status,
+    date: new Date(p.paidAt).toLocaleDateString("en-GB", { day: '2-digit', month: 'short', year: 'numeric' }),
+    eventName: p.eventName
+  }));
+
+  const filteredPayments = tablePayments.filter(payment => {
     const searchLower = search.toLowerCase();
     const matchesSearch = search === "" || 
       payment.receiptId.toLowerCase().includes(searchLower) || 
@@ -148,13 +123,13 @@ export function PaymentsTable() {
           <table className="w-full text-sm text-left">
             <thead className="bg-slate-50 dark:bg-slate-950/50 text-slate-500 dark:text-slate-400 font-medium border-b border-slate-200 dark:border-slate-800">
               <tr>
-                <th scope="col" className="px-4 py-3 font-medium">Receipt ID & Date</th>
-                <th scope="col" className="px-4 py-3 font-medium">Member</th>
-                <th scope="col" className="px-4 py-3 font-medium">Category</th>
-                <th scope="col" className="px-4 py-3 font-medium">Method</th>
-                <th scope="col" className="px-4 py-3 font-medium text-right">Amount</th>
-                <th scope="col" className="px-4 py-3 font-medium text-center">Status</th>
-                <th scope="col" className="px-4 py-3 font-medium text-right">Actions</th>
+                <th className="px-4 py-3 font-medium">{"Receipt ID & Date"}</th>
+                <th className="px-4 py-3 font-medium">{"Member"}</th>
+                <th className="px-4 py-3 font-medium">{"Category"}</th>
+                <th className="px-4 py-3 font-medium">{"Method"}</th>
+                <th className="px-4 py-3 font-medium text-right">{"Amount"}</th>
+                <th className="px-4 py-3 font-medium text-center">{"Status"}</th>
+                <th className="px-4 py-3 font-medium text-right">{"Actions"}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
@@ -193,8 +168,8 @@ export function PaymentsTable() {
                         </Button>
                       </Link>
                       <Link href={`/admin/payments/${payment.id}`}>
-                        <Button variant="ghost" size="sm" aria-label={`View details for ${payment.receiptId}`} className="h-8 text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100 font-medium">
-                          Details
+                        <Button variant="ghost" size="sm" className="h-8 text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100 font-medium">
+                          {"Details"}
                         </Button>
                       </Link>
                     </div>
