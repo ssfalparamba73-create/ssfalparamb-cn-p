@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
+import { MOCK_PAYMENTS } from "@/lib/admin/mock-data";
 
 export default function PaymentDetailPage() {
   const params = useParams();
@@ -16,8 +17,23 @@ export default function PaymentDetailPage() {
   const [paymentStatus, setPaymentStatus] = useState(params.id === "pay_3" ? "Pending" : "Confirmed");
 
   // In a real app, fetch based on params.id
-  // Mock Data
-  const payment = {
+  // Find the actual payment
+  const actualPayment = MOCK_PAYMENTS.find(p => p.id === params.id);
+  
+  // Mock Data mapped to existing shape
+  const payment = actualPayment ? {
+    id: actualPayment.id,
+    receiptId: actualPayment.receiptId,
+    amount: actualPayment.amount,
+    memberName: actualPayment.payerName || "Unknown",
+    memberId: actualPayment.memberId || "N/A",
+    category: actualPayment.category === "monthly_dues" ? "Monthly Dues" : "Special Event",
+    date: new Date(actualPayment.paidAt).toLocaleDateString("en-GB", { day: '2-digit', month: 'short', year: 'numeric' }),
+    method: actualPayment.method.toUpperCase().replace("_", " "),
+    recordedBy: actualPayment.collectedByAdminName ? `${actualPayment.collectedByAdminName} (Admin)` : "Self",
+    recordedAt: new Date(actualPayment.recordedAt).toLocaleString(),
+    notes: actualPayment.notes || "No notes provided."
+  } : {
     id: params.id as string,
     receiptId: "REC-2026-07-001",
     amount: 100,

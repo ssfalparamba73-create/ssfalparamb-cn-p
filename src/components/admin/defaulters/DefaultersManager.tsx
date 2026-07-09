@@ -10,17 +10,14 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { MOCK_DEFAULTERS } from "@/lib/admin/mock-data";
 
 export function DefaultersManager() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
 
-  const [members, setMembers] = useState([
-    { id: "1", name: "Fawas", phone: "9876543210", area: "Alparamba Center", dueMonths: 4, amount: 200, category: "long_overdue", lastPaid: "Feb 2026", lastReminded: null, reminderCount: 0 },
-    { id: "2", name: "Safwan", phone: "8765432109", area: "North Zone", dueMonths: 1, amount: 50, category: "current_due", lastPaid: "May 2026", lastReminded: "2 days ago", reminderCount: 1 },
-    { id: "3", name: "Shibili N", phone: "7654321098", area: "South Zone", dueMonths: 6, amount: 300, category: "long_overdue", lastPaid: "Dec 2025", lastReminded: "1 week ago", reminderCount: 2 },
-  ]);
+  const [members, setMembers] = useState(MOCK_DEFAULTERS);
 
   const filteredMembers = members.filter(m => {
     const matchesSearch = m.name.toLowerCase().includes(searchQuery.toLowerCase()) || m.phone.includes(searchQuery);

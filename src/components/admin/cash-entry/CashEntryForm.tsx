@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Check, Search, ArrowLeft, Receipt, User, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import { PremiumReceiptCard } from "@/components/receipt/PremiumReceiptCard";
+import { MOCK_MEMBERS } from "@/lib/admin/mock-data";
 
 export function CashEntryForm() {
   const [category, setCategory] = useState("monthly_dues");
@@ -62,11 +63,16 @@ export function CashEntryForm() {
     setShowSuccess(false);
   };
 
+
   const handleSearch = () => {
     if (memberSearch.length > 3) {
-      // Mock search result
-      setSelectedMember({ name: "Shibili", phone: "9876543210", id: "SSF-101" });
-      toast.success("Member found");
+      const found = MOCK_MEMBERS.find(m => m.name.toLowerCase().includes(memberSearch.toLowerCase()) || m.phone.includes(memberSearch));
+      if (found) {
+        setSelectedMember({ name: found.name, phone: found.phone, id: found.memberId });
+        toast.success("Member found");
+      } else {
+        toast.error("No member found");
+      }
     }
   };
 

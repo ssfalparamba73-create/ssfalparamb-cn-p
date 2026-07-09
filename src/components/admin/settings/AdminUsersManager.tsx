@@ -9,26 +9,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { ShieldCheck, Edit2, Trash2, Plus, UserCog, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
+import { MOCK_ADMIN_USERS } from "@/lib/admin/mock-data";
+import { AdminUser } from "@/lib/admin/admin-types";
 
-// Mock Data
-type AdminRole = "super_admin" | "president" | "secretary" | "treasurer" | "collector" | "viewer";
 
-interface AdminUser {
-  id: string;
-  name: string;
-  phone: string;
-  role: AdminRole;
-  isActive: boolean;
-}
-
-const INITIAL_ADMINS: AdminUser[] = [
-  { id: "1", name: "Farhan M", phone: "9876543210", role: "super_admin", isActive: true },
-  { id: "2", name: "Shibili N", phone: "8765432109", role: "president", isActive: true },
-  { id: "3", name: "Safwan", phone: "7654321098", role: "treasurer", isActive: true },
-];
 
 export function AdminUsersManager() {
-  const [admins, setAdmins] = useState<AdminUser[]>(INITIAL_ADMINS);
+  const [admins, setAdmins] = useState<AdminUser[]>(MOCK_ADMIN_USERS);
   const [isAdding, setIsAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
 
@@ -103,7 +90,7 @@ export function AdminUsersManager() {
         </div>
         <div className="space-y-2">
           <Label>Status</Label>
-          <Select name="status" defaultValue={admin?.isActive !== false ? "active" : "inactive"}>
+          <Select name="status" defaultValue={admin?.status !== "inactive" ? "active" : "inactive"}>
             <SelectTrigger className="bg-white dark:bg-slate-950">
               <SelectValue placeholder="Select Status" />
             </SelectTrigger>
@@ -169,7 +156,7 @@ export function AdminUsersManager() {
                         {admin.role}
                       </Badge>
                     )}
-                    {!admin.isActive && (
+                    {admin.status === "inactive" && (
                       <Badge variant="secondary" className="bg-slate-100 text-slate-500 dark:bg-slate-800 shadow-none">Inactive</Badge>
                     )}
                   </div>

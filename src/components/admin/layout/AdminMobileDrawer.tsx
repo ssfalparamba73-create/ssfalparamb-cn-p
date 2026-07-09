@@ -7,6 +7,7 @@ import { useTheme } from "next-themes";
 import { X, LayoutDashboard, Users, Banknote, Wallet, AlertOctagon, BarChart3, Droplet, History, Settings, Moon, Sun } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { AdminActionIcon } from "./AdminActionIcon";
+import { useAuth } from "@/lib/admin/AuthContext";
 
 interface AdminMobileDrawerProps {
   isOpen: boolean;
@@ -29,6 +30,7 @@ export function AdminMobileDrawer({ isOpen, onClose }: AdminMobileDrawerProps) {
   const pathname = usePathname();
   const { resolvedTheme, setTheme } = useTheme();
   const [isThemeMounted, setIsThemeMounted] = useState(false);
+  const { currentUser } = useAuth();
   
   const isDark = resolvedTheme === "dark";
 
@@ -102,11 +104,11 @@ export function AdminMobileDrawer({ isOpen, onClose }: AdminMobileDrawerProps) {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center text-blue-700 dark:text-blue-400 font-semibold border border-blue-200 dark:border-blue-800">
-                FA
+                {currentUser?.avatarInitials || "AD"}
               </div>
               <div>
-                <p className="text-sm font-medium text-slate-900 dark:text-slate-100 leading-none">Farhan</p>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">President</p>
+                <p className="text-sm font-medium text-slate-900 dark:text-slate-100 leading-none">{currentUser?.name || "Admin"}</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 capitalize">{currentUser?.role?.replace("_", " ") || "Staff"}</p>
               </div>
             </div>
             

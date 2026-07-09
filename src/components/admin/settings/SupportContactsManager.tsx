@@ -9,13 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Edit2, Trash2, GripVertical, Check, MessageSquare } from "lucide-react";
 import { toast } from "sonner";
 
-// Mock Data
-const MOCK_CONTACTS = [
-  { id: "1", name: "Farhan M", role: "President", phone: "9876543210", whatsappEnabled: true, isActive: true },
-  { id: "2", name: "Shibili N", role: "Secretary", phone: "8765432109", whatsappEnabled: true, isActive: true },
-  { id: "3", name: "Safwan", role: "Treasurer", phone: "7654321098", whatsappEnabled: false, isActive: true },
-  { id: "4", name: "Fawas", role: "Collector", phone: "6543210987", whatsappEnabled: true, isActive: false },
-];
+import { MOCK_CONTACTS } from "@/lib/admin/mock-data";
 
 export function SupportContactsManager() {
   const [editingId, setEditingId] = useState<string | null>(null);

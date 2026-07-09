@@ -3,6 +3,7 @@
 import React from "react";
 import { usePathname } from "next/navigation";
 import { AdminLayoutShell } from "@/components/admin/layout/AdminLayoutShell";
+import { AuthProvider } from "@/lib/admin/AuthContext";
 
 export default function AdminLayout({
   children,
@@ -12,8 +13,16 @@ export default function AdminLayout({
   const pathname = usePathname();
 
   if (pathname === "/admin/login") {
-    return <div className="min-h-screen bg-[#F6F8FC] transition-colors duration-300 dark:bg-slate-900">{children}</div>;
+    return (
+      <AuthProvider>
+        <div className="min-h-screen bg-[#F6F8FC] transition-colors duration-300 dark:bg-slate-900">{children}</div>
+      </AuthProvider>
+    );
   }
 
-  return <AdminLayoutShell>{children}</AdminLayoutShell>;
+  return (
+    <AuthProvider>
+      <AdminLayoutShell>{children}</AdminLayoutShell>
+    </AuthProvider>
+  );
 }

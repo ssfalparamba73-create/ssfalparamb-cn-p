@@ -110,7 +110,7 @@ export interface SupportContact {
   updatedAt: string;
 }
 
-export type AdminRole = "president" | "secretary" | "treasurer" | "collector" | "viewer";
+export type AdminRole = "super_admin" | "president" | "secretary" | "treasurer" | "collector" | "viewer";
 
 export interface AdminUser {
   id: string;

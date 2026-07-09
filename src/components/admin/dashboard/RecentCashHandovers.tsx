@@ -5,12 +5,11 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 
+  import { MOCK_CASH_HANDOVERS } from "@/lib/admin/mock-data";
+
 export function RecentCashHandovers() {
   // Mock data for handovers
-  const handovers = [
-    { id: "HO-101", admin: "Shibili N", amount: 4500, date: "Today, 10:30 AM", status: "pending" },
-    { id: "HO-100", admin: "Mishab", amount: 2100, date: "Yesterday, 04:15 PM", status: "verified" },
-  ];
+  const handovers = MOCK_CASH_HANDOVERS;
 
   return (
     <Card className="border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">

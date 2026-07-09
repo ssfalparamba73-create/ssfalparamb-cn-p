@@ -8,18 +8,12 @@ import { Search, Droplets, Phone, Edit2, Download } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-
-// Initial Mock Data
-const INITIAL_DONORS = [
-  { id: "1", name: "Safwan", phone: "9876543210", bloodGroup: "O+", area: "Alparamba Center", isAvailable: true, lastDonated: "2025-10-15" },
-  { id: "2", name: "Fawas", phone: "8765432109", bloodGroup: "B+", area: "North Zone", isAvailable: false, lastDonated: "2026-06-10" },
-  { id: "3", name: "Shibili N", phone: "7654321098", bloodGroup: "A-", area: "South Zone", isAvailable: true, lastDonated: "2025-01-22" },
-];
+import { MOCK_BLOOD_DONORS } from "@/lib/admin/mock-data";
 
 const BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"];
 
 export function BloodDonorsManager() {
-  const [donors, setDonors] = useState(INITIAL_DONORS);
+  const [donors, setDonors] = useState(MOCK_BLOOD_DONORS);
   const [searchQuery, setSearchQuery] = useState("");
   const [groupFilter, setGroupFilter] = useState("all");
   const [availabilityFilter, setAvailabilityFilter] = useState("all");

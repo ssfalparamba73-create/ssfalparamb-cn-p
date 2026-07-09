@@ -173,3 +173,34 @@ export const MOCK_SPECIAL_EVENTS = [
     theme: "",
   },
 ];
+
+export const MOCK_AUDIT = [
+  { id: "LOG-001", time: "2026-07-08 10:30 AM", actor: "Farhan M", action: "update", entity: "Member", target: "Safwan", summary: "Updated phone number", severity: "info", ip: "192.168.1.42", device: "Chrome / Windows 11", changes: { field: "Phone Number", before: "+919876543210", after: "9876543210" } },
+  { id: "LOG-002", time: "2026-07-08 11:15 AM", actor: "Shibili N", action: "create", entity: "Payment", target: "Cash Receipt REC-0012", summary: "Recorded cash handover", severity: "info", ip: "192.168.1.15", device: "Safari / iPhone 14", changes: { field: "Status", before: "Pending", after: "Confirmed" } },
+  { id: "LOG-003", time: "2026-07-07 04:20 PM", actor: "Farhan M", action: "delete", entity: "Support Contact", target: "Fawas", summary: "Removed support contact", severity: "warning", ip: "192.168.1.42", device: "Chrome / Windows 11", changes: { field: "Access", before: "Granted", after: "Revoked" } },
+  { id: "LOG-004", time: "2026-07-06 09:10 AM", actor: "System", action: "alert", entity: "Security", target: "Admin Login", summary: "Multiple failed login attempts", severity: "error", ip: "45.22.19.102", device: "Unknown Device", changes: { field: "IP Address", before: "Unknown", after: "Blocked" } },
+];
+
+export const MOCK_CONTACTS = [
+  { id: "1", name: "Farhan M", role: "President", phone: "9876543210", whatsappEnabled: true, isActive: true },
+  { id: "2", name: "Shibili N", role: "Secretary", phone: "8765432109", whatsappEnabled: true, isActive: true },
+  { id: "3", name: "Safwan", role: "Treasurer", phone: "7654321098", whatsappEnabled: false, isActive: true },
+  { id: "4", name: "Fawas", role: "Collector", phone: "6543210987", whatsappEnabled: true, isActive: false },
+];
+
+export const MOCK_CASH_HANDOVERS = [
+  { id: "HO-101", admin: "Shibili N", amount: 4500, date: "Today, 10:30 AM", status: "pending" },
+  { id: "HO-100", admin: "Mishab", amount: 2100, date: "Yesterday, 04:15 PM", status: "verified" },
+];
+
+export const MOCK_BLOOD_DONORS = [
+  { id: "1", name: "Safwan", phone: "9876543210", bloodGroup: "O+", area: "Alparamba Center", isAvailable: true, lastDonated: "2025-10-15" },
+  { id: "2", name: "Fawas", phone: "8765432109", bloodGroup: "B+", area: "North Zone", isAvailable: false, lastDonated: "2026-06-10" },
+  { id: "3", name: "Shibili N", phone: "7654321098", bloodGroup: "A-", area: "South Zone", isAvailable: true, lastDonated: "2025-01-22" },
+];
+
+export const MOCK_DEFAULTERS = [
+  { id: "1", name: "Fawas", phone: "9876543210", area: "Alparamba Center", dueMonths: 4, amount: 200, category: "long_overdue", lastPaid: "Feb 2026", lastReminded: null, reminderCount: 0 },
+  { id: "2", name: "Safwan", phone: "8765432109", area: "North Zone", dueMonths: 1, amount: 50, category: "current_due", lastPaid: "May 2026", lastReminded: "2 days ago", reminderCount: 1 },
+  { id: "3", name: "Shibili N", phone: "7654321098", area: "South Zone", dueMonths: 6, amount: 300, category: "long_overdue", lastPaid: "Dec 2025", lastReminded: "1 week ago", reminderCount: 2 },
+];
