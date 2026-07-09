@@ -63,13 +63,13 @@ export function MemberDetailTabs({ member }: MemberDetailTabsProps) {
                 <div className="p-3 md:p-4 rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
                   <div className="text-sm text-slate-500 mb-1">Joined Date</div>
                   <div className="font-medium text-slate-900 dark:text-slate-100">
-                    {new Date(member.createdAt).toLocaleDateString()}
+                    {new Date(member.createdAt).toLocaleDateString("en-GB", { day: '2-digit', month: 'short', year: 'numeric' })}
                   </div>
                 </div>
                 <div className="p-3 md:p-4 rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
                   <div className="text-sm text-slate-500 mb-1">Last Paid</div>
                   <div className="font-medium text-slate-900 dark:text-slate-100">
-                    {member.lastPaidAt ? new Date(member.lastPaidAt).toLocaleDateString() : 'Never'}
+                    {member.lastPaidAt ? new Date(member.lastPaidAt).toLocaleDateString("en-GB", { day: '2-digit', month: 'short', year: 'numeric' }) : 'Never'}
                   </div>
                 </div>
              </div>

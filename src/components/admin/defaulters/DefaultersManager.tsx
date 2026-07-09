@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Search, MessageCircle, AlertCircle, Phone, ChevronRight } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 // Mock Data
@@ -18,6 +19,7 @@ const MOCK_PENDING = [
 ];
 
 export function DefaultersManager() {
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
 
@@ -85,7 +87,11 @@ export function DefaultersManager() {
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
               {filteredMembers.map((member) => (
-                <tr key={member.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+                <tr 
+                  key={member.id} 
+                  onClick={() => router.push(`/admin/members/${member.id}`)}
+                  className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors cursor-pointer"
+                >
                   <td className="px-4 py-3">
                     <div className="font-semibold text-slate-900 dark:text-slate-100">{member.name}</div>
                     <div className="text-xs text-slate-500">{member.area}</div>
@@ -115,10 +121,10 @@ export function DefaultersManager() {
                   </td>
                   <td className="px-4 py-3 text-right">
                     <div className="flex items-center justify-end gap-2">
-                      <Button variant="outline" size="sm" onClick={() => handleRemind(member.name, member.phone, member.dueMonths)} className="text-green-600 hover:text-green-700 hover:bg-green-50 border-green-200 dark:border-green-900 dark:text-green-500 dark:hover:bg-green-900/20">
+                      <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); handleRemind(member.name, member.phone, member.dueMonths); }} className="text-green-600 hover:text-green-700 hover:bg-green-50 border-green-200 dark:border-green-900 dark:text-green-500 dark:hover:bg-green-900/20">
                         <MessageCircle className="w-4 h-4 mr-1.5" /> Remind
                       </Button>
-                      <Link href={`/admin/members/${member.id}`}>
+                      <Link href={`/admin/members/${member.id}`} onClick={(e) => e.stopPropagation()}>
                         <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20">
                           <ChevronRight className="w-4 h-4" />
                         </Button>
@@ -138,7 +144,11 @@ export function DefaultersManager() {
       {/* Mobile Cards */}
       <div className="md:hidden space-y-3">
         {filteredMembers.map((member) => (
-          <Card key={member.id} className="p-4 border-slate-200 dark:border-slate-800 shadow-sm">
+          <Card 
+            key={member.id} 
+            onClick={() => router.push(`/admin/members/${member.id}`)}
+            className="p-4 border-slate-200 dark:border-slate-800 shadow-sm cursor-pointer hover:border-slate-300 dark:hover:border-slate-700 transition-colors"
+          >
             <div className="flex justify-between items-start mb-3">
               <div>
                 <h3 className="font-bold text-slate-900 dark:text-slate-100">{member.name}</h3>
@@ -168,10 +178,10 @@ export function DefaultersManager() {
             </div>
 
             <div className="flex gap-2">
-              <Button variant="outline" className="flex-1 text-green-600 hover:text-green-700 hover:bg-green-50 border-green-200 dark:border-green-900 dark:text-green-500 dark:hover:bg-green-900/20" onClick={() => handleRemind(member.name, member.phone, member.dueMonths)}>
+              <Button variant="outline" className="flex-1 text-green-600 hover:text-green-700 hover:bg-green-50 border-green-200 dark:border-green-900 dark:text-green-500 dark:hover:bg-green-900/20" onClick={(e) => { e.stopPropagation(); handleRemind(member.name, member.phone, member.dueMonths); }}>
                 <MessageCircle className="w-4 h-4 mr-2" /> Remind
               </Button>
-              <Link href={`/admin/members/${member.id}`} className="flex-1">
+              <Link href={`/admin/members/${member.id}`} className="flex-1" onClick={(e) => e.stopPropagation()}>
                 <Button variant="secondary" className="w-full">
                   Profile
                 </Button>

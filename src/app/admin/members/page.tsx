@@ -14,6 +14,11 @@ export default function AdminMembersPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [bloodGroupFilter, setBloodGroupFilter] = useState("all");
+  
+  // New Filters
+  const [areaFilter, setAreaFilter] = useState("all");
+  const [tierFilter, setTierFilter] = useState("all");
+  const [arrearsFilter, setArrearsFilter] = useState("all");
 
   const filteredMembers = members.filter((member) => {
     // Search query filter
@@ -29,7 +34,16 @@ export default function AdminMembersPage() {
     // Blood Group filter
     const matchesBloodGroup = bloodGroupFilter === "all" || member.bloodGroup === bloodGroupFilter;
 
-    return matchesSearch && matchesStatus && matchesBloodGroup;
+    // Area filter
+    const matchesArea = areaFilter === "all" || member.area === areaFilter;
+
+    // Tier filter
+    const matchesTier = tierFilter === "all" || member.monthlyTier === tierFilter;
+
+    // Arrears filter
+    const matchesArrears = arrearsFilter === "all" || (arrearsFilter === "arrears" ? member.duesPending > 0 : member.duesPending === 0);
+
+    return matchesSearch && matchesStatus && matchesBloodGroup && matchesArea && matchesTier && matchesArrears;
   });
 
   return (
@@ -58,6 +72,12 @@ export default function AdminMembersPage() {
           setStatusFilter={setStatusFilter}
           bloodGroupFilter={bloodGroupFilter}
           setBloodGroupFilter={setBloodGroupFilter}
+          areaFilter={areaFilter}
+          setAreaFilter={setAreaFilter}
+          tierFilter={tierFilter}
+          setTierFilter={setTierFilter}
+          arrearsFilter={arrearsFilter}
+          setArrearsFilter={setArrearsFilter}
         />
       </div>
 
