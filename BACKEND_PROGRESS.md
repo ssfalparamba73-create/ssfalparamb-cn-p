@@ -135,3 +135,204 @@ Files modified:
 
 Verification:
 - `npx.cmd tsc --noEmit` passed.
+
+## Gemini - Phase 5 Supabase Schema, RLS, RPC, Storage - 2026-07-13
+
+Completed:
+- Created Supabase migration folder and SQL migration files.
+- Added database enums, tables, constraints, indexes, RLS helpers, RLS policies, RPC functions, storage buckets, and seed data.
+- Added .env.example without secrets.
+- Aligned adapter table names with canonical backend schema where required.
+- Preserved separate-Supabase-per-unit deployment model.
+- Preserved UI with no visual or Malayalam text changes.
+
+Files created:
+- supabase/README.md
+- supabase/migrations/001_extensions_and_enums.sql
+- supabase/migrations/002_core_identity_tables.sql
+- supabase/migrations/003_member_tables.sql
+- supabase/migrations/004_payment_tables.sql
+- supabase/migrations/005_admin_rbac_tables.sql
+- supabase/migrations/006_settings_support_events_tables.sql
+- supabase/migrations/007_audit_notifications_storage_tables.sql
+- supabase/migrations/008_indexes_constraints.sql
+- supabase/migrations/009_rls_helpers.sql
+- supabase/migrations/010_rls_policies.sql
+- supabase/migrations/011_rpc_functions.sql
+- supabase/migrations/012_storage_buckets.sql
+- supabase/migrations/013_seed_roles_permissions_settings.sql
+- .env.example
+
+Files modified if needed:
+- Supabase adapter files only, to align table names with canonical schema.
+- BACKEND_PROGRESS.md
+
+Verification:
+- 
+px.cmd tsc --noEmit passed.
+
+## Gemini - Phase 5 Fix Pass - 2026-07-13
+
+Completed:
+- Aligned database enums with TypeScript DTO/contract values.
+- Fixed member/payment/admin schema mismatches with Supabase adapters.
+- Strengthened amount constraints to prevent zero payment inserts.
+- Completed role-permission seed data.
+- Expanded RLS helper functions and RLS policies across all protected tables.
+- Added required RPC functions including payment amount resolution and audit event recording.
+- Implemented actual Supabase storage bucket creation SQL.
+- Verified adapters and migrations agree on canonical table/column names.
+- Preserved separate-Supabase-per-unit deployment model.
+
+Files modified:
+- supabase/migrations/001_extensions_and_enums.sql
+- supabase/migrations/003_member_tables.sql
+- supabase/migrations/004_payment_tables.sql
+- supabase/migrations/005_admin_rbac_tables.sql
+- supabase/migrations/008_indexes_constraints.sql
+- supabase/migrations/009_rls_helpers.sql
+- supabase/migrations/010_rls_policies.sql
+- supabase/migrations/011_rpc_functions.sql
+- supabase/migrations/012_storage_buckets.sql
+- supabase/migrations/013_seed_roles_permissions_settings.sql
+- Adapter files if alignment changes were required.
+- BACKEND_PROGRESS.md
+
+Verification:
+- 
+px.cmd tsc --noEmit passed.
+
+## Gemini - Phase 5 Final Fix Pass - 2026-07-13
+
+Completed:
+- Removed invalid lood_group DEFAULT 'unknown' usage.
+- Added DB-side member code generation so member inserts satisfy member_code NOT NULL.
+- Fixed numeric app setting parsing for payment amount resolution.
+- Removed hardcoded runtime payment amount fallbacks from esolve_payment_amount.
+- Updated storage object policies to use app-level admin permission helpers instead of uth.uid().
+- Updated receipt repository to use generate_receipt_id RPC.
+- Verified migrations and adapters are closer to real Supabase apply readiness.
+
+Files modified:
+- supabase/migrations/003_member_tables.sql
+- supabase/migrations/011_rpc_functions.sql
+- supabase/migrations/012_storage_buckets.sql
+- supabase/migrations/013_seed_roles_permissions_settings.sql
+- src/lib/backend/adapters/supabase/repositories/supabaseReceiptRepository.ts
+- BACKEND_PROGRESS.md
+
+Verification:
+- 
+px.cmd tsc --noEmit passed.
+
+## Gemini - Phase 5 Adapter Alignment Mini-Fix - 2026-07-13
+
+Completed:
+- Updated Supabase payment adapter to use esolve_payment_amount RPC for monthly dues.
+- Added safe member id resolution from member query.
+- Ensured monthly dues payments do not insert without a valid member id.
+- Ensured resolved member id is attached to payment inserts where available.
+- Preserved no-hardcoded-payment-amount rule.
+
+Files modified:
+- src/lib/backend/adapters/supabase/repositories/supabasePaymentRepository.ts
+- BACKEND_PROGRESS.md
+
+Verification:
+- 
+px.cmd tsc --noEmit passed.
+
+## Gemini - Phase 5 Security Audit Fix Pass - 2026-07-13
+
+Completed:
+- Replaced raw receipt token storage with receipt token hashing.
+- Added receipt token expiry support.
+- Hardened RLS helper functions to require active admins/members.
+- Split over-broad RLS mutation policies into operation-specific policies.
+- Aligned payment/receipt/cash schema nullability with DTO requirements.
+- Enforced one receipt per payment.
+- Added search_path protection to SECURITY DEFINER functions.
+- Prevented zero special event minimum amounts.
+- Improved migration policy idempotency where relevant.
+- Preserved UI and Malayalam text unchanged.
+
+Files modified:
+- supabase/migrations/004_payment_tables.sql
+- supabase/migrations/008_indexes_constraints.sql
+- supabase/migrations/009_rls_helpers.sql
+- supabase/migrations/010_rls_policies.sql
+- supabase/migrations/011_rpc_functions.sql
+- src/lib/backend/adapters/supabase/repositories/supabasePaymentRepository.ts
+- src/lib/backend/adapters/supabase/repositories/supabaseReceiptRepository.ts
+- src/lib/backend/adapters/supabase/mappers/payment.mapper.ts
+- BACKEND_PROGRESS.md
+
+Verification:
+- 
+px.cmd tsc --noEmit passed.
+
+## Gemini - Phase 5 Data-Flow Integrity Fix Pass - 2026-07-13
+
+Completed:
+- Ensured payment and receipt rows reuse the same eceipt_id.
+- Updated cash entry adapter flow to create a linked payment before inserting cash_entries.
+- Added active-member checks to member-facing RLS policies.
+- Added one-time raw receipt token return support without storing raw tokens.
+- Made generate_receipt_id() collision-aware.
+- Preserved receipt token hashing and no raw token storage.
+
+Files modified:
+- supabase/migrations/010_rls_policies.sql
+- supabase/migrations/011_rpc_functions.sql
+- src/lib/backend/adapters/supabase/repositories/supabasePaymentRepository.ts
+- src/lib/backend/adapters/supabase/repositories/supabaseReceiptRepository.ts
+- BACKEND_PROGRESS.md
+
+Verification:
+- 
+px.cmd tsc --noEmit passed.
+
+## Gemini - Phase 5 Cash Entry Phone Fix - 2026-07-13
+
+Completed:
+- Removed "0000000000" fallback for payer_phone in ecordCashEntry.
+- If guestPhone is missing but memberId exists, fetching phone and name from members profile.
+- Throw error if no valid phone can be found.
+
+Files modified:
+- src/lib/backend/adapters/supabase/repositories/supabasePaymentRepository.ts
+- BACKEND_PROGRESS.md
+
+Verification:
+- 
+px.cmd tsc --noEmit passed.
+
+## Codex - Phase 5 RPC Privilege Final Hardening Fix - 2026-07-13 21:49:29
+
+Completed:
+- Added missing execute privilege hardening for `generate_member_code()`.
+- Ensured the member-code generation function is revoked from `PUBLIC`, `anon`, and `authenticated`.
+- Ensured only `service_role` has explicit execute permission for `generate_member_code()`.
+
+Files modified:
+- supabase/migrations/014_rpc_execute_privileges.sql
+- BACKEND_PROGRESS.md
+
+Verification:
+- `npx.cmd tsc --noEmit` passed.
+- Security scan confirmed no Supabase imports outside the adapter layer, no `auth.uid()` usage, no fake phone fallback, and all custom RPC/helper functions are covered by execute privilege hardening.
+
+## Gemini - Phase 5 RPC Privilege Hardening - 2026-07-13
+
+Completed:
+- Created  14_rpc_execute_privileges.sql.
+- Revoked EXECUTE privileges from PUBLIC, anon, and authenticated roles for all custom functions.
+- Granted explicit EXECUTE privileges to service_role for backend API access.
+
+Files modified:
+- supabase/migrations/014_rpc_execute_privileges.sql
+- BACKEND_PROGRESS.md
+
+Verification:
+- 
+px.cmd tsc --noEmit passed.

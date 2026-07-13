@@ -149,8 +149,11 @@ export class SupabaseMemberRepository implements MemberRepository {
 
   async incrementReminderCount(memberId: string, actor: ActorContext): Promise<MemberDTO> {
     const supabase = createSupabaseBackendClient();
-    const { data, error } = await supabase.rpc("increment_reminder_count", { p_member_id: memberId });
+    const { error } = await supabase.rpc("increment_reminder_count", { p_member_id: memberId });
     if (error) throw error;
-    return mapRowToMemberDTO(data);
+    
+    const { data: member } = await supabase.from("members").select("*").eq("id", memberId).single();
+    if (!member) throw new Error("Member not found after increment");
+    return mapRowToMemberDTO(member);
   }
 }

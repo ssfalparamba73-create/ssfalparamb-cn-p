@@ -57,9 +57,31 @@ export class SupabasePaymentRepository implements PaymentRepository {
     };
   }
 
+  private async resolveMemberId(
+    supabase: ReturnType<typeof createSupabaseBackendClient>,
+    memberQuery?: string
+  ): Promise<string | null> {
+    if (!memberQuery) return null;
+    
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (uuidRegex.test(memberQuery)) {
+      const { data } = await supabase.from("members").select("id").eq("id", memberQuery).single();
+      if (data) return data.id;
+    }
+    
+    const { data: byPhone } = await supabase.from("members").select("id").eq("phone", memberQuery).single();
+    if (byPhone) return byPhone.id;
+    
+    const { data: byCode } = await supabase.from("members").select("id").eq("member_code", memberQuery).single();
+    if (byCode) return byCode.id;
+    
+    return null;
+  }
+
   private async resolvePaymentAmount(
     supabase: ReturnType<typeof createSupabaseBackendClient>,
-    input: CreatePaymentIntentInput
+    input: CreatePaymentIntentInput,
+    memberId: string | null
   ): Promise<number> {
     if (input.category === "special_event" && input.customAmount) {
       if (input.customAmount <= 0) throw new Error("Payment amount must be greater than 0");
@@ -67,9 +89,34 @@ export class SupabasePaymentRepository implements PaymentRepository {
     }
     
     if (input.category === "monthly_dues") {
-      throw new Error("Resolving amount for monthly dues is not fully implemented yet. Cannot insert 0.");
+      if (!memberId) {
+        throw new Error("A valid member is required to resolve monthly dues amount.");
+      }
+
+      const { data, error } = await supabase.rpc("resolve_payment_amount", {
+        p_member_id: memberId,
+        p_category: input.category,
+        p_event_id: input.eventId ?? null,
+      });
+
+      if (error || data === null || Number(data) <= 0) {
+        throw new Error("Failed to resolve monthly dues payment amount.");
+      }
+
+      return Number(data);
     }
     
+    if (input.category === "special_event" && input.eventId) {
+      const { data, error } = await supabase.rpc("resolve_payment_amount", {
+        p_member_id: memberId || null,
+        p_category: input.category,
+        p_event_id: input.eventId,
+      });
+      if (!error && data !== null && Number(data) > 0) {
+         return Number(data);
+      }
+    }
+
     if (input.customAmount && input.customAmount > 0) {
        return input.customAmount;
     }
@@ -79,9 +126,15 @@ export class SupabasePaymentRepository implements PaymentRepository {
 
   async createPendingPayment(input: CreatePaymentIntentInput, actor: ActorContext): Promise<PaymentDTO> {
     const supabase = createSupabaseBackendClient();
-    const amount = await this.resolvePaymentAmount(supabase, input);
+    const memberId = await this.resolveMemberId(supabase, input.memberQuery);
+    const amount = await this.resolvePaymentAmount(supabase, input, memberId);
+
+    const { data: receiptId, error: receiptIdError } = await supabase.rpc("generate_receipt_id");
+    if (receiptIdError || !receiptId) throw new Error("Failed to generate receipt ID");
 
     const { data, error } = await supabase.from("payments").insert([{
+      member_id: memberId,
+      receipt_id: receiptId,
       payer_phone: input.payerPhone,
       payer_name: input.payerName,
       category: input.category,
@@ -100,20 +153,74 @@ export class SupabasePaymentRepository implements PaymentRepository {
 
   async recordCashEntry(input: RecordCashEntryInput, actor: ActorContext): Promise<CashEntryDTO> {
     const supabase = createSupabaseBackendClient();
+    
+    const { data: adminUser } = await supabase.from("admin_users").select("name").eq("id", input.receivedByAdminId).single();
+    if (!adminUser) throw new Error("Invalid admin user for cash entry");
+
+    const { data: receiptId, error: receiptIdError } = await supabase.rpc("generate_receipt_id");
+    if (receiptIdError || !receiptId) throw new Error("Failed to generate receipt ID");
+
+    let payerPhone = input.guestPhone;
+    let payerName = input.guestName;
+
+    if (input.memberId && (!payerPhone || !payerName)) {
+      const { data: member } = await supabase
+        .from("members")
+        .select("phone, name")
+        .eq("id", input.memberId)
+        .single();
+        
+      if (member) {
+        if (!payerPhone) payerPhone = member.phone;
+        if (!payerName) payerName = member.name;
+      }
+    }
+
+    if (!payerPhone) {
+      throw new Error("A valid payer phone is required for cash entry payment.");
+    }
+
+    const { data: payment, error: paymentError } = await supabase.from("payments").insert([{
+      member_id: input.memberId || null,
+      receipt_id: receiptId,
+      payer_name: payerName,
+      payer_phone: payerPhone,
+      category: input.category,
+      method: "admin_cash_entry",
+      amount: input.amount,
+      status: "confirmed",
+      event_id: input.eventId || null,
+      recorded_by_admin_id: actor.adminId,
+      collected_by_admin_id: input.receivedByAdminId,
+      collected_by_admin_name: adminUser.name,
+      paid_at: new Date().toISOString(),
+      recorded_at: new Date().toISOString(),
+      notes: input.notes,
+    }]).select("*").single();
+
+    if (paymentError || !payment) {
+      throw new Error("Failed to create linked payment for cash entry");
+    }
+    
     const { data, error } = await supabase.from("cash_entries").insert([{
+      payment_id: payment.id,
       member_id: input.memberId,
-      payer_name: input.guestName,
-      payer_phone: input.guestPhone,
+      payer_name: payerName,
+      payer_phone: payerPhone,
       category: input.category,
       amount: input.amount,
       months: input.months,
       event_id: input.eventId,
       received_by_admin_id: input.receivedByAdminId,
+      received_by_admin_name: adminUser.name,
       notes: input.notes,
       status: "recorded"
     }]).select("*").single();
     
-    if (error) throw error;
+    if (error) {
+      throw new Error(`Cash entry insertion failed. Payment ID was ${payment.id}: ${error.message}`);
+    }
+
     return mapRowToCashEntryDTO(data);
   }
 

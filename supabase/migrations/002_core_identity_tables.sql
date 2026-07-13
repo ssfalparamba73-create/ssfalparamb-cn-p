@@ -1,0 +1,3 @@
+-- For single-unit scope, we skip multi-tenant tenant_id columns for now.
+-- Platform super-admin logic can be added later.
+-- App identity foundation is based on app_settings table (created later).

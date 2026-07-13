@@ -1,21 +1,22 @@
 import type {
+  AdminRole,
   AdminUserDTO,
   AuditLogDTO,
 } from "../../../dto/admin.dto";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function mapRowToAdminUserDTO(row: any, permissions: string[] = []): AdminUserDTO {
+export function mapRowToAdminUserDTO(row: any, roles: string[] = [], permissions: string[] = []): AdminUserDTO {
   return {
     id: row.id,
     name: row.name,
     phone: row.phone,
     avatarInitials: row.name ? row.name.substring(0, 2).toUpperCase() : "AD",
-    roles: row.roles || [],
+    roles: roles as AdminRole[],
     permissions: permissions,
-    canReceiveCash: Boolean(row.can_receive_cash),
-    canVerifyPayments: Boolean(row.can_verify_payments),
-    canManageMembers: Boolean(row.can_manage_members),
-    canManageSettings: Boolean(row.can_manage_settings),
+    canReceiveCash: permissions.includes("payments.record_cash"),
+    canVerifyPayments: permissions.includes("payments.verify"),
+    canManageMembers: permissions.includes("members.create") || permissions.includes("members.update") || permissions.includes("members.delete"),
+    canManageSettings: permissions.includes("settings.update"),
     status: row.status,
     lastLoginAt: row.last_login_at,
   };
