@@ -74,6 +74,9 @@ export interface PaymentService {
     pagination: PaginationInput,
     actor: ActorContext
   ): Promise<BackendResult<PaginatedResult<MemberPaymentHistoryItemDTO>>>;
+}
+
+export interface ReceiptService {
   getReceiptByToken(receiptId: string, token: string, actor: ActorContext): Promise<BackendResult<ReceiptDTO>>;
 }
 

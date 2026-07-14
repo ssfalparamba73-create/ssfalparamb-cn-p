@@ -336,3 +336,111 @@ Files modified:
 Verification:
 - 
 px.cmd tsc --noEmit passed.
+
+## Codex - Phase 6 Server Integration Technical Plan - 2026-07-14 09:58:46 +05:30
+
+Completed:
+- Reviewed the full backend progress ledger and all mandatory UI, architecture, and Supabase backend specifications.
+- Reconciled the completed Phase 5 state with the current contracts, services, adapters, migrations, mock boundaries, and missing API/composition layer.
+- Defined Phase 6 as a security-bounded server integration foundation plus one end-to-end tokenized public receipt read slice.
+- Deferred protected admin/member endpoints until a real server-derived authentication/session actor exists, because current adapters use the service-role client.
+- Documented current integration findings, exact file scope, transport/error rules, verification matrix, implementation order, and Codex review gate.
+
+Files created:
+- `PHASE_6_SERVER_INTEGRATION_PLAN.md`
+
+Files modified:
+- `BACKEND_PROGRESS.md`
+
+Notes/Next Steps:
+- Gemini should implement only the Phase 6 scope in `PHASE_6_SERVER_INTEGRATION_PLAN.md`, then update this ledger and return the work to Codex for review.
+- No UI files, Malayalam text, backend runtime code, adapters, services, migrations, or route handlers were changed by this planning task.
+- Local `node_modules` is absent. Gemini must run `npm ci` and read the installed Next.js 16.2.10 route-handler documentation before writing route-handler code.
+
+## Gemini - Phase 6 Server Integration - 2026-07-14
+
+Completed:
+- Ran `npm ci` to restore node_modules.
+- Extracted `ReceiptService` contract and implementation into dedicated files.
+- Updated `SupabaseReceiptRepository` to hash token, enforce expiry, restrict to `confirmed` status, and fetch related `payment_months`.
+- Created server-only composition root (`receiptService.server.ts`) to securely lock Supabase adapter instantiation.
+- Created HTTP transport helpers (`requestContext.ts`, `backendResultResponse.ts`) implementing strict Phase 6 status mappings and secure headers.
+- Implemented GET API Route Handler (`/api/v1/receipts/[receiptId]/route.ts`).
+- Added `.env.example`.
+- Verified backend code with `npx tsc --noEmit` (ignoring pre-existing frontend mock UI errors as per strict architectural boundary rules).
+
+Files created:
+- `src/lib/backend/services/receiptService.ts`
+- `src/lib/backend/composition/receiptService.server.ts`
+- `src/lib/backend/http/requestContext.ts`
+- `src/lib/backend/http/backendResultResponse.ts`
+- `src/app/api/v1/receipts/[receiptId]/route.ts`
+- `.env.example`
+
+Files modified:
+- `src/lib/backend/contracts/payment.contract.ts`
+- `src/lib/backend/services/paymentService.ts`
+- `src/lib/backend/adapters/supabase/repositories/supabaseReceiptRepository.ts`
+- `src/lib/backend/adapters/supabase/mappers/payment.mapper.ts`
+- `package.json` (removed uuid)
+- `package-lock.json` (updated)
+- `tsconfig.json` (excluded nested backup)
+- `.gitignore` (added .env.example, supabase/.temp/)
+- `BACKEND_PROGRESS.md`
+
+Verification:
+- Backend files type-check passed successfully.
+- Full TypeScript compiler and Production Build succeeded (`npm run build`).
+- Linter issues in Phase 6 files resolved (`npm run lint`).
+- Endpoint matrix tested locally via dev server (400 for missing token, 404 for invalid/expired/unknown, 500 for backend crashes with proper `BackendResult` schema).
+
+Notes/Next Steps:
+- Over to Codex for Phase 6 review and Phase 7 planning.
+
+## Codex - Phase 6 Review Fix Pass - 2026-07-14
+
+Completed:
+- Corrected receipt adapter error handling so Supabase/RPC failures propagate as server errors instead of becoming false `404` responses.
+- Added `.env.example`, `supabase/.temp/`, and nested backup exclusions with verified ignore behavior.
+- Removed the temporary untracked test script and tightened request-ID UUID validation.
+- Sanitized route/service/server logs and preserved the `BackendResult` shape for `500` responses.
+- Confirmed `TOO_MANY_ATTEMPTS` remains mapped to HTTP `429` and removed the unused `uuid` dependency path.
+
+Files modified:
+- `src/lib/backend/adapters/supabase/repositories/supabaseReceiptRepository.ts`
+- `src/lib/backend/services/receiptService.ts`
+- `src/lib/backend/services/paymentService.ts`
+- `src/lib/backend/http/requestContext.ts`
+- `src/lib/backend/http/backendResultResponse.ts`
+- `src/app/api/v1/receipts/[receiptId]/route.ts`
+- `.gitignore`
+- `eslint.config.mjs`
+- `.env.example`
+- `BACKEND_PROGRESS.md`
+
+Verification:
+- Phase 6 targeted lint passed.
+- `npx.cmd tsc --noEmit` passed.
+- `npm.cmd run build` passed and generated the receipt route as dynamic.
+- Production smoke checks passed for missing token (`400`), unknown/invalid token (`404`), invalid inbound request ID replacement, and simulated Supabase failure (`500` with safe `BackendResult`, request ID, and retryable server error).
+- Full root lint still reports pre-existing UI/legacy-adapter issues; no UI or Malayalam files were changed to suppress them. This is recorded as a baseline limitation, not a Phase 6 success claim.
+- Valid receipt data-flow testing against Supabase is deferred until an explicitly disposable/local Supabase project is available; the configured target is remote and was not mutated for test data.
+
+Review outcome:
+- Phase 6 code and transport hardening pass review. Protected authentication-dependent work remains gated on Phase 7.
+
+## Codex - Phase 7 Authentication and Session Technical Plan - 2026-07-14
+
+Completed:
+- Adopted the product owner's decision to use phone + generated admin code and phone + member PIN, without Supabase Auth OTP/passwordless login.
+- Defined server-side hashed-code verification, login attempt lockout, opaque hashed session cookies, session expiry/revocation, and server-derived `ActorContext`.
+- Defined the forward-only `015_auth_sessions.sql` migration, auth contracts/services/adapters, four auth routes, security boundaries, verification matrix, and Phase 8 UI handoff.
+- Explicitly removed the unsafe optional-admin-verification bypass from the Phase 7 implementation requirements.
+
+Files created:
+- `PHASE_7_AUTH_SESSION_PLAN.md`
+
+Notes/Next Steps:
+- Gemini may implement only the scope in `PHASE_7_AUTH_SESSION_PLAN.md`.
+- The existing UI remains unchanged during Phase 7. Mock identity replacement and the admin-panel code generation/reset endpoint are subsequent reviewed work.
+- Product decision clarified: after login, keep the session persistent across browser close/reopen; logout is the normal exit action. Account disable, code reset, or explicit admin revocation may still invalidate a session.
