@@ -8,7 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
-import { MOCK_PAYMENTS } from "@/lib/admin/mock-data";
+import { adminClient } from "@/lib/frontend-api/adminClient";
+import { PaymentDTO } from "@/lib/backend/dto/payment.dto";
 
 export default function PaymentDetailPage() {
   const params = useParams();
@@ -16,11 +17,25 @@ export default function PaymentDetailPage() {
   
   const [paymentStatus, setPaymentStatus] = useState(params.id === "pay_3" ? "Pending" : "Confirmed");
 
-  // In a real app, fetch based on params.id
-  // Find the actual payment
-  const actualPayment = MOCK_PAYMENTS.find(p => p.id === params.id);
+  const [actualPayment, setActualPayment] = useState<PaymentDTO | null>(null);
+  const [loading, setLoading] = useState(true);
   
-  // Mock Data mapped to existing shape
+  React.useEffect(() => {
+    async function load() {
+      try {
+        const res = await adminClient.listPayments({ pageSize: "1000" });
+        const p = res.items.find(x => x.id === params.id) || null;
+        setActualPayment(p);
+        if (p) setPaymentStatus(p.status.charAt(0).toUpperCase() + p.status.slice(1));
+      } catch (err: any) {
+        toast.error(err.message || "Failed to load payment details");
+      } finally {
+        setLoading(false);
+      }
+    }
+    load();
+  }, [params.id]);
+
   const payment = actualPayment ? {
     id: actualPayment.id,
     receiptId: actualPayment.receiptId,
@@ -28,27 +43,19 @@ export default function PaymentDetailPage() {
     memberName: actualPayment.payerName || "Unknown",
     memberId: actualPayment.memberId || "N/A",
     category: actualPayment.category === "monthly_dues" ? "Monthly Dues" : "Special Event",
-    date: new Date(actualPayment.paidAt).toLocaleDateString("en-GB", { day: '2-digit', month: 'short', year: 'numeric' }),
+    date: new Date(actualPayment.paidAt || actualPayment.recordedAt).toLocaleDateString("en-GB", { day: '2-digit', month: 'short', year: 'numeric' }),
     method: actualPayment.method.toUpperCase().replace("_", " "),
     recordedBy: actualPayment.collectedByAdminName ? `${actualPayment.collectedByAdminName} (Admin)` : "Self",
     recordedAt: new Date(actualPayment.recordedAt).toLocaleString(),
     notes: actualPayment.notes || "No notes provided."
-  } : {
-    id: params.id as string,
-    receiptId: "REC-2026-07-001",
-    amount: 100,
-    memberName: "Farhan M",
-    memberId: "SSF-101",
-    category: "Monthly Dues",
-    date: "04 Jul 2026",
-    method: "UPI (Google Pay)",
-    recordedBy: "Shibili N (Admin)",
-    recordedAt: "04 Jul 2026, 10:30 AM",
-    notes: "Payment received directly to unit account."
-  };
+  } : null;
 
-  const [notes, setNotes] = useState(payment.notes);
+  const [notes, setNotes] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+
+  React.useEffect(() => {
+    if (payment) setNotes(payment.notes);
+  }, [payment]);
 
   const handleSaveNotes = () => {
     setIsSaving(true);
@@ -57,6 +64,24 @@ export default function PaymentDetailPage() {
       toast.success("Notes updated successfully");
     }, 600);
   };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-[50vh]">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  if (!payment) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[50vh] text-center">
+        <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100 mb-2">Payment Not Found</h2>
+        <p className="text-slate-500 mb-6">The payment record you are looking for does not exist.</p>
+        <Button onClick={() => router.push("/admin/payments")}>Back to Payments</Button>
+      </div>
+    );
+  }
 
   return (
     <div className="flex-1 space-y-6 p-4 md:p-8 pt-6 max-w-4xl mx-auto animate-in fade-in duration-300">
@@ -149,14 +174,30 @@ export default function PaymentDetailPage() {
                <div className="space-y-2 mb-4 pb-4 border-b border-slate-100 dark:border-slate-800">
                  <Button 
                    className="w-full bg-green-600 hover:bg-green-700 text-white shadow-none" 
-                   onClick={() => { setPaymentStatus("Confirmed"); toast.success("Payment Approved"); }}
+                   onClick={async () => {
+                     try {
+                       await adminClient.approvePayment(payment.id);
+                       setPaymentStatus("Confirmed"); 
+                       toast.success("Payment Approved");
+                     } catch (err: any) {
+                       toast.error(err.message || "Failed to approve payment");
+                     }
+                   }}
                  >
                    Approve Payment
                  </Button>
                  <Button 
                    variant="outline" 
                    className="w-full text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200 dark:border-red-900/50 dark:hover:bg-red-900/20 shadow-none"
-                   onClick={() => { setPaymentStatus("Rejected"); toast.error("Payment Rejected"); }}
+                   onClick={async () => { 
+                     try {
+                       await adminClient.rejectPayment(payment.id);
+                       setPaymentStatus("Rejected"); 
+                       toast.error("Payment Rejected");
+                     } catch (err: any) {
+                       toast.error(err.message || "Failed to reject payment");
+                     }
+                   }}
                  >
                    Reject
                  </Button>
@@ -168,7 +209,15 @@ export default function PaymentDetailPage() {
                  <Button 
                    variant="outline" 
                    className="w-full text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200 dark:border-red-900/50 dark:hover:bg-red-900/20 shadow-none"
-                   onClick={() => { setPaymentStatus("Cancelled"); toast.info("Payment Cancelled"); }}
+                   onClick={async () => { 
+                     try {
+                       await adminClient.cancelPayment(payment.id);
+                       setPaymentStatus("Cancelled"); 
+                       toast.info("Payment Cancelled"); 
+                     } catch (err: any) {
+                       toast.error(err.message || "Failed to cancel payment");
+                     }
+                   }}
                  >
                    Cancel / Undo Payment
                  </Button>

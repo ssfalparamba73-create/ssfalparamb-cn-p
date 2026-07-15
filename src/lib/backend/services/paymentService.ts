@@ -1,24 +1,21 @@
 import type { 
   PaymentService, 
-  PaymentRepository, 
-  ReceiptRepository,
+  PaymentRepository,
   CreatePaymentIntentInput,
   RecordCashEntryInput
 } from "../contracts/payment.contract";
 import type { ActorContext, BackendResult, PaginatedResult, PaginationInput } from "../contracts/common.contract";
-import type { PaymentIntentDTO, CashEntryDTO, MemberPaymentHistoryItemDTO, ReceiptDTO } from "../dto/payment.dto";
-import { authError, notFoundError, permissionError } from "../errors/createBackendError";
+import type { PaymentIntentDTO, CashEntryDTO, MemberPaymentHistoryItemDTO } from "../dto/payment.dto";
+import { authError, permissionError } from "../errors/createBackendError";
 import { ok, fail, fromThrowable } from "../errors/resultHelpers";
 import { 
   validateCreatePaymentIntentInput, 
-  validateRecordCashEntryInput,
-  validateReceiptTokenInput
+  validateRecordCashEntryInput
 } from "../validation/paymentSchemas";
 import { validatePagination } from "../validation/commonSchemas";
 
 export function createPaymentService(deps: {
   paymentRepository: PaymentRepository;
-  receiptRepository: ReceiptRepository;
   getSpecialEventMinimumAmount: (
     input: Partial<CreatePaymentIntentInput>,
     actor: ActorContext
@@ -29,7 +26,6 @@ export function createPaymentService(deps: {
 }): PaymentService {
   const { 
     paymentRepository, 
-    receiptRepository, 
     getSpecialEventMinimumAmount, 
     getCashEntryMinimumAmount 
   } = deps;
@@ -119,30 +115,5 @@ export function createPaymentService(deps: {
       }
     },
 
-    async getReceiptByToken(
-      receiptId: string, 
-      token: string, 
-      actor: ActorContext
-    ): Promise<BackendResult<ReceiptDTO>> {
-      try {
-        const validation = validateReceiptTokenInput({ receiptId, token });
-        if (!validation.ok) return fail(validation.error!);
-
-        const receipt = await receiptRepository.findByReceiptIdAndToken(
-          validation.data!.receiptId, 
-          validation.data!.token
-        );
-
-        if (!receipt) {
-          return fail(notFoundError("Receipt not found or invalid token.", "RECEIPT_NOT_FOUND"));
-        }
-
-        await receiptRepository.incrementViewCount(receipt.receiptId);
-
-        return ok(receipt);
-      } catch (err) {
-        return fail(fromThrowable(err));
-      }
-    }
   };
 }

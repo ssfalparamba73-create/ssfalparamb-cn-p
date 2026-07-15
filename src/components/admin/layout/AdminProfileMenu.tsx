@@ -5,13 +5,15 @@ import { Settings, LogOut } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/lib/admin/AuthContext";
+import { useSession } from "@/lib/auth/SessionContext";
+import { authClient } from "@/lib/frontend-api/authClient";
 
 export function AdminProfileMenu() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
-  const { currentUser, logout } = useAuth();
+  const { session, refreshSession } = useSession();
+  const currentUser = session?.actorType === "admin" ? session : null;
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -28,17 +30,17 @@ export function AdminProfileMenu() {
       <div className="hidden lg:flex items-center gap-3 cursor-pointer" onClick={() => setIsMenuOpen(!isMenuOpen)}>
         <div className="text-right">
           <p className="text-sm font-medium text-slate-900 leading-none dark:text-slate-50">{currentUser?.name || "Admin"}</p>
-          <p className="text-xs text-slate-500 mt-1 dark:text-slate-400 capitalize">{currentUser?.role?.replace("_", " ") || "Staff"}</p>
+          <p className="text-xs text-slate-500 mt-1 dark:text-slate-400 capitalize">{"Admin"}</p>
         </div>
         <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-semibold border border-blue-200 dark:border-blue-500/30 dark:bg-blue-500/15 dark:text-blue-300 hover:ring-2 hover:ring-blue-100 dark:hover:ring-blue-500/20 transition-all">
-          {currentUser?.avatarInitials || "AD"}
+          {currentUser?.name?.substring(0, 2).toUpperCase() || "AD"}
         </div>
       </div>
       
       {/* Mobile view profile icon */}
       <div className="lg:hidden flex" onClick={() => setIsMenuOpen(!isMenuOpen)}>
         <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-semibold border border-blue-200 dark:border-blue-500/30 dark:bg-blue-500/15 dark:text-blue-300">
-          {currentUser?.avatarInitials || "AD"}
+          {currentUser?.name?.substring(0, 2).toUpperCase() || "AD"}
         </div>
       </div>
 
@@ -54,7 +56,7 @@ export function AdminProfileMenu() {
             <div className="px-3 py-3 text-sm text-slate-500 font-medium border-b border-slate-100 mb-2 dark:border-slate-700 dark:text-slate-400">
               <p className="text-[11px] uppercase tracking-wider text-slate-400 font-bold mb-1 dark:text-slate-500">Signed in as Admin</p>
               <p className="text-slate-800 font-bold text-base truncate dark:text-slate-100">{currentUser?.name || "Admin"}</p>
-              <p className="text-[11px] mt-0.5 text-blue-600 dark:text-blue-400 font-semibold capitalize">{currentUser?.role?.replace("_", " ") || "Staff"}</p>
+              <p className="text-[11px] mt-0.5 text-blue-600 dark:text-blue-400 font-semibold capitalize">{"Admin"}</p>
             </div>
             <button 
               onClick={() => {
@@ -66,11 +68,12 @@ export function AdminProfileMenu() {
               <Settings className="h-4 w-4" /> Admin Settings
             </button>
             <button 
-              onClick={() => {
+              onClick={async () => {
                 setIsMenuOpen(false);
-                logout();
+                await authClient.logout();
+                await refreshSession();
                 toast.success("Admin logged out");
-                router.push("/");
+                router.push("/admin/login");
               }}
               className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-red-600 hover:bg-red-50 transition-colors mt-1 dark:hover:bg-red-900/20"
             >

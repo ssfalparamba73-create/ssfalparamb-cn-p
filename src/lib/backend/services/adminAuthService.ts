@@ -1,19 +1,14 @@
-import type { AdminAuthService, AdminRepository, AdminLoginInput } from "../contracts/admin.contract";
+import type { AdminAuthService, AdminRepository } from "../contracts/admin.contract";
 import type { ActorContext, BackendResult } from "../contracts/common.contract";
-import type { AdminSessionDTO, AdminUserDTO } from "../dto/admin.dto";
+import type { AdminUserDTO } from "../dto/admin.dto";
 import { authError, permissionError } from "../errors/createBackendError";
 import { ok, fail, fromThrowable } from "../errors/resultHelpers";
-import { validateAdminLoginInput } from "../validation/adminSchemas";
 import { ERROR_CODES } from "../errors/errorCodes";
 
 export function createAdminAuthService(deps: {
   adminRepository: AdminRepository;
-  verifyAdminCredential?: (
-    input: AdminLoginInput,
-    admin: AdminUserDTO
-  ) => Promise<boolean>;
 }): AdminAuthService {
-  const { adminRepository, verifyAdminCredential } = deps;
+  const { adminRepository } = deps;
 
   function requireAdminId(actor: ActorContext): BackendResult<string> {
     if (actor.actorType !== "admin" || !actor.adminId) {
@@ -23,29 +18,6 @@ export function createAdminAuthService(deps: {
   }
 
   return {
-    async login(input: AdminLoginInput, actor: ActorContext): Promise<BackendResult<AdminSessionDTO>> {
-      try {
-        const validation = validateAdminLoginInput(input);
-        if (!validation.ok) return fail(validation.error!);
-
-        const admin = await adminRepository.findAdminByPhone(validation.data!.phone);
-        if (!admin || admin.status !== "active") {
-          return fail(authError("Invalid admin credentials or account disabled.", ERROR_CODES.ADMIN_NOT_FOUND));
-        }
-
-        if (verifyAdminCredential) {
-          const isValid = await verifyAdminCredential(validation.data!, admin);
-          if (!isValid) {
-            return fail(authError("Invalid login credentials.", ERROR_CODES.INVALID_PIN));
-          }
-        }
-
-        return ok({ admin });
-      } catch (err) {
-        return fail(fromThrowable(err));
-      }
-    },
-
     async getCurrentAdmin(actor: ActorContext): Promise<BackendResult<AdminUserDTO>> {
       try {
         const adminIdCheck = requireAdminId(actor);

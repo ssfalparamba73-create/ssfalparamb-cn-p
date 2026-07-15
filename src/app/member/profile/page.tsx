@@ -1,11 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTheme } from "next-themes";
 import { MemberProfileDetails, MemberProfileData } from "@/components/profile/MemberProfileDetails";
 import { EditProfileDrawer } from "@/components/profile/EditProfileDrawer";
 import { ContactAdminsDrawer } from "@/components/profile/ContactAdminsDrawer";
-import { Fingerprint, MessageCircle, LogOut, ChevronRight, Edit3, CheckCircle2, Moon, Sun } from "lucide-react";
+import { Fingerprint, MessageCircle, LogOut, ChevronRight, Edit3, CheckCircle2, Moon, Sun, Loader2 } from "lucide-react";
+import { memberClient } from "@/lib/frontend-api/memberClient";
+import { toast } from "sonner";
+import { authClient } from "@/lib/frontend-api/authClient";
+import { useRouter } from "next/navigation";
+import { useSession } from "@/lib/auth/SessionContext";
 
 const INITIAL_MOCK_MEMBER: MemberProfileData = {
   id: "SSF-ALP-104",
@@ -23,28 +28,70 @@ const INITIAL_MOCK_MEMBER: MemberProfileData = {
 };
 
 export default function ProfilePage() {
+  const router = useRouter();
+  const { refreshSession } = useSession();
   const { resolvedTheme, setTheme } = useTheme();
   const [isBiometricEnabled, setIsBiometricEnabled] = useState(false);
-  const [member, setMember] = useState<MemberProfileData>(INITIAL_MOCK_MEMBER);
+  const [member, setMember] = useState<MemberProfileData | null>(null);
+  const [loading, setLoading] = useState(true);
   const [isEditDrawerOpen, setIsEditDrawerOpen] = useState(false);
   const [isContactDrawerOpen, setIsContactDrawerOpen] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const isDark = resolvedTheme === "dark";
 
-  const handleSaveProfile = (updatedMember: MemberProfileData) => {
-    // Update initials based on new name
-    const nameParts = updatedMember.name.trim().split(' ');
-    const newInitials = nameParts.length > 1 
-      ? `${nameParts[0][0]}${nameParts[nameParts.length - 1][0]}`.toUpperCase()
-      : nameParts[0].substring(0, 2).toUpperCase();
+  useEffect(() => {
+    async function load() {
+      try {
+        const res = await memberClient.getProfile();
+        setMember({
+          id: res.memberCode,
+          name: res.name,
+          initials: res.initials,
+          age: res.age || 0,
+          bloodGroup: res.bloodGroup || "",
+          phone: res.phone || "",
+          whatsapp: res.whatsapp || "",
+          address: res.address || "",
+          unit: res.unit || "",
+          sector: res.sector || "",
+          joinedYear: res.joinedYear || "",
+          occupation: res.occupation || "",
+        });
+        setIsBiometricEnabled(res.biometricEnabled);
+      } catch (err: any) {
+        toast.error(err.message || "Failed to load profile");
+      } finally {
+        setLoading(false);
+      }
+    }
+    load();
+  }, []);
+
+  const handleSaveProfile = async (updatedMember: MemberProfileData) => {
+    try {
+      const res = await memberClient.updateProfile({
+        name: updatedMember.name,
+        whatsapp: updatedMember.whatsapp,
+        address: updatedMember.address,
+        bloodGroup: updatedMember.bloodGroup as any,
+        age: updatedMember.age,
+        occupation: updatedMember.occupation,
+      });
+
+      setMember({
+        ...updatedMember,
+        initials: res.initials,
+      });
+      setIsEditDrawerOpen(false);
       
-    setMember({ ...updatedMember, initials: newInitials });
-    setIsEditDrawerOpen(false);
-    
-    // Show success toast
-    setShowToast(true);
-    setTimeout(() => setShowToast(false), 3000);
+      // Show success toast
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 3000);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to update profile");
+    }
   };
+
 
   return (
     <div className="p-4 md:p-6 min-h-screen bg-[#F6F8FC] animate-in fade-in duration-300 pb-24 md:pb-6 relative transition-colors dark:bg-slate-900">
@@ -73,7 +120,13 @@ export default function ProfilePage() {
       </div>
 
       {/* Main Profile Card */}
-      <MemberProfileDetails member={member} />
+      {loading || !member ? (
+        <div className="flex justify-center p-12">
+          <Loader2 className="size-8 animate-spin text-slate-400" />
+        </div>
+      ) : (
+        <MemberProfileDetails member={member} />
+      )}
 
       {/* Settings Section */}
       <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-3 px-2 dark:text-slate-50">Settings & Security</h2>
@@ -141,7 +194,15 @@ export default function ProfilePage() {
         </button>
 
         {/* Logout */}
-        <button className="w-full p-4 flex items-center gap-3 hover:bg-red-50 transition-colors text-left group dark:hover:bg-red-500/10">
+        <button 
+          onClick={async () => {
+            await authClient.logout();
+            await refreshSession();
+            toast.success("Logged out successfully");
+            router.push("/");
+          }}
+          className="w-full p-4 flex items-center gap-3 hover:bg-red-50 transition-colors text-left group dark:hover:bg-red-500/10"
+        >
           <div className="size-11 rounded-full bg-red-50 border border-red-100 shadow-[0_4px_12px_rgba(15,23,42,0.06)] flex items-center justify-center shrink-0 transition-all group-hover:-translate-y-0.5 text-red-600">
             <LogOut className="size-5" />
           </div>
@@ -154,12 +215,14 @@ export default function ProfilePage() {
       </div>
 
       {/* Edit Profile Drawer / Modal */}
-      <EditProfileDrawer 
-        isOpen={isEditDrawerOpen} 
-        onClose={() => setIsEditDrawerOpen(false)} 
-        member={member} 
-        onSave={handleSaveProfile} 
-      />
+      {member && (
+        <EditProfileDrawer 
+          isOpen={isEditDrawerOpen} 
+          onClose={() => setIsEditDrawerOpen(false)} 
+          member={member} 
+          onSave={handleSaveProfile} 
+        />
+      )}
 
       {/* Contact Admins Drawer */}
       <ContactAdminsDrawer 

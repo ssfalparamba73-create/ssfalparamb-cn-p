@@ -1,8 +1,10 @@
 import type { ActorContext, PaginatedResult, PaginationInput } from "../../../contracts/common.contract";
-import type { CreateMemberInput, MemberRepository, UpdateMemberInput, UpdateMemberProfileInput } from "../../../contracts/member.contract";
+import type { CreateMemberInput, MemberRepository, ResetMemberPinInput, UpdateMemberInput, UpdateMemberProfileInput } from "../../../contracts/member.contract";
 import type { MemberDTO, MemberDirectoryItemDTO, MemberListFilters, MemberProfileDTO, MemberDashboardDTO } from "../../../dto/member.dto";
 import { createSupabaseBackendClient } from "../client";
 import { mapRowToMemberDirectoryItemDTO, mapRowToMemberDTO, mapRowToMemberProfileDTO } from "../mappers/member.mapper";
+
+import { hashPinForPostgres } from "../../../security/pinHash";
 
 export class SupabaseMemberRepository implements MemberRepository {
   async findById(id: string): Promise<MemberDTO | null> {
@@ -67,7 +69,8 @@ export class SupabaseMemberRepository implements MemberRepository {
 
   async create(input: CreateMemberInput, actor: ActorContext): Promise<MemberDTO> {
     const supabase = createSupabaseBackendClient();
-    const { data, error } = await supabase.from("members").insert([{
+    
+    const insertData: any = {
       name: input.name,
       phone: input.phone,
       alternate_phone: input.alternatePhone,
@@ -77,7 +80,14 @@ export class SupabaseMemberRepository implements MemberRepository {
       occupation: input.occupation,
       monthly_tier: input.monthlyTier,
       monthly_amount: input.monthlyAmount,
-    }]).select("*").single();
+    };
+    
+    if (input.pin) {
+      insertData.pin_hash = await hashPinForPostgres(input.pin);
+      insertData.pin_status = 'issued';
+    }
+
+    const { data, error } = await supabase.from("members").insert([insertData]).select("*").single();
     
     if (error) throw error;
     return mapRowToMemberDTO(data);
@@ -89,9 +99,34 @@ export class SupabaseMemberRepository implements MemberRepository {
     if (input.name) updateData.name = input.name;
     if (input.phone) updateData.phone = input.phone;
     if (input.status) updateData.status = input.status;
+    if (input.pin) {
+      updateData.pin_hash = await hashPinForPostgres(input.pin);
+      updateData.pin_status = "issued";
+      updateData.pin_updated_at = new Date().toISOString();
+      updateData.force_pin_reset = false;
+    }
     
     const { data, error } = await supabase.from("members").update(updateData).eq("id", id).select("*").single();
     if (error) throw error;
+    return mapRowToMemberDTO(data);
+  }
+
+  async resetPin(id: string, input: ResetMemberPinInput, actor: ActorContext): Promise<MemberDTO> {
+    const supabase = createSupabaseBackendClient();
+    const pinHash = await hashPinForPostgres(input.pin);
+    const { data, error } = await supabase
+      .from("members")
+      .update({
+        pin_hash: pinHash,
+        pin_status: "issued",
+        pin_updated_at: new Date().toISOString(),
+        force_pin_reset: input.forceReset === true,
+      })
+      .eq("id", id)
+      .select("*")
+      .single();
+
+    if (error || !data) throw error || new Error("Member not found");
     return mapRowToMemberDTO(data);
   }
 

@@ -12,17 +12,13 @@ import type {
 } from "../dto/admin.dto";
 import type {
   CreateMemberInput,
+  ResetMemberPinInput,
   UpdateMemberInput,
 } from "./member.contract";
 import type {
   MemberDTO,
   MemberListFilters,
 } from "../dto/member.dto";
-
-export interface AdminLoginInput {
-  phone: string;
-  pinOrOtp?: string;
-}
 
 export interface AdminUserFilters {
   search?: string;
@@ -47,12 +43,12 @@ export interface AdminRepository {
 }
 
 export interface AdminAuthService {
-  login(input: AdminLoginInput, actor: ActorContext): Promise<BackendResult<AdminSessionDTO>>;
   getCurrentAdmin(actor: ActorContext): Promise<BackendResult<AdminUserDTO>>;
   requirePermission(actor: ActorContext, permission: string): Promise<BackendResult<true>>;
 }
 
 export interface AdminMemberService {
+  getMemberDetail(id: string, actor: ActorContext): Promise<BackendResult<MemberDTO>>;
   listMembers(
     filters: MemberListFilters,
     pagination: PaginationInput,
@@ -60,6 +56,7 @@ export interface AdminMemberService {
   ): Promise<BackendResult<PaginatedResult<MemberDTO>>>;
   createMember(input: CreateMemberInput, actor: ActorContext): Promise<BackendResult<MemberDTO>>;
   updateMember(id: string, input: UpdateMemberInput, actor: ActorContext): Promise<BackendResult<MemberDTO>>;
+  resetMemberPin(id: string, input: ResetMemberPinInput, actor: ActorContext): Promise<BackendResult<MemberDTO>>;
   softDeleteMember(id: string, actor: ActorContext): Promise<BackendResult<void>>;
 }
 
@@ -88,3 +85,4 @@ export interface AuditService {
     actor: ActorContext
   ): Promise<BackendResult<PaginatedResult<AuditLogDTO>>>;
 }
+

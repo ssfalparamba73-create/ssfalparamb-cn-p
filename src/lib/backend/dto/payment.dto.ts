@@ -82,6 +82,7 @@ export interface ReceiptDTO {
 
 export interface CashEntryDTO {
   id: ID;
+  receiptId: string;
   paymentId: ID;
   memberId?: ID;
   payerName?: string;

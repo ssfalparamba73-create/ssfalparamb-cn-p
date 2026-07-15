@@ -11,6 +11,8 @@ import { useRouter } from "next/navigation";
 import { Camera, Trash2, PlusCircle, User } from "lucide-react";
 import { toast } from "sonner";
 import Image from "next/image";
+import { adminClient } from "@/lib/frontend-api/adminClient";
+import { MemberInviteDialog } from "@/components/admin/members/MemberInviteDialog";
 
 interface MemberFormProps {
   initialData?: Member;
@@ -21,10 +23,12 @@ export function MemberForm({ initialData, isEdit }: MemberFormProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [phone, setPhone] = useState(initialData?.phone || "");
+  const [pin, setPin] = useState(() => (isEdit ? "" : Math.floor(1000 + Math.random() * 9000).toString()));
+  const [invite, setInvite] = useState<{ name: string; phone: string; pin: string } | null>(null);
   const [phoneError, setPhoneError] = useState("");
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  
+
   const [familyMembers, setFamilyMembers] = useState<{name: string, relation: string, age: string}[]>([]);
 
   const validatePhone = (val: string) => {
@@ -84,23 +88,54 @@ export function MemberForm({ initialData, isEdit }: MemberFormProps) {
     setFamilyMembers(newMembers);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (phoneError) {
       toast.error("Please fix the validation errors before submitting.");
       return;
     }
+    
     setIsSubmitting(true);
-    // Simulate API call
-    setTimeout(() => {
-      setIsSubmitting(false);
-      toast.success(isEdit ? "Member updated successfully!" : "Member created successfully!");
+    
+    const formData = new FormData(e.currentTarget);
+    const data = {
+      name: formData.get("name") as string,
+      phone,
+      alternatePhone: formData.get("altPhone") as string || undefined,
+      age: formData.get("age") ? parseInt(formData.get("age") as string, 10) : undefined,
+      address: formData.get("address") as string || undefined,
+      area: formData.get("area") as string || undefined,
+      occupation: formData.get("occupation") as string || undefined,
+      monthlyTier: formData.get("tier") as any,
+      monthlyAmount: parseInt(formData.get("amount") as string, 10),
+      status: formData.get("status") as any,
+      bloodGroup: formData.get("bloodGroup") as any,
+      isBloodDonor: formData.get("isDonor") === "on",
+      donorAvailable: formData.get("isAvailable") === "on",
+      pin: pin || undefined,
+    };
+
+    try {
+      if (isEdit && initialData) {
+        await adminClient.updateMember(initialData.id, data);
+        toast.success("Member updated successfully!");
+      } else {
+        const created = await adminClient.createMember(data);
+        toast.success("Member created successfully!");
+        setInvite({ name: created.name, phone: created.phone, pin });
+        return;
+      }
       router.push("/admin/members");
-    }, 1000);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to save member");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-8 animate-in fade-in duration-300 pb-24">
+    <>
+      <form onSubmit={handleSubmit} className="space-y-8 animate-in fade-in duration-300 pb-24">
       
       {/* Photo Upload Section */}
       <div className="flex flex-col items-center justify-center p-6 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
@@ -134,7 +169,7 @@ export function MemberForm({ initialData, isEdit }: MemberFormProps) {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label htmlFor="name">Full Name <span className="text-red-500">*</span></Label>
-            <Input id="name" defaultValue={initialData?.name} required placeholder="e.g. Niyas C" />
+            <Input id="name" name="name" defaultValue={initialData?.name} required placeholder="e.g. Niyas C" />
           </div>
           <div className="space-y-2">
             <Label htmlFor="phone">Phone Number <span className="text-red-500">*</span></Label>
@@ -150,19 +185,19 @@ export function MemberForm({ initialData, isEdit }: MemberFormProps) {
           </div>
           <div className="space-y-2">
             <Label htmlFor="altPhone">Alternate Phone</Label>
-            <Input id="altPhone" placeholder="Optional" />
+            <Input id="altPhone" name="altPhone" placeholder="Optional" />
           </div>
           <div className="space-y-2">
             <Label htmlFor="age">Age</Label>
-            <Input id="age" type="number" placeholder="e.g. 32" />
+            <Input id="age" name="age" type="number" placeholder="e.g. 32" />
           </div>
           <div className="space-y-2 sm:col-span-2">
             <Label htmlFor="address">Address</Label>
-            <Textarea id="address" placeholder="Full residential address" className="min-h-[80px]" />
+            <Textarea id="address" name="address" placeholder="Full residential address" className="min-h-[80px]" />
           </div>
           <div className="space-y-2">
              <Label htmlFor="area">Area / Branch <span className="text-red-500">*</span></Label>
-             <Select defaultValue={initialData?.area || ""}>
+             <Select name="area" defaultValue={initialData?.area || ""}>
                 <SelectTrigger className="w-full h-10 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
                   <SelectValue placeholder="Select an area" />
                 </SelectTrigger>
@@ -175,7 +210,7 @@ export function MemberForm({ initialData, isEdit }: MemberFormProps) {
           </div>
           <div className="space-y-2">
             <Label htmlFor="occupation">Occupation</Label>
-            <Input id="occupation" placeholder="e.g. Teacher, Business" />
+            <Input id="occupation" name="occupation" placeholder="e.g. Teacher, Business" />
           </div>
         </div>
       </div>
@@ -190,7 +225,7 @@ export function MemberForm({ initialData, isEdit }: MemberFormProps) {
           </div>
           <div className="space-y-2">
              <Label htmlFor="status">Status</Label>
-             <Select defaultValue={initialData?.status || "active"}>
+             <Select name="status" defaultValue={initialData?.status || "active"}>
                 <SelectTrigger className="w-full h-10 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
                   <SelectValue placeholder="Status" />
                 </SelectTrigger>
@@ -202,7 +237,7 @@ export function MemberForm({ initialData, isEdit }: MemberFormProps) {
           </div>
           <div className="space-y-2">
              <Label htmlFor="tier">Monthly Tier <span className="text-red-500">*</span></Label>
-             <Select defaultValue={initialData?.monthlyTier || "flexible"}>
+             <Select name="tier" defaultValue={initialData?.monthlyTier || "flexible"}>
                 <SelectTrigger className="w-full h-10 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
                   <SelectValue placeholder="Select Tier" />
                 </SelectTrigger>
@@ -216,7 +251,7 @@ export function MemberForm({ initialData, isEdit }: MemberFormProps) {
           </div>
           <div className="space-y-2">
             <Label htmlFor="amount">Monthly Amount (₹) <span className="text-red-500">*</span></Label>
-            <Input id="amount" type="number" min="50" defaultValue={initialData?.monthlyAmount || 50} required />
+            <Input id="amount" name="amount" type="number" min="50" defaultValue={initialData?.monthlyAmount || 50} required />
           </div>
           <div className="space-y-2">
             <Label htmlFor="joinedDate">Joined Date</Label>
@@ -231,17 +266,17 @@ export function MemberForm({ initialData, isEdit }: MemberFormProps) {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-3 flex flex-col mt-2">
             <div className="flex items-center gap-2">
-              <input type="checkbox" id="isDonor" defaultChecked={initialData?.isBloodDonor} className="w-4 h-4 rounded text-red-600 border-slate-300 focus:ring-red-500" />
+              <input type="checkbox" id="isDonor" name="isDonor" defaultChecked={initialData?.isBloodDonor} className="w-4 h-4 rounded text-red-600 border-slate-300 focus:ring-red-500" />
               <Label htmlFor="isDonor" className="mb-0 font-normal">Register as Blood Donor</Label>
             </div>
             <div className="flex items-center gap-2">
-              <input type="checkbox" id="isAvailable" defaultChecked={true} className="w-4 h-4 rounded text-red-600 border-slate-300 focus:ring-red-500" />
+              <input type="checkbox" id="isAvailable" name="isAvailable" defaultChecked={true} className="w-4 h-4 rounded text-red-600 border-slate-300 focus:ring-red-500" />
               <Label htmlFor="isAvailable" className="mb-0 font-normal">Available to donate now</Label>
             </div>
           </div>
           <div className="space-y-2">
              <Label htmlFor="bloodGroup">Blood Group</Label>
-             <Select defaultValue={initialData?.bloodGroup || ""}>
+             <Select name="bloodGroup" defaultValue={initialData?.bloodGroup || ""}>
                 <SelectTrigger className="w-full h-10 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
                   <SelectValue placeholder="Select Group" />
                 </SelectTrigger>
@@ -316,7 +351,17 @@ export function MemberForm({ initialData, isEdit }: MemberFormProps) {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="pin">Set 4-Digit PIN (Optional)</Label>
-              <Input id="pin" type="text" pattern="[0-9]{4}" placeholder="e.g. 1234" maxLength={4} />
+              <Input
+                id="pin"
+                name="pin"
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]{4}"
+                placeholder="e.g. 1234"
+                maxLength={4}
+                value={pin}
+                onChange={(e) => setPin(e.target.value.replace(/\D/g, "").slice(0, 4))}
+              />
             </div>
             {isEdit && (
                <div className="space-y-2 flex items-center gap-2 mt-6">
@@ -342,6 +387,18 @@ export function MemberForm({ initialData, isEdit }: MemberFormProps) {
          </Button>
       </div>
 
-    </form>
+      </form>
+      <MemberInviteDialog
+        isOpen={Boolean(invite)}
+        onClose={() => {
+          setInvite(null);
+          setPin("");
+          router.push("/admin/members");
+        }}
+        memberName={invite?.name || "Member"}
+        phone={invite?.phone || ""}
+        pin={invite?.pin || ""}
+      />
+    </>
   );
 }

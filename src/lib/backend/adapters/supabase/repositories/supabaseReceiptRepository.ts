@@ -11,6 +11,7 @@ export interface CreatedReceiptWithToken {
 
 export class SupabaseReceiptRepository implements ReceiptRepository {
   async createForPaymentWithToken(paymentId: string, actor: ActorContext): Promise<CreatedReceiptWithToken> {
+    void actor;
     const supabase = createSupabaseBackendClient();
     
     const { data: payment, error: payError } = await supabase.from("payments").select("*").eq("id", paymentId).single();
@@ -73,17 +74,23 @@ export class SupabaseReceiptRepository implements ReceiptRepository {
     const { data: tokenHash, error: tokenHashError } = await supabase.rpc("hash_receipt_token", {
       p_token: token,
     });
-    if (tokenHashError || !tokenHash) return null;
+    if (tokenHashError) throw tokenHashError;
+    if (!tokenHash) throw new Error("Receipt token hashing returned no value.");
 
     const { data, error } = await supabase.from("payment_receipts")
-      .select("*, payments(*)")
+      .select("*, payments(*, payment_months(*))")
       .eq("receipt_id", receiptId)
       .eq("public_token_hash", tokenHash)
       .gt("token_expires_at", new Date().toISOString())
-      .single();
-      
-    if (error || !data) return null;
-    return mapRowToReceiptDTO(data, data.payments || {});
+      .maybeSingle();
+
+    if (error) throw error;
+    if (!data || !data.payments) return null;
+
+    // For Phase 6, only confirmed payments can display public receipts
+    if (data.payments.status !== "confirmed") return null;
+
+    return mapRowToReceiptDTO(data, data.payments);
   }
 
   async findForMember(paymentId: string, memberId: string): Promise<ReceiptDTO | null> {
@@ -98,6 +105,7 @@ export class SupabaseReceiptRepository implements ReceiptRepository {
 
   async incrementViewCount(receiptId: string): Promise<void> {
     const supabase = createSupabaseBackendClient();
-    await supabase.rpc("increment_receipt_view_count", { p_receipt_id: receiptId });
+    const { error } = await supabase.rpc("increment_receipt_view_count", { p_receipt_id: receiptId });
+    if (error) throw error;
   }
 }

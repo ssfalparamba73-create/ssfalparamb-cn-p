@@ -4,7 +4,7 @@ import { PieChart } from "lucide-react";
 interface PaymentMethod {
   method: string;
   percentage: number;
-  color: string;
+  color?: string;
 }
 
 interface PaymentMethodChartProps {
@@ -21,8 +21,6 @@ const colorMap: Record<string, string> = {
 };
 
 export function PaymentMethodChart({ data }: PaymentMethodChartProps) {
-  let cumulativePercent = 0;
-
   return (
     <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm transition-colors duration-300 dark:border-slate-700 dark:bg-slate-800 dark:shadow-none h-full flex flex-col">
       <div className="flex items-center justify-between mb-2">
@@ -48,9 +46,11 @@ export function PaymentMethodChart({ data }: PaymentMethodChartProps) {
             />
             {data.map((item, index) => {
               const dashArray = `${item.percentage} ${100 - item.percentage}`;
+              const cumulativePercent = data
+                .slice(0, index)
+                .reduce((total, entry) => total + entry.percentage, 0);
               const dashOffset = 100 - cumulativePercent;
-              cumulativePercent += item.percentage;
-              const strokeColor = colorMap[item.color] || "#3b82f6";
+              const strokeColor = (item.color ? colorMap[item.color] : undefined) || "#3b82f6";
               
               return (
                 <circle
@@ -77,7 +77,7 @@ export function PaymentMethodChart({ data }: PaymentMethodChartProps) {
         {/* Legend */}
         <div className="w-full sm:w-auto flex-1 space-y-3">
           {data.map((item, index) => {
-            const dotColor = colorMap[item.color] || "#3b82f6";
+            const dotColor = (item.color ? colorMap[item.color] : undefined) || "#3b82f6";
             return (
               <div key={index} className="flex items-center justify-between group hover:bg-slate-50 dark:hover:bg-slate-700/50 p-2 rounded-lg transition-colors cursor-pointer -mx-2">
                 <div className="flex items-center">

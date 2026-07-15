@@ -8,6 +8,8 @@ import { Label } from "@/components/ui/label";
 import { PhoneIcon, ArrowRight, ShieldAlert, ShieldCheck, ArrowLeft, Send, ChevronDown } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
+import { authClient } from "@/lib/frontend-api/authClient";
+import { useSession } from "@/lib/auth/SessionContext";
 
 interface InlineLoginFormProps {
   isGlass?: boolean; // To match the desktop hero section style
@@ -15,6 +17,7 @@ interface InlineLoginFormProps {
 
 export function InlineLoginForm({ isGlass = false }: InlineLoginFormProps) {
   const router = useRouter();
+  const { refreshSession } = useSession();
   
   // State
   const [step, setStep] = useState<"phone" | "otp">("phone");
@@ -105,27 +108,27 @@ export function InlineLoginForm({ isGlass = false }: InlineLoginFormProps) {
     }, 500);
   };
 
-  const handleOtpSubmit = (e: React.FormEvent) => {
+  const handleOtpSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!otp) return;
     
     setIsLoading(true);
     setError("");
 
-    // Mock verification (demo mode: "1234" is valid)
-    setTimeout(() => {
+    try {
+      await authClient.memberLogin(phone, otp);
+      setSuccess(true);
+      toast.success("Verification Successful!");
+      await refreshSession();
+      setTimeout(() => {
+        router.push("/member/dashboard");
+      }, 800);
+    } catch (err: any) {
+      toast.error(err.message || "Invalid Code");
+      setError("Invalid Code");
+    } finally {
       setIsLoading(false);
-      if (otp === "1234") {
-        setSuccess(true);
-        toast.success("Verification Successful!");
-        setTimeout(() => {
-          router.push("/member/dashboard");
-        }, 800);
-      } else {
-        toast.error("Invalid Code. For demo purposes, use '1234'.");
-        setError("Invalid Code"); // Keep for styling if needed, but UI text removed
-      }
-    }, 1000);
+    }
   };
 
   // Styles based on whether it's in the hero (glass) or login page (clean)

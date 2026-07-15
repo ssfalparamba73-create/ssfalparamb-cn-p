@@ -12,6 +12,7 @@ import {
   validatePhone,
   validatePositiveAmount,
   validateRequiredString,
+  validatePin,
   includesValue,
 } from "./commonSchemas";
 
@@ -34,6 +35,13 @@ export function validateCreateMemberInput(input: Partial<CreateMemberInput>): Ba
     return fail(validationError("Invalid monthly tier.", "monthlyTier"));
   }
 
+  let pin: string | undefined;
+  if (input.pin !== undefined) {
+    const pinValidation = validatePin(input.pin);
+    if (!pinValidation.ok) return fail(pinValidation.error!);
+    pin = pinValidation.data!;
+  }
+
   return ok({
     name: name.data!,
     phone: phone.data!,
@@ -44,6 +52,7 @@ export function validateCreateMemberInput(input: Partial<CreateMemberInput>): Ba
     occupation: input.occupation,
     monthlyTier: tier,
     monthlyAmount: amount.data!,
+    pin,
   });
 }
 
@@ -52,6 +61,12 @@ export function validateUpdateMemberInput(input: UpdateMemberInput): BackendResu
     const phone = validatePhone(input.phone);
     if (!phone.ok) return fail(phone.error!);
     input.phone = phone.data!;
+  }
+
+  if (input.pin !== undefined) {
+    const pinValidation = validatePin(input.pin);
+    if (!pinValidation.ok) return fail(pinValidation.error!);
+    input.pin = pinValidation.data!;
   }
 
   if (input.monthlyAmount !== undefined) {

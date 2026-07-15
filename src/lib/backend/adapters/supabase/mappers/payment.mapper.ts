@@ -41,6 +41,9 @@ export function mapRowToPaymentDTO(row: any, monthsRows: any[] = []): PaymentDTO
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function mapRowToReceiptDTO(row: any, paymentRow: any = {}): ReceiptDTO {
+  const monthsRows = paymentRow.payment_months || [];
+  const monthLabels = monthsRows.map((m: { label?: string }) => m.label).filter(Boolean);
+
   return {
     receiptId: row.receipt_id,
     paymentId: row.payment_id,
@@ -50,9 +53,9 @@ export function mapRowToReceiptDTO(row: any, paymentRow: any = {}): ReceiptDTO {
     currency: "INR",
     category: row.category || paymentRow.category,
     method: row.method || paymentRow.method,
-    status: paymentRow.status || "confirmed",
+    status: paymentRow.status, // DO NOT default to "confirmed", preserve real status
     eventName: row.event_name || paymentRow.event_name,
-    months: row.months,
+    months: monthLabels.length > 0 ? monthLabels : row.months,
     receivedBy: row.received_by || paymentRow.collected_by_admin_name,
     paidAt: paymentRow.paid_at,
     issuedAt: row.issued_at || row.created_at,
@@ -62,9 +65,10 @@ export function mapRowToReceiptDTO(row: any, paymentRow: any = {}): ReceiptDTO {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function mapRowToCashEntryDTO(row: any): CashEntryDTO {
+export function mapRowToCashEntryDTO(row: any, receiptId: string): CashEntryDTO {
   return {
     id: row.id,
+    receiptId,
     paymentId: row.payment_id,
     memberId: row.member_id,
     payerName: row.payer_name,

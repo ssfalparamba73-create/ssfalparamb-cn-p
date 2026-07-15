@@ -9,9 +9,13 @@ import { Label } from "@/components/ui/label";
 import { Loader2 } from "lucide-react";
 import Image from "next/image";
 import { TransparentLogo } from "@/components/TransparentLogo";
+import { toast } from "sonner";
+import { authClient } from "@/lib/frontend-api/authClient";
+import { useSession } from "@/lib/auth/SessionContext";
 
 export default function AdminLoginPage() {
   const router = useRouter();
+  const { refreshSession } = useSession();
   const [step, setStep] = useState<1 | 2>(1);
   const [phone, setPhone] = useState("");
   const [pin, setPin] = useState(["", "", "", ""]);
@@ -48,13 +52,22 @@ export default function AdminLoginPage() {
     }
   };
 
-  const handlePinSubmit = (e: React.FormEvent) => {
+  const handlePinSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (pin.every((p) => p !== "")) {
       setIsLoading(true);
-      setTimeout(() => {
-        router.push("/admin/dashboard");
-      }, 800);
+      try {
+        await authClient.adminLogin(phone, pin.join(""));
+        toast.success("Login Successful!");
+        await refreshSession();
+        setTimeout(() => {
+          router.push("/admin/dashboard");
+        }, 800);
+      } catch (err: any) {
+        toast.error(err.message || "Invalid Admin PIN");
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 

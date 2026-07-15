@@ -7,11 +7,14 @@ import { usePathname, useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { toast } from "sonner";
 import { useTheme } from "next-themes";
+import { useSession } from "@/lib/auth/SessionContext";
+import { authClient } from "@/lib/frontend-api/authClient";
 
 export function MemberHeader() {
   const pathname = usePathname();
   const router = useRouter();
   const { resolvedTheme, setTheme } = useTheme();
+  const { session, refreshSession } = useSession();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isThemeMounted, setIsThemeMounted] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -94,7 +97,7 @@ export function MemberHeader() {
 
           {/* Desktop Name */}
           <div className="hidden md:flex flex-col text-right">
-            <span className="text-sm font-bold text-slate-900 leading-none mb-1 transition-colors duration-300 dark:text-slate-50">Safvan Alparamba</span>
+            <span className="text-sm font-bold text-slate-900 leading-none mb-1 transition-colors duration-300 dark:text-slate-50">{session?.name || "Member"}</span>
             <span className="text-[10px] uppercase tracking-wider font-bold text-slate-400 leading-none transition-colors duration-300 dark:text-slate-500">Member</span>
           </div>
           
@@ -104,7 +107,7 @@ export function MemberHeader() {
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               className="relative size-10 flex items-center justify-center rounded-full overflow-hidden bg-blue-100 border-2 border-white shadow-sm shrink-0 cursor-pointer hover:ring-2 hover:ring-blue-100 transition-all dark:border-slate-700 dark:bg-blue-500/15 dark:hover:ring-blue-500/20"
             >
-              <span className="text-[13px] font-bold text-blue-700 dark:text-blue-300">SA</span>
+              <span className="text-[13px] font-bold text-blue-700 dark:text-blue-300">{session?.name?.substring(0, 2).toUpperCase() || "ME"}</span>
             </div>
 
             <AnimatePresence>
@@ -118,14 +121,16 @@ export function MemberHeader() {
                 >
                   <div className="px-3 py-3 text-sm text-slate-500 font-medium border-b border-slate-100 mb-2 dark:border-slate-700 dark:text-slate-400">
                     <p className="text-[11px] uppercase tracking-wider text-slate-400 font-bold mb-1 dark:text-slate-500">Welcome back,</p>
-                    <p className="text-slate-800 font-bold text-base truncate dark:text-slate-100">Safvan Alparamba</p>
+                    <p className="text-slate-800 font-bold text-base truncate dark:text-slate-100">{session?.name || "Member"}</p>
                   </div>
                   <button className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors dark:text-slate-300 dark:hover:bg-slate-700">
                     <Settings className="h-4 w-4" /> Settings
                   </button>
                   <button 
-                    onClick={() => {
+                    onClick={async () => {
                       setIsMenuOpen(false);
+                      await authClient.logout();
+                      await refreshSession();
                       toast.success("Logged out successfully");
                       router.push("/");
                     }}

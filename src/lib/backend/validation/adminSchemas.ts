@@ -1,5 +1,5 @@
 import type {
-  AdminLoginInput,
+  
   AdminUserFilters,
   AuditLogFilters,
 } from "../contracts/admin.contract";
@@ -16,19 +16,6 @@ import {
 const adminStatuses = ["active", "inactive"] as const;
 const auditSeverities = ["info", "warning", "error", "critical"] as const;
 
-export function validateAdminLoginInput(input: Partial<AdminLoginInput>): BackendResult<AdminLoginInput> {
-  const phone = validatePhone(input.phone);
-  if (!phone.ok) return fail(phone.error!);
-
-  if (input.pinOrOtp !== undefined && !/^\d{4,8}$/.test(input.pinOrOtp)) {
-    return fail(validationError("Invalid login code format.", "pinOrOtp"));
-  }
-
-  return ok({
-    phone: phone.data!,
-    pinOrOtp: input.pinOrOtp,
-  });
-}
 
 export function validatePermissionCode(input: unknown): BackendResult<string> {
   const permission = validateRequiredString(input, "permission", "Permission");
