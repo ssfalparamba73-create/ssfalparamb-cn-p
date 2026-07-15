@@ -1,35 +1,37 @@
-import { ShieldCheck, CalendarRange } from "lucide-react";
-import { TransactionCard, Transaction } from "@/components/payments/TransactionCard";
+"use client";
 
-const MOCK_TRANSACTIONS: Transaction[] = [
-  {
-    id: "tx_1",
-    date: "July 2, 2026",
-    amount: 100,
-    method: "UPI",
-    status: "COMPLETED",
-    receiptUrl: "/receipt/tx_1?method=UPI&admin=Admin&phone=Member&source=member"
-  },
-  {
-    id: "tx_2",
-    date: "June 1, 2026",
-    amount: 100,
-    method: "CASH",
-    status: "COMPLETED",
-    receiptUrl: "/receipt/tx_2?method=CASH&admin=Farhan%20(President)&phone=Member&source=member"
-  },
-  {
-    id: "tx_3",
-    date: "May 5, 2026",
-    amount: 150,
-    method: "UPI",
-    status: "COMPLETED",
-    receiptUrl: "/receipt/tx_3?method=UPI&admin=Admin&phone=Member&source=member"
-  },
-];
+import { useEffect, useState } from "react";
+import { ShieldCheck, CalendarRange, Loader2 } from "lucide-react";
+import { TransactionCard, Transaction } from "@/components/payments/TransactionCard";
+import { memberClient } from "@/lib/frontend-api/memberClient";
+import { toast } from "sonner";
 
 export default function PaymentsPage() {
-  const totalPaid = MOCK_TRANSACTIONS.reduce((sum, tx) => sum + (tx.status === "COMPLETED" ? tx.amount : 0), 0);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function load() {
+      try {
+        const res = await memberClient.listPayments();
+        setTransactions(res.items.map(p => ({
+          id: p.id,
+          date: new Date(p.date).toLocaleDateString(),
+          amount: p.amount,
+          method: (p.method === "upi" || p.method === "qr_code") ? "UPI" : "CASH",
+          status: p.status,
+          receiptUrl: p.receiptUrl
+        })));
+      } catch (err: any) {
+        toast.error(err.message || "Failed to load payments");
+      } finally {
+        setLoading(false);
+      }
+    }
+    load();
+  }, []);
+
+  const totalPaid = transactions.reduce((sum, tx) => sum + (tx.status === "COMPLETED" ? tx.amount : 0), 0);
 
   return (
     <div className="p-4 md:p-6 min-h-screen bg-[#F6F8FC] animate-in fade-in duration-300 pb-24 md:pb-6 transition-colors dark:bg-slate-900">
@@ -66,14 +68,25 @@ export default function PaymentsPage() {
       <div className="space-y-4">
         <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2 dark:text-slate-50">
           Recent Transactions
-          <span className="bg-slate-200 text-slate-600 text-xs py-0.5 px-2 rounded-full dark:bg-slate-700 dark:text-slate-300">{MOCK_TRANSACTIONS.length}</span>
+          <span className="bg-slate-200 text-slate-600 text-xs py-0.5 px-2 rounded-full dark:bg-slate-700 dark:text-slate-300">{transactions.length}</span>
         </h2>
-        
-        <div className="flex flex-col gap-3">
-          {MOCK_TRANSACTIONS.map((tx) => (
-            <TransactionCard key={tx.id} transaction={tx} />
-          ))}
-        </div>
+        {loading ? (
+          <div className="flex justify-center p-12">
+            <Loader2 className="size-8 animate-spin text-slate-400" />
+          </div>
+        ) : (
+          <div className="flex flex-col gap-3">
+            {transactions.length > 0 ? (
+              transactions.map((tx) => (
+                <TransactionCard key={tx.id} transaction={tx} />
+              ))
+            ) : (
+              <div className="p-8 text-center text-slate-500 text-sm dark:text-slate-400">
+                No payments found.
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
     </div>

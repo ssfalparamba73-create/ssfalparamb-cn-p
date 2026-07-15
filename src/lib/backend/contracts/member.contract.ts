@@ -22,6 +22,12 @@ export interface CreateMemberInput {
   occupation?: string;
   monthlyTier: MemberDTO["monthlyTier"];
   monthlyAmount: number;
+  pin?: string;
+}
+
+export interface ResetMemberPinInput {
+  pin: string;
+  forceReset?: boolean;
 }
 
 export interface UpdateMemberInput extends Partial<CreateMemberInput> {
@@ -49,6 +55,7 @@ export interface MemberRepository {
   listDirectory(filters: MemberListFilters, pagination: PaginationInput): Promise<PaginatedResult<MemberDirectoryItemDTO>>;
   create(input: CreateMemberInput, actor: ActorContext): Promise<MemberDTO>;
   update(id: string, input: UpdateMemberInput, actor: ActorContext): Promise<MemberDTO>;
+  resetPin(id: string, input: ResetMemberPinInput, actor: ActorContext): Promise<MemberDTO>;
   updateProfile(memberId: string, input: UpdateMemberProfileInput, actor: ActorContext): Promise<MemberProfileDTO>;
   softDelete(id: string, actor: ActorContext): Promise<void>;
   getProfile(memberId: string): Promise<MemberProfileDTO | null>;

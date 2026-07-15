@@ -38,7 +38,7 @@ export function MemberProfileDetails({ member }: MemberProfileDetailsProps) {
           <h2 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-slate-50">{member.name}</h2>
           <p className="text-slate-500 font-medium mt-1 flex items-center gap-1.5 dark:text-slate-400">
             <span className="bg-blue-100 text-blue-700 px-2 py-0.5 rounded-md text-xs font-bold uppercase tracking-wide dark:bg-blue-500/10 dark:text-blue-300">
-              ID: {member.id}
+              Member Code: {member.id}
             </span>
             • {member.unit} Unit
           </p>
@@ -76,7 +76,7 @@ export function MemberProfileDetails({ member }: MemberProfileDetailsProps) {
           Organization
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-8">
-          <DetailItem colorScheme="indigo" icon={<CreditCard className="size-5" />} label="Membership ID" value={member.id} />
+          <DetailItem colorScheme="indigo" icon={<CreditCard className="size-5" />} label="Member Code" value={member.id} />
           <DetailItem colorScheme="teal" icon={<MapPin className="size-5" />} label="Unit & Sector" value={`${member.unit}, ${member.sector}`} />
           <DetailItem colorScheme="orange" icon={<Calendar className="size-5" />} label="Joined Year" value={member.joinedYear} />
         </div>

@@ -17,7 +17,7 @@ export class SupabaseAuthRepository implements AuthRepository {
     });
 
     if (error) {
-      return fail(serverError("Database error during verification"));
+      console.error("DB RPC error", error); return fail(serverError("Database error during verification"));
     }
 
     if (!data.success) {
@@ -37,7 +37,7 @@ export class SupabaseAuthRepository implements AuthRepository {
     });
 
     if (error) {
-      return fail(serverError("Database error during verification"));
+      console.error("DB RPC error", error); return fail(serverError("Database error during verification"));
     }
 
     if (!data.success) {

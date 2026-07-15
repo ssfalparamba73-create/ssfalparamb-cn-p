@@ -4,7 +4,8 @@ import React, { useState } from "react";
 import { TrendingUp } from "lucide-react";
 
 interface CollectionData {
-  month: string;
+  month?: string;
+  label?: string;
   amount: number;
 }
 
@@ -14,22 +15,29 @@ interface CollectionTrendChartProps {
 
 export function CollectionTrendChart({ data }: CollectionTrendChartProps) {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
-  
+  const chartData = data.filter(
+    (item) => Number.isFinite(item.amount) && item.amount >= 0
+  );
+
   // Find max value to scale the chart correctly
-  const maxAmount = Math.max(...data.map(d => d.amount));
+  const maxAmount = Math.max(...chartData.map((item) => item.amount), 0);
   
   // Create points for SVG (mapping to viewBox 0 0 1000 300)
   const width = 1000;
   const height = 300;
   
-  const points = data.map((item, index) => {
-    const x = (index / (data.length - 1)) * width;
-    const y = height - (item.amount / maxAmount) * height;
+  const points = chartData.map((item, index) => {
+    const x = chartData.length <= 1
+      ? width / 2
+      : (index / (chartData.length - 1)) * width;
+    const y = maxAmount > 0
+      ? height - (item.amount / maxAmount) * height
+      : height / 2;
     return { x, y, item };
   });
 
   // Generate smooth bezier curve path
-  let path = `M ${points[0].x} ${points[0].y}`;
+  let path = points.length > 0 ? `M ${points[0].x} ${points[0].y}` : "";
   for (let i = 0; i < points.length - 1; i++) {
     const p0 = points[i === 0 ? 0 : i - 1];
     const p1 = points[i];
@@ -109,11 +117,11 @@ export function CollectionTrendChart({ data }: CollectionTrendChartProps) {
           </svg>
 
           {/* Tooltip HTML Overlay */}
-          {hoveredIndex !== null && (
+          {hoveredIndex !== null && points[hoveredIndex] && (
             <div 
               className="absolute pointer-events-none transition-all duration-200 z-20"
               style={{ 
-                left: `${(points[hoveredIndex].x / width) * 100}%`, 
+                left: `${(points[hoveredIndex].x / width) * 100}%`,
                 top: `${(points[hoveredIndex].y / height) * 100}%`,
                 transform: `translate(${hoveredIndex === 0 ? '5%' : hoveredIndex === points.length - 1 ? '-105%' : '-50%'}, -150%)`
               }}
@@ -129,7 +137,7 @@ export function CollectionTrendChart({ data }: CollectionTrendChartProps) {
             className="absolute inset-0 flex"
             onMouseLeave={() => setHoveredIndex(null)}
           >
-            {data.map((_, i) => (
+            {chartData.map((_, i) => (
               <div 
                 key={i} 
                 className="flex-1 h-full cursor-pointer"
@@ -144,8 +152,10 @@ export function CollectionTrendChart({ data }: CollectionTrendChartProps) {
         {/* X-Axis Labels (with padding so they don't stick to walls) */}
         <div className="relative w-full h-8 mt-2 border-t border-slate-100 dark:border-slate-700/50 pt-2 px-4 sm:px-6 bg-white dark:bg-slate-800 z-10">
           <div className="relative w-full h-full">
-            {data.map((item, index) => {
-              const leftPercent = (index / (data.length - 1)) * 100;
+            {chartData.map((item, index) => {
+              const leftPercent = chartData.length <= 1
+                ? 50
+                : (index / (chartData.length - 1)) * 100;
               let transform = 'translateX(-50%)';
               if (index === 0) transform = 'translateX(0%)';
               if (index === data.length - 1) transform = 'translateX(-100%)';
@@ -156,7 +166,7 @@ export function CollectionTrendChart({ data }: CollectionTrendChartProps) {
                   className="absolute text-[11px] sm:text-xs font-medium text-slate-500 dark:text-slate-400 cursor-default"
                   style={{ left: `${leftPercent}%`, transform }}
                 >
-                  {item.month}
+                  {item.label ?? item.month ?? ""}
                 </div>
               );
             })}

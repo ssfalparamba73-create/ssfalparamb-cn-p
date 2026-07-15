@@ -1,30 +1,48 @@
 "use client";
 
-import { useState } from "react";
-import { Search, Phone, MessageCircle, HeartPulse, X } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Search, Phone, MessageCircle, HeartPulse, X, Loader2 } from "lucide-react";
 import { MemberDetailDrawer, MemberStats } from "@/components/directory/MemberDetailDrawer";
 import { Input } from "@/components/ui/input";
+import { memberClient } from "@/lib/frontend-api/memberClient";
+import { toast } from "sonner";
 
-// Mock Data
-const MOCK_MEMBERS: MemberStats[] = [
-  { id: "1", name: "Afsal KK", initials: "AK", phone: "+91 9876543210", bloodGroup: "O+ve", targetAmount: 1200, paidPercentage: 100 },
-  { id: "2", name: "Favas Rahman", initials: "FR", phone: "+91 9876543211", bloodGroup: "A+ve", targetAmount: 1200, paidPercentage: 25 },
-  { id: "3", name: "Nabeel", initials: "NA", phone: "+91 9876543212", bloodGroup: "B+ve", targetAmount: 1200, paidPercentage: 50 },
-  { id: "4", name: "Rashid Ali", initials: "RA", phone: "+91 9876543213", bloodGroup: "O-ve", targetAmount: 1200, paidPercentage: 80 },
-  { id: "5", name: "Safvan Alparamba", initials: "SA", phone: "+91 9876543214", bloodGroup: "AB+ve", targetAmount: 1200, paidPercentage: 10 },
-  { id: "6", name: "Yahiya", initials: "YA", phone: "+91 9876543215", bloodGroup: "A-ve", targetAmount: 1200, paidPercentage: 0 },
-];
-
-const BLOOD_GROUPS = ["O+ve", "O-ve", "A+ve", "A-ve", "B+ve", "B-ve", "AB+ve", "AB-ve"];
+const BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
 
 export default function DirectoryPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedMember, setSelectedMember] = useState<MemberStats | null>(null);
   const [isBloodGroupModalOpen, setIsBloodGroupModalOpen] = useState(false);
   const [selectedBloodGroup, setSelectedBloodGroup] = useState<string | null>(null);
+  const [members, setMembers] = useState<MemberStats[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function load() {
+      try {
+        setLoading(true);
+        const res = await memberClient.listDirectory({ limit: "100" });
+        const mapped = res.items.map(m => ({
+          id: m.id,
+          name: m.name,
+          initials: m.initials,
+          phone: m.phone || "",
+          bloodGroup: m.bloodGroup || "",
+          targetAmount: 1200, // Placeholder as per mock
+          paidPercentage: m.paymentProgressPercent || 0
+        }));
+        setMembers(mapped);
+      } catch (err: any) {
+        toast.error(err.message || "Failed to load directory");
+      } finally {
+        setLoading(false);
+      }
+    }
+    load();
+  }, []);
 
   // Filter members based on search query AND blood group filter
-  const filteredMembers = MOCK_MEMBERS.filter((member) => {
+  const filteredMembers = members.filter((member) => {
     // 1. Blood Group Exact Filter
     if (selectedBloodGroup && member.bloodGroup !== selectedBloodGroup) {
       return false;
@@ -97,7 +115,12 @@ export default function DirectoryPage() {
 
       {/* Member List */}
       <div className="bg-white rounded-2xl border border-[#E5EAF3] shadow-sm overflow-hidden transition-colors duration-300 dark:border-slate-700 dark:bg-slate-800 dark:shadow-none">
-        <div className="divide-y divide-[#E5EAF3] dark:divide-slate-700">
+        {loading ? (
+          <div className="flex justify-center p-12">
+            <Loader2 className="size-8 animate-spin text-slate-400" />
+          </div>
+        ) : (
+          <div className="divide-y divide-[#E5EAF3] dark:divide-slate-700">
           {filteredMembers.length > 0 ? (
             filteredMembers.map((member) => {
               const isBloodGroupSearched = searchQuery && member.bloodGroup.toLowerCase().includes(searchQuery.toLowerCase());
@@ -168,6 +191,7 @@ export default function DirectoryPage() {
             </div>
           )}
         </div>
+        )}
       </div>
 
       {/* Detail Drawer */}

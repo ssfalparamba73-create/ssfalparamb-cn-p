@@ -1,8 +1,11 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useEffect, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import { AdminUser } from "./admin-types";
-import { MOCK_ADMIN_USERS } from "./mock-data";
+import { useSession } from "../auth/SessionContext";
+import { authClient } from "../frontend-api/authClient";
+import { toast } from "sonner";
 
 interface AuthContextType {
   currentUser: AdminUser | null;
@@ -14,31 +17,68 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  // Hardcoding "Farhan" (admin_1) for now to keep the UI exactly as it was, 
-  // but now it's managed centrally here.
-  const [currentUser, setCurrentUser] = useState<AdminUser | null>(
-    MOCK_ADMIN_USERS.find(u => u.id === "admin_1") || null
-  );
+  const { session, isLoading: sessionLoading, refreshSession } = useSession();
+  const [currentUser, setCurrentUser] = useState<AdminUser | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const pathname = usePathname();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (session && session.actorType === "admin") {
+      setCurrentUser({
+        id: session.actorId,
+        name: session.name || "Admin",
+        role: "viewer",
+        phone: "", 
+        avatarInitials: (session.name || "Admin")
+          .split(/\s+/)
+          .map((part) => part[0])
+          .join("")
+          .slice(0, 2)
+          .toUpperCase(),
+        canReceiveCash: false,
+        canVerifyPayments: false,
+        canManageMembers: false,
+        canManageSettings: false,
+        status: "active",
+      });
+    } else {
+      setCurrentUser(null);
+    }
+  }, [session]);
+
+  // Handle automatic redirect if no session on protected admin routes
+  useEffect(() => {
+    if (!sessionLoading && (!session || session.actorType !== "admin") && pathname !== "/admin/login") {
+      router.push("/admin/login");
+    }
+  }, [session, sessionLoading, pathname, router]);
 
   const login = async (phone: string, pin: string) => {
     setIsLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      const user = MOCK_ADMIN_USERS.find(u => u.phone === phone);
-      if (user) {
-        setCurrentUser(user);
-      }
+    try {
+      await authClient.adminLogin(phone, pin);
+      await refreshSession();
+      router.push("/admin/dashboard");
+    } catch (err: any) {
+      toast.error(err.message || "Login failed");
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
-  const logout = () => {
-    setCurrentUser(null);
+  const logout = async () => {
+    try {
+      await authClient.logout();
+      await refreshSession();
+      router.push("/admin/login");
+    } catch (err: any) {
+      toast.error(err.message || "Logout failed");
+    }
   };
 
   return (
-    <AuthContext.Provider value={{ currentUser, isLoading, login, logout }}>
+    <AuthContext.Provider value={{ currentUser, isLoading: isLoading || sessionLoading, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

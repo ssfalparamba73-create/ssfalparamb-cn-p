@@ -1,5 +1,5 @@
 import type { AdminMemberService } from "../contracts/admin.contract";
-import type { MemberRepository, CreateMemberInput, UpdateMemberInput } from "../contracts/member.contract";
+import type { MemberRepository, CreateMemberInput, ResetMemberPinInput, UpdateMemberInput } from "../contracts/member.contract";
 import type { ActorContext, BackendResult, PaginatedResult, PaginationInput } from "../contracts/common.contract";
 import type { MemberDTO, MemberListFilters } from "../dto/member.dto";
 import { fail, ok, fromThrowable } from "../errors/resultHelpers";
@@ -9,8 +9,9 @@ import {
   validateMemberListFilters, 
   validateUpdateMemberInput 
 } from "../validation/memberSchemas";
-import { validatePagination } from "../validation/commonSchemas";
+import { validatePagination, validatePin } from "../validation/commonSchemas";
 
+import { notFoundError } from "../errors/createBackendError";
 export function createAdminMemberService(deps: {
   memberRepository: MemberRepository;
   requirePermission?: (
@@ -31,6 +32,17 @@ export function createAdminMemberService(deps: {
   }
 
   return {
+    async getMemberDetail(id: string, actor: ActorContext): Promise<BackendResult<MemberDTO>> {
+      try {
+        const accessCheck = await checkAccess(actor, "members.view");
+        if (!accessCheck.ok) return fail(accessCheck.error!);
+        const member = await memberRepository.findById(id);
+        if (!member) return fail(notFoundError("Member not found", "MEMBER_NOT_FOUND"));
+        return ok(member);
+      } catch (err) {
+        return fail(fromThrowable(err));
+      }
+    },
     async listMembers(
       filters: MemberListFilters, 
       pagination: PaginationInput, 
@@ -89,6 +101,28 @@ export function createAdminMemberService(deps: {
       }
     },
 
+    async resetMemberPin(
+      id: string,
+      input: ResetMemberPinInput,
+      actor: ActorContext
+    ): Promise<BackendResult<MemberDTO>> {
+      try {
+        const accessCheck = await checkAccess(actor, "members.update");
+        if (!accessCheck.ok) return fail(accessCheck.error!);
+
+        const pinValidation = validatePin(input?.pin);
+        if (!pinValidation.ok) return fail(pinValidation.error!);
+
+        const member = await memberRepository.resetPin(id, {
+          pin: pinValidation.data!,
+          forceReset: input.forceReset === true,
+        }, actor);
+        return ok(member);
+      } catch (err) {
+        return fail(fromThrowable(err));
+      }
+    },
+
     async softDeleteMember(
       id: string, 
       actor: ActorContext
@@ -105,3 +139,4 @@ export function createAdminMemberService(deps: {
     }
   };
 }
+

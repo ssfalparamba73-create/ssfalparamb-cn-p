@@ -7,12 +7,15 @@ import { User, Settings, LogOut } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { useSession } from "@/lib/auth/SessionContext";
+import { authClient } from "@/lib/frontend-api/authClient";
 
 export function Header() {
   const router = useRouter();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const { session, refreshSession } = useSession();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -77,14 +80,16 @@ export function Header() {
                 >
                   <div className="px-3 py-3 text-sm text-slate-500 font-medium border-b border-white/50 mb-2">
                     <p className="text-[11px] uppercase tracking-wider text-slate-400 font-bold mb-1">Welcome back,</p>
-                    <p className="text-slate-800 font-bold text-base truncate">Safvan Alparamba</p>
+                    <p className="text-slate-800 font-bold text-base truncate">{session?.name || "Guest"}</p>
                   </div>
                   <button className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-700 hover:bg-white/60 transition-colors">
                     <Settings className="h-4 w-4" /> Settings
                   </button>
                   <button 
-                    onClick={() => {
+                    onClick={async () => {
                       setIsMenuOpen(false);
+                      await authClient.logout();
+                      await refreshSession();
                       toast.success("Logged out successfully");
                       router.push("/");
                     }}

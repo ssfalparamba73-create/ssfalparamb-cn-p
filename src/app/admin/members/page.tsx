@@ -8,9 +8,13 @@ import { AdminMemberRow } from "@/components/admin/members/AdminMemberRow";
 import { AdminMemberCard } from "@/components/admin/members/AdminMemberCard";
 import { MOCK_MEMBERS } from "@/lib/admin/mock-data";
 import Link from "next/link";
+import { adminClient } from "@/lib/frontend-api/adminClient";
+import { toast } from "sonner";
+import { MemberDTO } from "@/lib/backend/dto/member.dto";
 
 export default function AdminMembersPage() {
-  const [members] = useState(MOCK_MEMBERS);
+  const [members, setMembers] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [bloodGroupFilter, setBloodGroupFilter] = useState("all");
@@ -20,6 +24,37 @@ export default function AdminMembersPage() {
   const [tierFilter, setTierFilter] = useState("all");
   const [arrearsFilter, setArrearsFilter] = useState("all");
   const [sortOption, setSortOption] = useState("newest");
+
+  React.useEffect(() => {
+    async function load() {
+      try {
+        const res = await adminClient.listMembers({ pageSize: "1000" });
+        setMembers(res.items.map(m => ({
+          id: m.id,
+          memberId: m.memberCode,
+          name: m.name,
+          phone: m.phone,
+          bloodGroup: m.bloodGroup || "",
+          isBloodDonor: m.isBloodDonor,
+          donorAvailable: m.donorAvailable,
+          area: m.area || "",
+          status: m.status,
+          monthlyTier: m.monthlyTier,
+          monthlyAmount: m.monthlyAmount,
+          pinStatus: m.pinStatus,
+          lastPaidAt: m.lastPaidAt || "",
+          duesPending: m.duesPending,
+          createdAt: m.createdAt,
+          updatedAt: m.updatedAt,
+        })));
+      } catch (err: any) {
+        toast.error(err.message || "Failed to load members");
+      } finally {
+        setLoading(false);
+      }
+    }
+    load();
+  }, []);
 
   const filteredMembers = members.filter((member) => {
     // Search query filter
@@ -96,7 +131,13 @@ export default function AdminMembersPage() {
       </div>
 
       <div className="mt-4">
-        {/* Desktop Table View */}
+        {loading ? (
+          <div className="flex justify-center items-center h-64">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          </div>
+        ) : (
+          <>
+            {/* Desktop Table View */}
         <div className="hidden sm:block bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
           <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-800">
             <thead className="bg-slate-50 dark:bg-slate-800/50">
@@ -117,12 +158,14 @@ export default function AdminMembersPage() {
           </table>
         </div>
 
-        {/* Mobile Card View */}
-        <div className="sm:hidden space-y-3">
-          {filteredMembers.map((member) => (
-            <AdminMemberCard key={member.id} member={member} />
-          ))}
-        </div>
+            {/* Mobile Card View */}
+            <div className="sm:hidden space-y-3">
+              {filteredMembers.map((member) => (
+                <AdminMemberCard key={member.id} member={member} />
+              ))}
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

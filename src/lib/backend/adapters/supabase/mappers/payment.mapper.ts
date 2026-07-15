@@ -65,9 +65,10 @@ export function mapRowToReceiptDTO(row: any, paymentRow: any = {}): ReceiptDTO {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function mapRowToCashEntryDTO(row: any): CashEntryDTO {
+export function mapRowToCashEntryDTO(row: any, receiptId: string): CashEntryDTO {
   return {
     id: row.id,
+    receiptId,
     paymentId: row.payment_id,
     memberId: row.member_id,
     payerName: row.payer_name,

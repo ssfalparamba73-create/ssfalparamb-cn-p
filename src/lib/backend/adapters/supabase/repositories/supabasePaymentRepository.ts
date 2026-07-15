@@ -221,7 +221,7 @@ export class SupabasePaymentRepository implements PaymentRepository {
       throw new Error(`Cash entry insertion failed. Payment ID was ${payment.id}: ${error.message}`);
     }
 
-    return mapRowToCashEntryDTO(data);
+    return mapRowToCashEntryDTO(data, receiptId);
   }
 
   async approve(paymentId: string, actor: ActorContext, notes?: string): Promise<PaymentDTO> {

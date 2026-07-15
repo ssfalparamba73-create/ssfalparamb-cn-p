@@ -2,43 +2,80 @@
 
 import React, { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, Edit, Key, Banknote, Phone, Clock, Copy, X, ExternalLink } from "lucide-react";
-import { MOCK_MEMBERS } from "@/lib/admin/mock-data";
+import { ArrowLeft, Edit, Key, Banknote, Phone, Clock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { MemberDetailTabs } from "@/components/admin/members/MemberDetailTabs";
+import { MemberInviteDialog } from "@/components/admin/members/MemberInviteDialog";
 import Link from "next/link";
+
+import { adminClient } from "@/lib/frontend-api/adminClient";
+import { toast } from "sonner";
+import { Member } from "@/lib/admin/admin-types";
 
 export default function MemberDetailPage() {
   const params = useParams();
   const router = useRouter();
+  const [member, setMember] = useState<Member | null>(null);
+  const [loading, setLoading] = useState(true);
   const [isPinModalOpen, setIsPinModalOpen] = useState(false);
   const [generatedPin, setGeneratedPin] = useState<string | null>(null);
-  const [isCopied, setIsCopied] = useState(false);
+  const [isResettingPin, setIsResettingPin] = useState(false);
 
-  const handleGeneratePin = () => {
+  const handleGeneratePin = async () => {
     const newPin = Math.floor(1000 + Math.random() * 9000).toString();
-    setGeneratedPin(newPin);
-    setIsCopied(false);
-    setIsPinModalOpen(true);
-  };
-
-  const handleCopy = () => {
-    if (generatedPin) {
-      navigator.clipboard.writeText(generatedPin);
-      setIsCopied(true);
-      setTimeout(() => setIsCopied(false), 2000);
+    setIsResettingPin(true);
+    try {
+      const updated = await adminClient.resetMemberPin(params.id as string, newPin);
+      setMember((current) => current ? { ...current, pinStatus: updated.pinStatus } : current);
+      setGeneratedPin(newPin);
+      setIsPinModalOpen(true);
+      toast.success("Member PIN reset successfully!");
+    } catch (err: any) {
+      toast.error(err.message || "Failed to reset member PIN");
+    } finally {
+      setIsResettingPin(false);
     }
   };
-
-  const handleWhatsApp = () => {
-    if (!member || !generatedPin) return;
-    const message = `Hello ${member.name}, your SSF Alparamba account is ready. Your login PIN is: *${generatedPin}*. Please login at our website.`;
-    const whatsappUrl = `https://wa.me/91${member.phone}?text=${encodeURIComponent(message)}`;
-    window.open(whatsappUrl, '_blank');
-  };
   
-  const member = MOCK_MEMBERS.find((m) => m.id === params.id);
+  React.useEffect(() => {
+    async function load() {
+      try {
+        const m = await adminClient.getMemberDetail(params.id as string);
+        setMember({
+          id: m.id,
+          memberId: m.memberCode,
+          name: m.name,
+          phone: m.phone,
+          bloodGroup: m.bloodGroup,
+          isBloodDonor: m.isBloodDonor,
+          donorAvailable: m.donorAvailable,
+          area: m.area || "",
+          status: m.status,
+          monthlyTier: m.monthlyTier,
+          monthlyAmount: m.monthlyAmount,
+          pinStatus: m.pinStatus,
+          lastPaidAt: m.lastPaidAt || "",
+          duesPending: m.duesPending,
+          createdAt: m.createdAt,
+          updatedAt: m.updatedAt,
+        });
+      } catch (err: any) {
+        toast.error(err.message || "Failed to load member");
+      } finally {
+        setLoading(false);
+      }
+    }
+    load();
+  }, [params.id]);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-[50vh]">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
 
   if (!member) {
     return (
@@ -107,7 +144,7 @@ export default function MemberDetailPage() {
                   <Edit className="w-4 h-4 mr-2" /> Edit
                 </Button>
               </Link>
-              <Button onClick={handleGeneratePin} variant="outline" className="w-full h-10 border-slate-200 text-slate-700 dark:border-slate-700 dark:text-slate-300">
+              <Button onClick={handleGeneratePin} disabled={isResettingPin} variant="outline" className="w-full h-10 border-slate-200 text-slate-700 dark:border-slate-700 dark:text-slate-300">
                 <Key className="w-4 h-4 mr-2" /> Reset PIN
               </Button>
               <Button className="col-span-2 md:col-auto w-full h-10 bg-blue-600 hover:bg-blue-700 text-white">
@@ -120,44 +157,16 @@ export default function MemberDetailPage() {
       {/* Detail Tabs */}
       <MemberDetailTabs member={member} />
 
-      {/* PIN Reset Modal */}
-      {isPinModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl w-full max-w-sm overflow-hidden shadow-xl border border-slate-200 dark:border-slate-800 animate-in zoom-in-95">
-            <div className="flex items-center justify-between p-4 border-b border-slate-100 dark:border-slate-800">
-              <h3 className="font-semibold text-slate-900 dark:text-slate-100 flex items-center">
-                <Key className="w-4 h-4 mr-2 text-blue-600" />
-                Generated PIN
-              </h3>
-              <button onClick={() => setIsPinModalOpen(false)} className="text-slate-400 hover:text-slate-600 p-1">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            
-            <div className="p-6 text-center space-y-4">
-              <p className="text-sm text-slate-500">
-                Share this 4-digit PIN with <strong>{member.name}</strong> to allow them to login.
-              </p>
-              
-              <div className="text-5xl font-mono font-bold tracking-widest text-slate-900 dark:text-slate-50 py-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800">
-                {generatedPin}
-              </div>
-
-              <div className="flex flex-col gap-2 pt-2">
-                <Button onClick={handleCopy} variant="outline" className="w-full h-12 bg-white dark:bg-slate-900">
-                  <Copy className="w-4 h-4 mr-2 text-slate-500" />
-                  {isCopied ? "Copied!" : "Copy PIN"}
-                </Button>
-                
-                <Button onClick={handleWhatsApp} className="w-full h-12 bg-[#25D366] hover:bg-[#128C7E] text-white">
-                  <ExternalLink className="w-4 h-4 mr-2" />
-                  Send via WhatsApp
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      <MemberInviteDialog
+        isOpen={isPinModalOpen && Boolean(generatedPin)}
+        onClose={() => {
+          setIsPinModalOpen(false);
+          setGeneratedPin(null);
+        }}
+        memberName={member.name}
+        phone={member.phone}
+        pin={generatedPin || ""}
+      />
     </div>
   );
 }

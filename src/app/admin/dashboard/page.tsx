@@ -17,12 +17,44 @@ import { RecentCashHandovers } from "@/components/admin/dashboard/RecentCashHand
 import { AdminActionIcon } from "@/components/admin/layout/AdminActionIcon";
 import { CollectionTrendChart } from "@/components/admin/dashboard/CollectionTrendChart";
 import { PaymentMethodChart } from "@/components/admin/dashboard/PaymentMethodChart";
-import { MOCK_DASHBOARD_STATS, MOCK_PAYMENTS } from "@/lib/admin/mock-data";
+import { MOCK_PAYMENTS, MOCK_CASH_HANDOVERS } from "@/lib/admin/mock-data";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { adminClient } from "@/lib/frontend-api/adminClient";
+import { toast } from "sonner";
+import { AdminDashboardStatsDTO } from "@/lib/backend/dto/admin.dto";
+import { PaymentDTO } from "@/lib/backend/dto/payment.dto";
 
 export default function AdminDashboardPage() {
-  const stats = MOCK_DASHBOARD_STATS;
+  const [stats, setStats] = React.useState<AdminDashboardStatsDTO | null>(null);
+  const [payments, setPayments] = React.useState<PaymentDTO[]>([]);
+  const [loading, setLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    async function load() {
+      try {
+        const statsRes = await adminClient.getDashboard();
+        setStats(statsRes);
+        
+        // Fetch recent payments
+        const payRes = await adminClient.listPayments({ pageSize: "5" });
+        setPayments(payRes.items || []);
+      } catch (error: any) {
+        toast.error(error.message || "Failed to load dashboard data");
+      } finally {
+        setLoading(false);
+      }
+    }
+    load();
+  }, []);
+
+  if (loading || !stats) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8 animate-in fade-in duration-300 pb-10">
@@ -147,7 +179,7 @@ export default function AdminDashboardPage() {
           </div>
 
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-            <RecentPayments payments={MOCK_PAYMENTS} />
+            <RecentPayments payments={payments as any} />
             <RecentCashHandovers />
           </div>
 

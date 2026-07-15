@@ -7,12 +7,13 @@ interface EditProfileDrawerProps {
   isOpen: boolean;
   onClose: () => void;
   member: MemberProfileData;
-  onSave: (updatedMember: MemberProfileData) => void;
+  onSave: (updatedMember: MemberProfileData) => Promise<void> | void;
 }
 
 export function EditProfileDrawer({ isOpen, onClose, member, onSave }: EditProfileDrawerProps) {
   const [formData, setFormData] = useState<MemberProfileData>(member);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isSaving, setIsSaving] = useState(false);
 
   // Reset form data when the drawer opens
   useEffect(() => {
@@ -69,10 +70,15 @@ export function EditProfileDrawer({ isOpen, onClose, member, onSave }: EditProfi
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (validateForm()) {
-      onSave(formData);
+      try {
+        setIsSaving(true);
+        await onSave(formData);
+      } finally {
+        setIsSaving(false);
+      }
     }
   };
 
@@ -239,10 +245,11 @@ export function EditProfileDrawer({ isOpen, onClose, member, onSave }: EditProfi
           <button 
             form="edit-profile-form"
             type="submit"
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 px-4 rounded-xl shadow-sm transition-colors flex items-center justify-center gap-2"
+            disabled={isSaving}
+            className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-bold py-3.5 px-4 rounded-xl shadow-sm transition-colors flex items-center justify-center gap-2"
           >
             <Save className="size-5" />
-            Save Changes
+            {isSaving ? "Saving..." : "Save Changes"}
           </button>
         </div>
 

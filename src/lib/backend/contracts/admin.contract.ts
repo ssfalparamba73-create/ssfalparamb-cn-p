@@ -12,6 +12,7 @@ import type {
 } from "../dto/admin.dto";
 import type {
   CreateMemberInput,
+  ResetMemberPinInput,
   UpdateMemberInput,
 } from "./member.contract";
 import type {
@@ -47,6 +48,7 @@ export interface AdminAuthService {
 }
 
 export interface AdminMemberService {
+  getMemberDetail(id: string, actor: ActorContext): Promise<BackendResult<MemberDTO>>;
   listMembers(
     filters: MemberListFilters,
     pagination: PaginationInput,
@@ -54,6 +56,7 @@ export interface AdminMemberService {
   ): Promise<BackendResult<PaginatedResult<MemberDTO>>>;
   createMember(input: CreateMemberInput, actor: ActorContext): Promise<BackendResult<MemberDTO>>;
   updateMember(id: string, input: UpdateMemberInput, actor: ActorContext): Promise<BackendResult<MemberDTO>>;
+  resetMemberPin(id: string, input: ResetMemberPinInput, actor: ActorContext): Promise<BackendResult<MemberDTO>>;
   softDeleteMember(id: string, actor: ActorContext): Promise<BackendResult<void>>;
 }
 
@@ -82,3 +85,4 @@ export interface AuditService {
     actor: ActorContext
   ): Promise<BackendResult<PaginatedResult<AuditLogDTO>>>;
 }
+

@@ -65,6 +65,14 @@ export function validateRequiredString(
   return ok(input.trim());
 }
 
+export function validatePin(input: unknown, field = "pin"): BackendResult<string> {
+  if (typeof input !== "string" || !/^\d{4}$/.test(input)) {
+    return fail(validationError("PIN must be exactly 4 digits.", field));
+  }
+
+  return ok(input);
+}
+
 export function validatePagination(input: PaginationInput = {}): PaginationInput {
   const page = input.page && input.page > 0 ? Math.floor(input.page) : 1;
   const pageSize = input.pageSize && input.pageSize > 0 ? Math.min(Math.floor(input.pageSize), 100) : 20;

@@ -10,11 +10,30 @@ import { cn } from "@/lib/utils";
 import Link from "next/link";
 
 import { MOCK_PAYMENTS } from "@/lib/admin/mock-data";
+import { adminClient } from "@/lib/frontend-api/adminClient";
+import { toast } from "sonner";
+import { PaymentDTO } from "@/lib/backend/dto/payment.dto";
 
 export function PaymentsTable() {
+  const [payments, setPayments] = useState<PaymentDTO[]>([]);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [methodFilter, setMethodFilter] = useState("all");
+
+  React.useEffect(() => {
+    async function load() {
+      try {
+        const res = await adminClient.listPayments({ pageSize: "1000" });
+        setPayments(res.items);
+      } catch (err: any) {
+        toast.error(err.message || "Failed to load payments");
+      } finally {
+        setLoading(false);
+      }
+    }
+    load();
+  }, []);
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -38,8 +57,8 @@ export function PaymentsTable() {
     return method.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
   };
 
-  // Map central MOCK_PAYMENTS to the shape expected by the table
-  const tablePayments = MOCK_PAYMENTS.map(p => ({
+  // Map central payments to the shape expected by the table
+  const tablePayments = payments.map(p => ({
     id: p.id,
     receiptId: p.receiptId,
     memberName: p.payerName || "Unknown",
@@ -48,7 +67,7 @@ export function PaymentsTable() {
     method: p.method,
     amount: p.amount,
     status: p.status,
-    date: new Date(p.paidAt).toLocaleDateString("en-GB", { day: '2-digit', month: 'short', year: 'numeric' }),
+    date: new Date(p.paidAt || p.recordedAt).toLocaleDateString("en-GB", { day: '2-digit', month: 'short', year: 'numeric' }),
     eventName: p.eventName
   }));
 
@@ -118,7 +137,13 @@ export function PaymentsTable() {
       </div>
 
       {/* Desktop Table View */}
-      <div className="hidden md:block bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
+      {loading ? (
+        <div className="flex justify-center items-center h-64">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        </div>
+      ) : (
+        <>
+          <div className="hidden md:block bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-sm text-left">
             <thead className="bg-slate-50 dark:bg-slate-950/50 text-slate-500 dark:text-slate-400 font-medium border-b border-slate-200 dark:border-slate-800">
@@ -219,6 +244,8 @@ export function PaymentsTable() {
           </div>
         ))}
       </div>
+        </>
+      )}
       
     </div>
   );

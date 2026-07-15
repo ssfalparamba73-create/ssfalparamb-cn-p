@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Check, Search, ArrowLeft, Receipt, User, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import { PremiumReceiptCard } from "@/components/receipt/PremiumReceiptCard";
-import { MOCK_MEMBERS } from "@/lib/admin/mock-data";
+import { adminClient } from "@/lib/frontend-api/adminClient";
 
 export function CashEntryForm() {
   const [category, setCategory] = useState("monthly_dues");
@@ -26,7 +26,11 @@ export function CashEntryForm() {
   // UI State
   const [showConfirm, setShowConfirm] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [generatedReceiptId, setGeneratedReceiptId] = useState("");
+  const [notes, setNotes] = useState("");
+  const [months, setMonths] = useState("");
+  const [event, setEvent] = useState("building_fund");
 
   const handleInitialSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,13 +49,30 @@ export function CashEntryForm() {
     setShowConfirm(true);
   };
 
-  const confirmAndSave = () => {
-    // Simulate save
-    const newReceiptId = `REC-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
-    setGeneratedReceiptId(newReceiptId);
-    setShowConfirm(false);
-    setShowSuccess(true);
-    toast.success("Payment recorded successfully!");
+  const confirmAndSave = async () => {
+    setIsSubmitting(true);
+    try {
+      // In a real app, 'admin' state needs to map to actual adminId.
+      const res = await adminClient.recordCashEntry({
+        memberId: isGuest ? undefined : selectedMember?.id,
+        guestName: isGuest ? guestName : undefined,
+        guestPhone: isGuest ? guestPhone : undefined,
+        category: category as any,
+        amount: Number(amount),
+        months: category === "monthly_dues" && months ? [months] : undefined,
+        eventId: category === "special_event" ? event : undefined,
+        receivedByAdminId: "admin_1", // TODO: use actual current admin ID
+        notes: notes || undefined
+      });
+      setGeneratedReceiptId(res.receiptId);
+      setShowConfirm(false);
+      setShowSuccess(true);
+      toast.success("Payment recorded successfully!");
+    } catch (err: any) {
+      toast.error(err.message || "Failed to record cash entry");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const resetForm = () => {
@@ -64,15 +85,22 @@ export function CashEntryForm() {
   };
 
 
-  const handleSearch = () => {
-    if (memberSearch.length > 3) {
-      const found = MOCK_MEMBERS.find(m => m.name.toLowerCase().includes(memberSearch.toLowerCase()) || m.phone.includes(memberSearch));
-      if (found) {
-        setSelectedMember({ name: found.name, phone: found.phone, id: found.memberId });
-        toast.success("Member found");
-      } else {
-        toast.error("No member found");
+  const handleSearch = async () => {
+    if (memberSearch.length >= 3) {
+      try {
+        const res = await adminClient.listMembers({ search: memberSearch, pageSize: "5" });
+        if (res.items.length > 0) {
+          const found = res.items[0];
+          setSelectedMember({ name: found.name, phone: found.phone, id: found.id });
+          toast.success("Member found");
+        } else {
+          toast.error("No member found");
+        }
+      } catch (err: any) {
+        toast.error("Error searching members");
       }
+    } else {
+      toast.error("Please enter at least 3 characters");
     }
   };
 
@@ -142,11 +170,11 @@ export function CashEntryForm() {
           </div>
         </CardContent>
         <CardFooter className="flex gap-3 bg-slate-50 dark:bg-slate-950 p-4 rounded-b-xl border-t border-slate-100 dark:border-slate-800">
-          <Button type="button" variant="outline" className="flex-1" onClick={() => setShowConfirm(false)}>
+          <Button type="button" variant="outline" className="flex-1" onClick={() => setShowConfirm(false)} disabled={isSubmitting}>
             <ArrowLeft className="size-4 mr-2" /> Back
           </Button>
-          <Button type="button" className="flex-1 bg-blue-600 hover:bg-blue-700 text-white" onClick={confirmAndSave}>
-            Confirm & Save
+          <Button type="button" className="flex-1 bg-blue-600 hover:bg-blue-700 text-white" onClick={confirmAndSave} disabled={isSubmitting}>
+            {isSubmitting ? "Saving..." : "Confirm & Save"}
           </Button>
         </CardFooter>
       </Card>
@@ -271,14 +299,14 @@ export function CashEntryForm() {
                 
                 <div className="space-y-2">
                   <Label htmlFor="months">Months Covering (e.g. July, Aug)</Label>
-                  <Input id="months" placeholder="e.g. July 2026" className="bg-white dark:bg-slate-950" required={!isGuest} />
+                  <Input id="months" value={months} onChange={(e) => setMonths(e.target.value)} placeholder="e.g. July 2026" className="bg-white dark:bg-slate-950" required={!isGuest} />
                 </div>
               </>
             ) : (
               <>
                 <div className="space-y-2 md:col-span-2">
                   <Label htmlFor="event">Select Special Event</Label>
-                  <Select defaultValue="building_fund">
+                  <Select value={event} onValueChange={setEvent}>
                     <SelectTrigger className="w-full bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800">
                       <SelectValue placeholder="Select Event" />
                     </SelectTrigger>
@@ -330,7 +358,7 @@ export function CashEntryForm() {
             {/* Notes */}
             <div className="space-y-2 md:col-span-2">
               <Label htmlFor="notes">Notes (Optional)</Label>
-              <Input id="notes" placeholder="Any additional information..." className="bg-white dark:bg-slate-950" />
+              <Input id="notes" value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Any additional information..." className="bg-white dark:bg-slate-950" />
             </div>
           </div>
         </CardContent>
