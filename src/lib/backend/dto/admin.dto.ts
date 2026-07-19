@@ -15,6 +15,7 @@ export interface AdminPermissionDTO {
 
 export interface AdminUserDTO {
   id: ID;
+  memberId?: ID;
   name: string;
   phone: string;
   avatarInitials: string;
@@ -28,6 +29,19 @@ export interface AdminUserDTO {
   lastLoginAt?: ISODateTime;
 }
 
+export interface AdminMemberCandidateDTO {
+  id: ID;
+  memberCode: string;
+  name: string;
+  phone: string;
+}
+
+export interface IssuedAdminCodeDTO {
+  admin: AdminUserDTO;
+  code: string;
+  issuedAt: ISODateTime;
+}
+
 export interface AdminSessionDTO {
   admin: AdminUserDTO;
   expiresAt?: ISODateTime;
@@ -38,6 +52,7 @@ export interface AdminDashboardStatsDTO {
   monthlyDues: number;
   specialEvents: number;
   pendingAmount: number;
+  activeMembers: number;
   paidMembers: number;
   defaulters: number;
   pendingCashHandovers: number;

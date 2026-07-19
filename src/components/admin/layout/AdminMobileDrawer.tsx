@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
@@ -29,13 +29,11 @@ const navItems = [
 export function AdminMobileDrawer({ isOpen, onClose }: AdminMobileDrawerProps) {
   const pathname = usePathname();
   const { resolvedTheme, setTheme } = useTheme();
-  const [isThemeMounted, setIsThemeMounted] = useState(false);
   const { currentUser } = useAuth();
-  
+
   const isDark = resolvedTheme === "dark";
 
   useEffect(() => {
-    setIsThemeMounted(true);
     if (isOpen) {
       document.body.style.overflow = "hidden";
     } else {
@@ -50,18 +48,18 @@ export function AdminMobileDrawer({ isOpen, onClose }: AdminMobileDrawerProps) {
 
   return (
     <div className="fixed inset-0 z-50 lg:hidden flex flex-col justify-end">
-      <div 
-        className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity" 
+      <div
+        className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity"
         onClick={onClose}
         aria-hidden="true"
       />
-      
+
       <div className="relative w-full bg-white dark:bg-slate-900 max-h-[85vh] flex flex-col shadow-2xl rounded-t-3xl animate-in slide-in-from-bottom duration-300 pb-[env(safe-area-inset-bottom)]">
         {/* Drag Handle */}
         <div className="w-full flex justify-center pt-3 pb-1" onClick={onClose}>
           <div className="w-12 h-1.5 bg-slate-300 dark:bg-slate-700 rounded-full" />
         </div>
-        
+
         <div className="flex items-center justify-between px-6 pb-3 border-b border-[#E2E8F0] dark:border-slate-800">
           <span className="font-semibold text-lg text-slate-900 dark:text-slate-50">Menu</span>
           <AdminActionIcon onClick={onClose} aria-label="Close menu" className="h-8 w-8">
@@ -75,7 +73,7 @@ export function AdminMobileDrawer({ isOpen, onClose }: AdminMobileDrawerProps) {
             // Let's show them all for a complete menu.
             const isActive = pathname.startsWith(item.href);
             const Icon = item.icon;
-            
+
             return (
               <Link
                 key={item.href}
@@ -83,8 +81,8 @@ export function AdminMobileDrawer({ isOpen, onClose }: AdminMobileDrawerProps) {
                 onClick={onClose}
                 className={cn(
                   "flex flex-col items-center justify-center gap-2 p-4 rounded-2xl text-sm font-medium transition-all active:scale-95 border",
-                  isActive 
-                    ? "bg-blue-50/50 text-blue-600 border-blue-200/50 dark:bg-blue-900/20 dark:border-blue-800/50 dark:text-blue-400" 
+                  isActive
+                    ? "bg-blue-50/50 text-blue-600 border-blue-200/50 dark:bg-blue-900/20 dark:border-blue-800/50 dark:text-blue-400"
                     : "bg-white text-slate-600 border-slate-100 hover:border-slate-200 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-400 dark:hover:border-slate-700"
                 )}
               >
@@ -111,13 +109,13 @@ export function AdminMobileDrawer({ isOpen, onClose }: AdminMobileDrawerProps) {
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 capitalize">{currentUser?.role?.replace("_", " ") || "Staff"}</p>
               </div>
             </div>
-            
+
             <button
               onClick={() => setTheme(isDark ? "light" : "dark")}
               className="p-2 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 shadow-sm transition-colors hover:bg-slate-50 dark:hover:bg-slate-700"
               aria-label="Toggle theme"
             >
-              {isThemeMounted && isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+              {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
             </button>
           </div>
         </div>

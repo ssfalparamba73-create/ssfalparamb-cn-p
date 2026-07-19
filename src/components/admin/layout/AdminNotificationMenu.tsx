@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useRef, useEffect } from "react";
-import { Bell, Check } from "lucide-react";
+import { Bell } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { AdminActionIcon } from "./AdminActionIcon";
 
@@ -24,7 +24,7 @@ export function AdminNotificationMenu() {
       <div onClick={() => setIsOpen(!isOpen)}>
         <AdminActionIcon aria-label="Notifications" className="relative cursor-pointer">
           <Bell className="w-5 h-5" />
-          <span className="absolute top-2.5 right-2.5 size-2.5 rounded-full bg-red-500 ring-2 ring-white dark:ring-slate-800"></span>
+          <span className="absolute top-2.5 right-2.5 size-2.5 rounded-full bg-slate-300 ring-2 ring-white dark:bg-slate-600 dark:ring-slate-800"></span>
         </AdminActionIcon>
       </div>
 
@@ -39,41 +39,17 @@ export function AdminNotificationMenu() {
           >
             <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
               <h3 className="font-semibold text-slate-900 dark:text-slate-100">Notifications</h3>
-              <button className="text-xs text-blue-600 hover:text-blue-700 font-medium">Mark all as read</button>
+              <button disabled title="Notifications are not enabled yet" className="text-xs text-slate-400 font-medium cursor-not-allowed">Mark all as read</button>
             </div>
             <div className="max-h-[300px] overflow-y-auto">
-              <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
-                <div className="flex gap-3">
-                  <div className="shrink-0 mt-1">
-                    <div className="size-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center">
-                      <Bell className="size-4" />
-                    </div>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-slate-900 dark:text-slate-100">New Payment Received</p>
-                    <p className="text-xs text-slate-500 mt-0.5">Shibili N paid ₹100 via UPI</p>
-                    <p className="text-[10px] text-slate-400 mt-1">10 mins ago</p>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
-                <div className="flex gap-3">
-                  <div className="shrink-0 mt-1">
-                    <div className="size-8 rounded-full bg-green-100 text-green-600 flex items-center justify-center">
-                      <Check className="size-4" />
-                    </div>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-slate-900 dark:text-slate-100">Receipt Verified</p>
-                    <p className="text-xs text-slate-500 mt-0.5">Cash handover REC-2026-07-002 was verified by Safwan.</p>
-                    <p className="text-[10px] text-slate-400 mt-1">2 hours ago</p>
-                  </div>
-                </div>
+              <div className="px-4 py-8 text-center">
+                <Bell className="size-8 mx-auto text-slate-300 dark:text-slate-600" />
+                <p className="text-sm font-medium text-slate-700 dark:text-slate-300 mt-3">Notifications are not enabled yet.</p>
+                <p className="text-xs text-slate-500 mt-1">Real alerts will appear here after the notification workflow is connected.</p>
               </div>
             </div>
             <div className="p-2 border-t border-slate-100 dark:border-slate-700">
-              <button className="w-full py-2 text-sm text-center text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 font-medium">
+              <button disabled title="Notifications are not enabled yet" className="w-full py-2 text-sm text-center text-slate-400 dark:text-slate-500 font-medium cursor-not-allowed">
                 View All Notifications
               </button>
             </div>

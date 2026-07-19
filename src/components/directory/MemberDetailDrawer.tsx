@@ -9,8 +9,8 @@ export interface MemberStats {
   initials: string;
   phone: string;
   bloodGroup: string;
-  targetAmount: number;
-  paidPercentage: number;
+  targetAmount?: number;
+  paidPercentage?: number;
 }
 
 interface MemberDetailDrawerProps {
@@ -37,19 +37,19 @@ export function MemberDetailDrawer({ isOpen, onClose, member }: MemberDetailDraw
   return (
     <div className="fixed inset-0 z-[60] flex flex-col justify-end md:justify-center md:items-center md:p-4">
       {/* Backdrop */}
-      <div 
+      <div
         className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity animate-in fade-in duration-200"
         onClick={onClose}
       />
-      
+
       {/* Drawer / Modal */}
       <div className="relative w-full max-w-md mx-auto bg-white rounded-t-3xl md:rounded-3xl shadow-2xl p-6 pb-safe md:pb-6 animate-in slide-in-from-bottom-full md:slide-in-from-bottom-0 md:zoom-in-95 duration-300 dark:border dark:border-slate-700 dark:bg-slate-800">
-        
+
         {/* Handle bar for visual cue (Mobile Only) */}
         <div className="absolute top-3 left-1/2 -translate-x-1/2 w-12 h-1.5 bg-slate-200 rounded-full md:hidden dark:bg-slate-700" />
-        
+
         {/* Close button */}
-        <button 
+        <button
           onClick={onClose}
           className="size-11 rounded-full bg-[#F8FAFC] border border-[#E2E8F0] shadow-[0_4px_12px_rgba(15,23,42,0.08)] text-slate-500 flex items-center justify-center transition-all hover:scale-105 hover:bg-white hover:text-slate-900 shrink-0 absolute top-4 right-4 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:shadow-none dark:hover:bg-slate-700 dark:hover:text-white"
         >
@@ -74,32 +74,39 @@ export function MemberDetailDrawer({ isOpen, onClose, member }: MemberDetailDraw
         <div className="bg-[#F6F8FC] rounded-2xl p-5 border border-[#E5EAF3] dark:border-slate-700 dark:bg-slate-900">
           <div className="flex justify-between items-center mb-3">
             <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300">Collection Target</h3>
-            <span className="text-sm font-bold text-slate-900 dark:text-slate-50">₹{member.targetAmount} / yr</span>
+            <span className="text-sm font-bold text-slate-900 dark:text-slate-50">
+              {member.targetAmount === undefined ? "--" : `₹${member.targetAmount} / yr`}
+            </span>
           </div>
-          
+
           <div className="space-y-2">
             <div className="flex justify-between items-end">
               <span className="text-xs text-slate-500 font-medium dark:text-slate-400">Progress</span>
-              <span className="text-lg font-black text-[#2563EB]">{member.paidPercentage}%</span>
+              <span className="text-lg font-black text-[#2563EB]">
+                {member.paidPercentage === undefined ? "--" : `${member.paidPercentage}%`}
+              </span>
             </div>
-            
+
             {/* Progress Bar Container */}
             <div className="h-3 w-full bg-slate-200 rounded-full overflow-hidden dark:bg-slate-700">
               {/* Progress Bar Fill */}
-              <div 
+              <div
                 className="h-full bg-[#2563EB] rounded-full transition-all duration-1000 ease-out"
-                style={{ width: `${member.paidPercentage}%` }}
+                style={{ width: `${member.paidPercentage ?? 0}%` }}
               />
             </div>
             <p className="text-[10px] text-slate-400 text-center mt-2 flex items-center justify-center gap-1 dark:text-slate-500">
-              <ShieldCheck className="size-3" /> Information is securely calculated
+              <ShieldCheck className="size-3" />
+              {member.paidPercentage === undefined
+                ? "Payment progress will appear after payment setup"
+                : "Information is securely calculated"}
             </p>
           </div>
         </div>
 
         {/* Action Buttons */}
-        <div className="mt-6 mb-4 md:mb-0 flex items-center gap-3">
-          <a 
+        {member.phone && <div className="mt-6 mb-4 md:mb-0 flex items-center gap-3">
+          <a
             href={`https://wa.me/${member.phone.replace(/\D/g, '')}`}
             target="_blank"
             rel="noopener noreferrer"
@@ -108,14 +115,14 @@ export function MemberDetailDrawer({ isOpen, onClose, member }: MemberDetailDraw
             <MessageCircle className="size-5" />
             WhatsApp
           </a>
-          <a 
+          <a
             href={`tel:${member.phone}`}
             className="flex-1 flex items-center justify-center gap-2 h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-lg shadow-sm transition-colors"
           >
             <Phone className="size-5" />
             Call
           </a>
-        </div>
+        </div>}
       </div>
     </div>
   );

@@ -8,7 +8,7 @@ import { ERROR_CODES } from "../errors/errorCodes";
 
 export function createAdminAuthService(deps: {
   adminRepository: AdminRepository;
-  verifyAdminCredential?: (
+  verifyAdminCredential: (
     input: AdminLoginInput,
     admin: AdminUserDTO
   ) => Promise<boolean>;
@@ -33,11 +33,9 @@ export function createAdminAuthService(deps: {
           return fail(authError("Invalid admin credentials or account disabled.", ERROR_CODES.ADMIN_NOT_FOUND));
         }
 
-        if (verifyAdminCredential) {
-          const isValid = await verifyAdminCredential(validation.data!, admin);
-          if (!isValid) {
-            return fail(authError("Invalid login credentials.", ERROR_CODES.INVALID_PIN));
-          }
+        const isValid = await verifyAdminCredential(validation.data!, admin);
+        if (!isValid) {
+          return fail(authError("Invalid login credentials.", ERROR_CODES.INVALID_PIN));
         }
 
         return ok({ admin });

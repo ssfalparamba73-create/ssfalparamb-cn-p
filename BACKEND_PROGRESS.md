@@ -1,8 +1,8 @@
 # Backend Development Progress Log
 
-This file is a shared development log for Gemini and Codex. 
+This file is a shared development log for Gemini and Codex.
 
-**CRITICAL RULE:** 
+**CRITICAL RULE:**
 Every time either AI agent (Gemini or Codex) completes a backend task, creates a database schema, writes an API, or updates a service, it **MUST** be logged here. Before starting a new task, both agents must read this file to understand the current state and prevent duplicating work or causing conflicts.
 
 ## Guidelines for Logging
@@ -168,7 +168,7 @@ Files modified if needed:
 - BACKEND_PROGRESS.md
 
 Verification:
-- 
+-
 px.cmd tsc --noEmit passed.
 
 ## Gemini - Phase 5 Fix Pass - 2026-07-13
@@ -199,7 +199,7 @@ Files modified:
 - BACKEND_PROGRESS.md
 
 Verification:
-- 
+-
 px.cmd tsc --noEmit passed.
 
 ## Gemini - Phase 5 Final Fix Pass - 2026-07-13
@@ -208,7 +208,8 @@ Completed:
 - Removed invalid lood_group DEFAULT 'unknown' usage.
 - Added DB-side member code generation so member inserts satisfy member_code NOT NULL.
 - Fixed numeric app setting parsing for payment amount resolution.
-- Removed hardcoded runtime payment amount fallbacks from esolve_payment_amount.
+- Removed hardcoded runtime payment amount fallbacks from
+esolve_payment_amount.
 - Updated storage object policies to use app-level admin permission helpers instead of uth.uid().
 - Updated receipt repository to use generate_receipt_id RPC.
 - Verified migrations and adapters are closer to real Supabase apply readiness.
@@ -222,13 +223,14 @@ Files modified:
 - BACKEND_PROGRESS.md
 
 Verification:
-- 
+-
 px.cmd tsc --noEmit passed.
 
 ## Gemini - Phase 5 Adapter Alignment Mini-Fix - 2026-07-13
 
 Completed:
-- Updated Supabase payment adapter to use esolve_payment_amount RPC for monthly dues.
+- Updated Supabase payment adapter to use
+esolve_payment_amount RPC for monthly dues.
 - Added safe member id resolution from member query.
 - Ensured monthly dues payments do not insert without a valid member id.
 - Ensured resolved member id is attached to payment inserts where available.
@@ -239,7 +241,7 @@ Files modified:
 - BACKEND_PROGRESS.md
 
 Verification:
-- 
+-
 px.cmd tsc --noEmit passed.
 
 ## Gemini - Phase 5 Security Audit Fix Pass - 2026-07-13
@@ -268,13 +270,14 @@ Files modified:
 - BACKEND_PROGRESS.md
 
 Verification:
-- 
+-
 px.cmd tsc --noEmit passed.
 
 ## Gemini - Phase 5 Data-Flow Integrity Fix Pass - 2026-07-13
 
 Completed:
-- Ensured payment and receipt rows reuse the same eceipt_id.
+- Ensured payment and receipt rows reuse the same
+eceipt_id.
 - Updated cash entry adapter flow to create a linked payment before inserting cash_entries.
 - Added active-member checks to member-facing RLS policies.
 - Added one-time raw receipt token return support without storing raw tokens.
@@ -289,13 +292,14 @@ Files modified:
 - BACKEND_PROGRESS.md
 
 Verification:
-- 
+-
 px.cmd tsc --noEmit passed.
 
 ## Gemini - Phase 5 Cash Entry Phone Fix - 2026-07-13
 
 Completed:
-- Removed "0000000000" fallback for payer_phone in ecordCashEntry.
+- Removed "0000000000" fallback for payer_phone in
+ecordCashEntry.
 - If guestPhone is missing but memberId exists, fetching phone and name from members profile.
 - Throw error if no valid phone can be found.
 
@@ -304,7 +308,7 @@ Files modified:
 - BACKEND_PROGRESS.md
 
 Verification:
-- 
+-
 px.cmd tsc --noEmit passed.
 
 ## Codex - Phase 5 RPC Privilege Final Hardening Fix - 2026-07-13 21:49:29
@@ -325,7 +329,7 @@ Verification:
 ## Gemini - Phase 5 RPC Privilege Hardening - 2026-07-13
 
 Completed:
-- Created  14_rpc_execute_privileges.sql.
+- Created 014_rpc_execute_privileges.sql.
 - Revoked EXECUTE privileges from PUBLIC, anon, and authenticated roles for all custom functions.
 - Granted explicit EXECUTE privileges to service_role for backend API access.
 
@@ -334,7 +338,7 @@ Files modified:
 - BACKEND_PROGRESS.md
 
 Verification:
-- 
+-
 px.cmd tsc --noEmit passed.
 
 ## Codex - Phase 6 Server Integration Technical Plan - 2026-07-14 09:58:46 +05:30
@@ -444,3 +448,507 @@ Notes/Next Steps:
 - Gemini may implement only the scope in `PHASE_7_AUTH_SESSION_PLAN.md`.
 - The existing UI remains unchanged during Phase 7. Mock identity replacement and the admin-panel code generation/reset endpoint are subsequent reviewed work.
 - Product decision clarified: after login, keep the session persistent across browser close/reopen; logout is the normal exit action. Account disable, code reset, or explicit admin revocation may still invalidate a session.
+
+## Codex - Dashboard Integration Cross-check and Phase 8 Plan - 2026-07-18
+
+Completed:
+- Re-checked dashboard pages, API routes, service/repository layers, DTOs, migrations, and mock references instead of relying only on the ledger.
+- Confirmed that dashboard service/repository groundwork exists, but no protected admin/member dashboard API routes or frontend API wiring exist yet.
+- Confirmed admin/member dashboard screens still consume mock data and that the current dashboard repository does not populate all rendered metrics.
+- Defined the dependency order: Phase 7 session/auth implementation and review, then read-only dashboard APIs, then login/dashboard UI wiring and dashboard-only mock removal.
+
+Files created:
+- `PHASE_8_READ_ONLY_DASHBOARD_PLAN.md`
+
+Notes/Next Steps:
+- Await product-owner approval before implementing Phase 7/Phase 8 code.
+- Payment creation, UPI/gateway, and payment mutation workflows remain outside this dashboard plan.
+
+## Codex - Phase 7 Authentication and Phase 8 Dashboard Integration - 2026-07-18
+
+Completed:
+- Added server-verified member phone + 4-digit PIN and admin phone + generated-code login flows.
+- Added login attempt tracking with five-attempt/15-minute lockout behavior.
+- Added persistent opaque sessions with SHA-256 token hashes, HttpOnly/SameSite cookies, server-side revocation, and active-account rechecks.
+- Removed the optional admin credential-verification bypass.
+- Added protected admin/member dashboard APIs with server-derived `ActorContext` and admin permission enforcement.
+- Replaced dashboard-only mock totals, recent payments, cash handovers, member identity, dues, and activity with API data.
+- Wired existing member/admin login forms and logout controls without redesigning the approved UI.
+
+Files created:
+- `supabase/migrations/015_auth_sessions.sql`
+- `src/lib/backend/contracts/auth.contract.ts`
+- `src/lib/backend/contracts/dashboard.contract.ts`
+- `src/lib/backend/dto/auth.dto.ts`
+- `src/lib/backend/dto/dashboard.dto.ts`
+- `src/lib/backend/validation/authSchemas.ts`
+- `src/lib/backend/services/authService.ts`
+- `src/lib/backend/services/dashboardService.ts`
+- `src/lib/backend/auth/sessionCookie.ts`
+- `src/lib/backend/auth/resolveActor.ts`
+- `src/lib/backend/composition/authService.server.ts`
+- `src/lib/backend/composition/dashboardService.server.ts`
+- `src/lib/backend/adapters/supabase/mappers/auth.mapper.ts`
+- `src/lib/backend/adapters/supabase/repositories/supabaseAuthRepository.ts`
+- `src/lib/backend/adapters/supabase/repositories/supabaseDashboardRepository.ts`
+- `src/app/api/v1/auth/member/login/route.ts`
+- `src/app/api/v1/auth/admin/login/route.ts`
+- `src/app/api/v1/auth/session/route.ts`
+- `src/app/api/v1/auth/logout/route.ts`
+- `src/app/api/v1/admin/dashboard/route.ts`
+- `src/app/api/v1/member/dashboard/route.ts`
+- `src/lib/api/backendClient.ts`
+- `src/lib/api/authClient.ts`
+- `src/lib/api/dashboardClient.ts`
+
+Verification:
+- `npx.cmd tsc --noEmit` passed.
+- Phase 7/8 targeted lint passed with zero errors/warnings.
+- `npm.cmd run build` passed and generated all six new API routes as dynamic handlers.
+- Production smoke tests: missing session, admin dashboard, and member dashboard returned `401`; malformed login returned `400`; request-ID/no-store/referrer headers were present.
+- Security scans found no dashboard mock references and no direct Supabase imports/calls in UI or Route Handlers.
+- Full repository lint still reports 39 errors and 64 warnings in pre-existing/out-of-scope files. Targeted Phase 7/8 files are clean; the global baseline is not claimed as passing.
+- Valid credential/data integration was not run because the configured Supabase target is remote and not identified as disposable. Migration `015` and the follow-up auth compatibility hardening are now applied to the linked unit database.
+
+Notes/Next Steps:
+- Product owner authorized Codex to plan and implement the next logical non-payment module autonomously.
+- Payment creation, gateway/UPI integration, and payment status mutations remain excluded.
+
+## Codex - Phase 9A Admin Member Read Plan - 2026-07-18
+
+Completed:
+- Selected the protected admin member list as the next bounded non-payment slice.
+- Defined mandatory `members.view` authorization, pagination/filter completion,
+  safe DTO transport, and admin members-page mock replacement.
+
+Files created:
+- `PHASE_9_ADMIN_MEMBER_READ_PLAN.md`
+
+Notes/Next Steps:
+- Product owner authorized autonomous implementation; Phase 9A implementation may proceed without another approval round.
+
+## Codex - Phase 9A Admin Member Read Implementation - 2026-07-18
+
+Completed:
+- Added the protected `GET /api/v1/admin/members` route with server-derived actor identity, pagination, and validated member filters.
+- Made `members.view` permission enforcement mandatory in `AdminMemberService` and added the server-only composition root.
+- Completed Supabase member-list filtering, deterministic ordering, and database error propagation.
+- Replaced `MOCK_MEMBERS` on the admin members page with the backend client while preserving the existing responsive table/card layout.
+- Corrected pending-state rendering to use the stored dues amount instead of account/PIN status.
+- Removed the old client-only fake "mark paid" state transition; payment status is no longer shown as changed unless a future payment API actually records it.
+
+Files created:
+- `src/lib/backend/composition/adminMemberService.server.ts`
+- `src/app/api/v1/admin/members/route.ts`
+- `src/lib/api/memberClient.ts`
+
+Verification:
+- `npx tsc --noEmit` passed.
+- Targeted Phase 9A lint passed with zero errors/warnings.
+- `npm run build` passed and generated `/api/v1/admin/members` as a dynamic route.
+- Production smoke test confirmed an unauthenticated request returns `401 LOGIN_REQUIRED` with `private, no-store`, `no-referrer`, and a matching request ID.
+- Scans confirmed the admin members-list page/API client/Route Handler contain no mock-member reference and no direct Supabase access.
+- `git diff --check` passed; its only output was the existing Windows line-ending normalization warning.
+- A valid admin/member-session data test was not run because the configured Supabase target is remote and has not been approved as a disposable test database.
+
+Notes/Next Steps:
+- Member detail, create/edit/delete, member self-profile/directory, and payment history remain separate follow-up slices.
+- Payment creation and payment status mutations remain excluded.
+
+## Codex - Phase 9B Admin Member Detail Plan - 2026-07-18
+
+Completed:
+- Selected the protected admin member-detail read as the next bounded non-payment slice.
+- Defined safe not-found/database-error behavior and mandatory `members.view` authorization.
+- Explicitly excluded member mutation, PIN reset, cash recording, payment history, family/event data, and audit history.
+
+Files created:
+- `PHASE_9B_ADMIN_MEMBER_DETAIL_PLAN.md`
+
+## Codex - Phase 9B Admin Member Detail Implementation - 2026-07-18
+
+Completed:
+- Added mandatory-authorization `getMember` behavior to `AdminMemberService` and the protected `GET /api/v1/admin/members/[id]` route.
+- Changed member lookup to distinguish a missing row from a Supabase/database failure.
+- Added UUID validation so malformed member IDs return a validation error instead of reaching the database.
+- Replaced the detail-page `MOCK_MEMBERS` lookup with the backend client and a shared DTO-to-UI mapper.
+- Removed browser-generated `Math.random()` PINs and hard-coded payment, event, and audit records.
+- Kept Edit, Reset PIN, and Record Cash visually intact but non-deceptive until their reviewed mutation phases are implemented.
+- Reconfirmed the soft-delete rule: member deletion updates `status` to `left`, checks the database error, and never removes the row.
+- Excluded `left` members from normal member/directory lists unless that status is explicitly requested.
+
+Files created:
+- `src/app/api/v1/admin/members/[id]/route.ts`
+- `src/lib/admin/mapMemberDto.ts`
+
+Verification:
+- `npx tsc --noEmit` passed.
+- Targeted Phase 9B lint passed with zero errors/warnings.
+- `npm run build` passed and generated `/api/v1/admin/members/[id]` as a dynamic route.
+- Production smoke test confirmed an unauthenticated detail request returns `401 LOGIN_REQUIRED` with no-store/referrer/request-ID protections.
+- Scans found no detail-page mock member, sample receipt/event/audit data, browser-random PIN, or direct Supabase access.
+- A valid admin/member-session and unknown-member `404` data test remains pending because the configured remote Supabase is not approved as disposable and migration `015` has not been applied there.
+
+Notes/Next Steps:
+- Member create/edit/soft-delete wiring and secure PIN reset remain future non-payment mutation slices.
+- Payment history and cash recording remain excluded until the payment phase.
+
+
+## Codex - Linked Supabase Migration Reconciliation - 2026-07-18
+
+Completed:
+- Confirmed the folder's Supabase link metadata matches the project URL configured in `.env.local` without exposing credential values.
+- Confirmed migrations `001` through `021` were already present remotely; migration `015` had already been applied.
+- Fetched missing remote history `016` through `021` into the repository and retained immutable `001` through `014` unchanged.
+- Redacted replayable legacy test credentials from the local copies of test-only history migrations.
+- Added and applied forward-only `022_disable_legacy_test_logins.sql`.
+- Added the `verify_app_login` RPC required by the Phase 7 Supabase auth adapter and restricted login RPC execution to `service_role`.
+- Soft-deleted the explicitly seeded legacy test member, deactivated the explicitly seeded legacy test admin, cleared their hashes, sessions, and attempt records.
+
+Verification:
+- Remote migration ledger matches local versions `001` through `022`.
+- Final `supabase db push --dry-run` reports the remote database is up to date.
+- PostgREST schema exposes `verify_app_login`, `auth_sessions`, and `auth_login_attempts` to the service role.
+- Legacy test member is `left/reset_required` with no PIN hash.
+- Legacy test admin is `inactive` with no code hash.
+- No real member/admin records were targeted by the cleanup; exact legacy phone and test-name matching were both required.
+
+## Codex - Phase 9C Member Mutation and PIN Plan - 2026-07-19
+
+Completed:
+- Cross-checked the existing member service/repository groundwork, Route Handlers,
+  Add/Edit form behavior, member schema, permissions, audit adapter, and session/PIN
+  architecture.
+- Confirmed create/update/soft-delete skeletons exist, but mutation routes, complete
+  field/family persistence, audit transactions, secure PIN issuance, and UI wiring
+  remain incomplete.
+- Defined a forward-only transactional migration, protected API routes, permission
+  matrix, server-generated one-time PIN flow, soft-delete/session-revocation rules,
+  mock replacement boundaries, and verification matrix.
+
+Files created:
+- `PHASE_9C_MEMBER_MUTATION_PIN_PLAN.md`
+
+Notes/Next Steps:
+- Phase 9C is planned only; implementation has not started.
+- Payment behavior, profile-photo storage, admin notes schema, admin-user code
+  generation, and member self-profile/directory wiring remain outside Phase 9C.
+
+## Codex - Phase 9C Member Mutations and Secure PIN Implementation - 2026-07-19
+
+Completed:
+- Added complete member/family create and update contracts, DTO mapping, input
+  validation, duplicate-phone conflict mapping, and server-side UUID/not-found
+  guards.
+- Added protected member create, update, soft-delete, and PIN issue/reset Route
+  Handlers using the existing session-derived actor and service/repository layers.
+- Replaced partial direct table mutations with transactional, service-role-only
+  Supabase RPCs that update member/family/session/audit state atomically.
+- Kept deletion soft-only: the member row remains and moves to `left`; its PIN is
+  cleared and active member sessions are revoked.
+- Added forward-only hardening so a `left` member cannot be restored through PATCH,
+  and repeated soft-delete requests still revoke unexpectedly active sessions
+  without writing duplicate transition audits.
+- Generate 4-digit member PINs only on the server with `crypto.randomInt`; store only
+  the pgcrypto hash, revoke old sessions, and exclude the raw PIN/hash from audit
+  data and normal member DTOs.
+- Removed the Add/Edit form's simulated save, replaced the edit-page mock lookup,
+  persisted the supported form and family fields, and wired real Edit, soft-delete,
+  one-time PIN display/copy/WhatsApp, and truthful error/success behavior without a
+  UI redesign.
+- Kept payment/cash recording, photo storage, and admin notes persistence explicitly
+  outside this phase; their visible controls do not claim a successful write.
+
+Files created:
+- `supabase/migrations/023_member_mutations_and_pin.sql`
+- `supabase/migrations/024_member_soft_delete_guards.sql`
+- `src/app/api/v1/admin/members/[id]/pin/route.ts`
+
+Major files updated:
+- `src/lib/backend/contracts/member.contract.ts`
+- `src/lib/backend/contracts/admin.contract.ts`
+- `src/lib/backend/dto/member.dto.ts`
+- `src/lib/backend/validation/memberSchemas.ts`
+- `src/lib/backend/services/adminMemberService.ts`
+- `src/lib/backend/adapters/supabase/repositories/supabaseMemberRepository.ts`
+- `src/lib/backend/adapters/supabase/mappers/member.mapper.ts`
+- `src/lib/backend/http/backendResultResponse.ts`
+- `src/app/api/v1/admin/members/route.ts`
+- `src/app/api/v1/admin/members/[id]/route.ts`
+- `src/lib/api/memberClient.ts`
+- `src/components/admin/members/MemberForm.tsx`
+- `src/app/admin/members/[id]/edit/page.tsx`
+- `src/app/admin/members/[id]/page.tsx`
+- `src/lib/admin/admin-types.ts`
+- `src/lib/admin/mapMemberDto.ts`
+
+Verification:
+- `npx tsc --noEmit` passed.
+- Targeted Phase 9C lint passed with zero errors/warnings.
+- `npm run build` passed and emitted all member pages and the four protected member
+  API mutation/read routes successfully.
+- Production smoke checks confirmed unauthenticated list/create/update/delete/PIN
+  requests return `401`.
+- Migrations `023` and `024` were dry-run as the only pending migrations, applied to
+  the linked unit database, and confirmed in the remote migration ledger.
+- Remote anonymous-role probes for all four mutation RPCs returned `401` with
+  PostgreSQL code `42501` (`permission denied`); execution remains service-role-only.
+- Scans found no `MOCK_MEMBERS`, fake save timer, browser `Math.random()` PIN,
+  frontend/Route-Handler Supabase access, or hard delete of `members` in the wired
+  paths. `git diff --check` reported only existing line-ending normalization notices.
+- Full repository lint still has pre-existing out-of-scope UI/legacy-adapter issues;
+  Phase 9C files themselves are clean.
+
+Limitations/Next Steps:
+- Authorized success-path mutation tests were not run against real member records,
+  because the linked unit database is not disposable and no test admin credential
+  was used. The migration and permission boundary were verified without creating or
+  altering test member data.
+- Linked database lint also reports pre-existing issues in `generate_receipt_id` and
+  `hash_receipt_token`; neither function was introduced or changed by Phase 9C.
+- Payment integration remains pending. Member self-profile/directory wiring and the
+  pre-existing database-function lint findings are suitable next non-payment slices.
+
+## Codex - Phase 10 Pre-Payment Hardening Plan - 2026-07-19
+
+Completed:
+- Audited the remaining mock surfaces, route protection, member service/repository
+  groundwork, support contacts, audit-log groundwork, database lint output, and
+  payment dependencies.
+- Selected only the non-payment work that can be made truthful without trusting
+  incomplete payment/dues data.
+- Defined member profile/directory, support-contact read, audit-log read, Next.js 16
+  proxy hardening, and forward-only database-function/profile RPC work.
+
+Files created:
+- `PHASE_10_PRE_PAYMENT_HARDENING_PLAN.md`
+
+Notes/Next Steps:
+- Payment-derived screens remain unchanged until payment source-of-truth work begins.
+- Phase 10 implementation is authorized by the product owner's instruction to finish
+  all safely implementable pre-payment work.
+
+## Codex - Phase 10 Pre-Payment Hardening Implementation - 2026-07-19
+
+Completed:
+- Added protected member profile GET/PATCH and privacy-scoped member directory APIs
+  through the required service/repository/Supabase layering.
+- Restricted self-profile mutation to name, WhatsApp, age, blood group, address,
+  occupation, and the stored biometric preference. Phone/login identity, member
+  status, tier, dues, PIN, family rows, and member code cannot be changed here.
+- Made profile updates transactional, active-member-only, service-role-only, and
+  safely audited without recording PINs, session tokens, or other login secrets.
+- Replaced member profile and directory mock records with authenticated backend data.
+  Payment target/progress now shows an unavailable state rather than invented values
+  before payment source-of-truth work exists.
+- Added a public read-only active support-contact API and replaced the hard-coded
+  phone/email data on the support page and member contact drawer.
+- Added a permission-protected admin audit-log read API, replaced mock audit rows,
+  and kept audit purge disabled because no reviewed destructive workflow exists.
+- Replaced deprecated `middleware.ts` with Next.js 16 `proxy.ts` for optimistic
+  missing-cookie redirects. Route Handlers still perform authoritative session and
+  permission checks.
+- Hardened receipt helper functions and resolved all linked database linter findings
+  through forward-only migrations `025`, `026`, and follow-up `027`.
+
+Files created:
+- `supabase/migrations/025_pre_payment_function_hardening.sql`
+- `supabase/migrations/026_member_profile_update.sql`
+- `supabase/migrations/027_resolve_function_lint_warnings.sql`
+- `src/proxy.ts`
+- `src/lib/backend/auth/sessionConstants.ts`
+- `src/lib/backend/composition/memberService.server.ts`
+- `src/lib/backend/composition/auditService.server.ts`
+- `src/lib/backend/composition/supportService.server.ts`
+- `src/lib/backend/contracts/support.contract.ts`
+- `src/lib/backend/dto/support.dto.ts`
+- `src/lib/backend/services/supportService.ts`
+- `src/lib/backend/adapters/supabase/repositories/supabaseSupportRepository.ts`
+- `src/app/api/v1/member/profile/route.ts`
+- `src/app/api/v1/member/directory/route.ts`
+- `src/app/api/v1/admin/audit-logs/route.ts`
+- `src/app/api/v1/support/contacts/route.ts`
+- `src/lib/api/auditClient.ts`
+- `src/lib/api/supportClient.ts`
+
+Verification:
+- `npx tsc --noEmit` passed.
+- Targeted Phase 10 ESLint passed with zero errors or warnings.
+- `npm run build` passed under Next.js `16.2.10` and emitted the four new dynamic
+  API routes plus `proxy.ts` successfully.
+- Production smoke checks confirmed missing-session member/admin pages redirect to
+  the correct login, protected profile/directory/audit APIs return `401`, and the
+  public support-contact API returns `200`.
+- Migrations `025` and `026`, followed by lint-only correction `027`, were dry-run,
+  applied to the linked unit database, and confirmed in the remote ledger through
+  version `027`.
+- Linked `supabase db lint --level warning` reports no schema errors or warnings.
+- Remote anonymous-role probes for `generate_receipt_id` and
+  `member_update_profile` both returned `401`; execution remains service-role-only.
+- Scans found no profile/directory/support/audit mock records or direct Supabase
+  access from the wired UI/Route Handler files. `git diff --check` is clean apart
+  from existing Windows line-ending normalization notices.
+
+Limitations/Next Steps:
+- No valid-login success-path write was performed against a real member because the
+  linked unit database is not disposable. Read/session/RPC permission boundaries and
+  build-time integration were verified without altering real member data.
+- Full repository lint still reports 21 errors and 56 warnings in older out-of-scope
+  UI, payment mock, and legacy adapter files. Phase 10 files are clean and the
+  production build passes; this historical lint baseline is not claimed as fixed.
+- The next logical phase is payment source-of-truth design and security planning.
+  Payment creation/status, cash entry, receipts, reports, defaulters, and payment
+  settings remain intentionally unimplemented or mock-backed until that plan is
+  approved.
+
+## Codex - Initial Unit Super Admin Provisioning - 2026-07-19
+
+Completed:
+- Provisioned the product-owner-supplied phone as a new active Super Admin in the
+  linked unit database.
+- Stored only a bcrypt hash of the supplied 4-digit PIN; no plaintext credential was
+  written to migrations, project files, audit data, or the progress ledger.
+- Assigned the system `super_admin` role, cleared prior login-attempt state, revoked
+  any pre-existing sessions for the account, and recorded a secret-free audit event.
+- Used a service-role-only temporary transactional provisioning RPC, then removed the
+  RPC immediately after successful provisioning.
+
+Files created:
+- `supabase/migrations/028_temporary_super_admin_provisioning.sql`
+- `supabase/migrations/029_fix_temporary_super_admin_provisioning.sql`
+- `supabase/migrations/030_remove_temporary_super_admin_provisioning.sql`
+
+Verification:
+- Database verification confirmed the account is active, has the `super_admin` role,
+  and contains a non-empty password hash.
+- Existing `verify_app_login` returned `success` for the supplied credential.
+- The actual localhost admin login Route Handler created a valid admin session; the
+  test session was then logged out and revoked.
+- The linked migration ledger matches local history through `030`.
+- Linked database lint reports no schema errors or warnings.
+- The temporary provisioning RPC no longer exists after migration `030`.
+
+## Codex - Real Blood Donor Directory Wiring - 2026-07-19
+
+Completed:
+- Removed `MOCK_BLOOD_DONORS` from the Admin Blood Donors page.
+- Added an authenticated `isBloodDonor` member-list filter through the existing
+  Route Handler, service validation, repository interface, and Supabase adapter flow.
+- The page now lists only active members whose stored `is_blood_donor` value is true.
+- Availability changes now use the protected member-update API and persist to
+  `donor_available` instead of changing browser state only.
+- Kept missing donation-history data truthful as `Not recorded`; no payment or
+  donation date is inferred from unrelated fields.
+- Connected CSV export to the currently filtered real donor rows and escaped cells
+  against spreadsheet formula injection.
+- Added strict boolean validation for donor status/availability filters and member
+  updates.
+
+Verification:
+- `npx tsc --noEmit` passed.
+- Targeted ESLint passed with zero errors or warnings.
+- `git diff --check` found no whitespace errors; only existing Windows line-ending
+  notices were emitted.
+- Authenticated localhost smoke test confirmed Super Admin login, successful donor
+  API response using `status=active&isBloodDonor=true`, donor page HTTP `200`, and
+  logout. The API returned the linked database's current real donor count.
+- No real member or donor values were changed during verification.
+
+## Codex - Post-Create Member WhatsApp Invitation - 2026-07-19
+
+Completed:
+- Active member creation now immediately calls the protected server-generated PIN
+  endpoint after the member transaction succeeds.
+- Added a one-time invitation dialog showing the generated PIN, phone number, safe
+  copy action, and a prefilled WhatsApp Invite link.
+- Kept the raw PIN only in short-lived React state. It is not written to URLs,
+  local/session storage, logs, migrations, member DTOs, or audit data.
+- Closing the dialog navigates to the created member's detail page; the PIN cannot be
+  recovered from the UI afterward.
+- Inactive/blocked new members are not issued an unusable invitation. The admin is
+  directed to activate the member first.
+- If member creation succeeds but PIN issuance fails, the UI reports the partial
+  outcome truthfully and navigates to the member detail page where Reset PIN remains
+  available.
+
+Files created:
+- `src/components/admin/members/MemberInvitationDialog.tsx`
+
+Files updated:
+- `src/components/admin/members/MemberForm.tsx`
+
+Verification:
+- `npx tsc --noEmit` passed.
+- Targeted ESLint passed with zero errors or warnings.
+- `git diff --check` found no whitespace errors; only the existing Windows line-ending
+  notice was emitted.
+- Authenticated localhost smoke test confirmed the Add Member page returns HTTP `200`;
+  the verification session was logged out afterward.
+- No test member was created in the linked production-like unit database.
+
+## Codex - Phase 11 Admin Settings and Invitation Management - 2026-07-19
+
+Completed:
+- Added an authenticated Invite / Resend action to active member rows and mobile
+  cards. Every resend generates a new server-side PIN, invalidates the previous PIN,
+  revokes that member's sessions, and displays the result only in the one-time shared
+  invitation dialog.
+- Moved the default WhatsApp member invitation text to a private persisted setting.
+  The Security page now loads, previews with a masked PIN, validates required
+  `{phone}` and `{pin}` placeholders, and saves the template through the approved
+  Route Handler, service, repository, adapter, and Supabase flow.
+- Replaced Admin Users mock data with real admin accounts. Existing active members
+  can be found by name, phone, or member code and promoted without changing or
+  duplicating their member identity. Role/status updates, one-time admin code reset,
+  session revocation, and soft deactivation are transactional and audited.
+- Replaced Support Contacts and Special Events mock state with real Supabase-backed
+  list/create/update/reorder/archive flows. Archive is soft-delete behavior and does
+  not alter member or payment history.
+- Wired Unit Settings text fields to private `app_settings` values. Empty optional
+  address/contact fields can be configured incrementally; the unit name remains
+  required. Logo upload stays visible but truthfully disabled until storage wiring is
+  reviewed.
+- Kept payment configuration, receipt persistence, biometric login, dynamic PIN
+  policy, and other backend-less controls visible but disabled/pending. No payment,
+  receipt, dues, cash-entry, or defaulter source-of-truth behavior was activated.
+- Removed misleading fake success actions from the relevant settings surfaces and
+  corrected the admin profile to show the real session role.
+- Corrected two integration findings found during browser verification: ambiguous
+  admin-role joins after the new audit relationship, and the legacy
+  `special_events.start_date` / `end_date` column names.
+- Resolved the repository's complete ESLint error baseline without changing payment
+  behavior; remaining lint output is warning-only.
+
+Database:
+- Applied forward-only migrations `031_member_invitation_template_and_resend_hardening.sql`,
+  `032_admin_member_promotion.sql`, and
+  `033_non_payment_settings_support_events.sql` to the linked unit database.
+- Privileged mutation RPCs are service-role-only and also enforce the requesting
+  admin's real settings-management permission inside the database transaction.
+- Raw member/admin codes and rendered WhatsApp messages are excluded from tables,
+  audit rows, application logs, and browser storage. The portal does not claim
+  WhatsApp sent/opened/delivered status without a provider callback.
+- Admin deactivation and member removal retain soft-delete semantics. Last-active
+  Super Admin and self-lockout guards are enforced transactionally.
+
+Verification:
+- `npx tsc --noEmit` passed.
+- `npx eslint . --quiet` passed with zero errors.
+- `npm run build` passed under Next.js `16.2.10`; all new settings/admin/event/support
+  APIs were emitted as dynamic routes.
+- `git diff --check` passed; only Windows line-ending normalization notices remain.
+- Linked migration parity is exact through `033` and linked database lint reports no
+  schema errors.
+- Authenticated localhost production smoke tests confirmed real Super Admin role,
+  real admin rows, editable persisted invitation template, empty real support/event
+  states, real unit settings, existing-member admin search, and member invitation
+  controls. Tests were read-only and did not mutate unit records.
+- Wired-path scans found no Admin Users, Support Contacts, Special Events, or member
+  invitation mock references and no direct Supabase adapter imports in UI components
+  or Route Handlers.
+
+Deferred by product-owner instruction:
+- Payment integration and every behavior that would create or change payment,
+  receipt, dues, cash-entry, defaulter, or payment-report records.
+- Unit logo and receipt-asset storage, dynamic authentication-policy enforcement, and
+  biometric authentication remain explicitly disabled rather than simulated.

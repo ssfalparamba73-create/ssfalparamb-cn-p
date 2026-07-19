@@ -8,7 +8,7 @@ import { validatePagination } from "../validation/commonSchemas";
 
 export function createAuditService(deps: {
   auditRepository: AuditRepository;
-  requirePermission?: (
+  requirePermission: (
     actor: ActorContext,
     permission: string
   ) => Promise<BackendResult<true>>;
@@ -19,7 +19,7 @@ export function createAuditService(deps: {
     if (actor.actorType !== "admin" && actor.actorType !== "system") {
       return fail(authError("System or Admin access required."));
     }
-    if (actor.actorType === "admin" && requirePermission) {
+    if (actor.actorType === "admin") {
       return await requirePermission(actor, permission);
     }
     return ok(true);

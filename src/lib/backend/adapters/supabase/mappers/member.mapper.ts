@@ -5,8 +5,8 @@ import type {
 } from "../../../dto/member.dto";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function mapRowToMemberDTO(row: any): MemberDTO {
-  return {
+export function mapRowToMemberDTO(row: any, familyRows?: any[]): MemberDTO {
+  const member: MemberDTO = {
     id: row.id,
     memberCode: row.member_code,
     name: row.name,
@@ -34,6 +34,12 @@ export function mapRowToMemberDTO(row: any): MemberDTO {
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
+
+  if (familyRows) {
+    member.familyMembers = familyRows.map((family) => mapFamilyRow(family));
+  }
+
+  return member;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -54,16 +60,21 @@ export function mapRowToMemberProfileDTO(row: any, familyRows: any[] = []): Memb
     joinedYear: row.joined_at ? new Date(row.joined_at).getFullYear().toString() : undefined,
     occupation: row.occupation,
     biometricEnabled: Boolean(row.biometric_enabled),
-    familyMembers: familyRows.map((fam) => ({
-      id: fam.id,
-      memberId: fam.member_id,
-      name: fam.name,
-      relationship: fam.relationship,
-      age: fam.age,
-      bloodGroup: fam.blood_group,
-      isBloodDonor: Boolean(fam.is_blood_donor),
-      phone: fam.phone,
-    })),
+    familyMembers: familyRows.map((fam) => mapFamilyRow(fam)),
+  };
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function mapFamilyRow(family: any) {
+  return {
+    id: family.id,
+    memberId: family.member_id,
+    name: family.name,
+    relationship: family.relationship,
+    age: family.age,
+    bloodGroup: family.blood_group,
+    isBloodDonor: Boolean(family.is_blood_donor),
+    phone: family.phone,
   };
 }
 

@@ -193,12 +193,6 @@ export const MOCK_CASH_HANDOVERS = [
   { id: "HO-100", admin: "Mishab", amount: 2100, date: "Yesterday, 04:15 PM", status: "verified" },
 ];
 
-export const MOCK_BLOOD_DONORS = [
-  { id: "1", name: "Safwan", phone: "9876543210", bloodGroup: "O+", area: "Alparamba Center", isAvailable: true, lastDonated: "2025-10-15" },
-  { id: "2", name: "Fawas", phone: "8765432109", bloodGroup: "B+", area: "North Zone", isAvailable: false, lastDonated: "2026-06-10" },
-  { id: "3", name: "Shibili N", phone: "7654321098", bloodGroup: "A-", area: "South Zone", isAvailable: true, lastDonated: "2025-01-22" },
-];
-
 export const MOCK_DEFAULTERS = [
   { id: "1", name: "Fawas", phone: "9876543210", area: "Alparamba Center", dueMonths: 4, amount: 200, category: "long_overdue", lastPaid: "Feb 2026", lastReminded: null, reminderCount: 0 },
   { id: "2", name: "Safwan", phone: "8765432109", area: "North Zone", dueMonths: 1, amount: 50, category: "current_due", lastPaid: "May 2026", lastReminded: "2 days ago", reminderCount: 1 },

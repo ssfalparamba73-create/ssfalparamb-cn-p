@@ -12,9 +12,9 @@ export default function CashEntryPage() {
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50">Manual Cash Entry</h2>
       </div>
-      
+
       <p className="text-slate-500 dark:text-slate-400 max-w-2xl">
-        Record cash payments received directly from members. These will be logged as 'Cash Handover' in the system.
+        Record cash payments received directly from members. These will be logged as &apos;Cash Handover&apos; in the system.
       </p>
 
       <div className="mt-6">

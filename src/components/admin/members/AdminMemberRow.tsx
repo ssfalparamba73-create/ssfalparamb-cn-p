@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { AdminActionIcon } from "@/components/admin/layout/AdminActionIcon";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { MemberInvitationAction } from "./MemberInvitationAction";
 
 interface AdminMemberRowProps {
   member: Member;
@@ -16,12 +17,11 @@ interface AdminMemberRowProps {
 export function AdminMemberRow({ member }: AdminMemberRowProps) {
   const router = useRouter();
   const [showPaymentWarning, setShowPaymentWarning] = useState(false);
-  const [isPaid, setIsPaid] = useState(false);
-  
-  const isDefaulter = !isPaid && (member.status === "inactive" || member.pinStatus === "reset_required");
-  
+
+  const isDefaulter = member.duesPending > 0;
+
   return (
-    <tr 
+    <tr
       onClick={() => router.push(`/admin/members/${member.id}`)}
       className="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer"
     >
@@ -56,7 +56,7 @@ export function AdminMemberRow({ member }: AdminMemberRowProps) {
           <span className="text-xs text-slate-500 capitalize">/ {member.monthlyTier}</span>
         </div>
         {isDefaulter ? (
-          <button 
+          <button
             onClick={(e) => {
               e.stopPropagation();
               setShowPaymentWarning(true);
@@ -66,12 +66,12 @@ export function AdminMemberRow({ member }: AdminMemberRowProps) {
             <Clock className="w-3 h-3 mr-1" />
             Pending
           </button>
-        ) : isPaid ? (
+        ) : (
           <div className="text-xs text-green-600 dark:text-green-400 flex items-center mt-1 font-medium bg-green-50 dark:bg-green-900/20 px-2 py-0.5 rounded w-fit">
             <CheckCircle2 className="w-3 h-3 mr-1" />
-            Paid
+            Clear
           </div>
-        ) : null}
+        )}
       </td>
       <td className="px-3 py-4">
         <Badge variant={member.status === "active" ? "success" : "secondary"}>
@@ -80,6 +80,7 @@ export function AdminMemberRow({ member }: AdminMemberRowProps) {
       </td>
       <td className="py-4 pr-4 pl-3 sm:pr-6 text-right">
         <div className="flex justify-end gap-2">
+           <MemberInvitationAction member={member} compact />
            <AdminActionIcon aria-label="View Details" className="h-8 w-8 pointer-events-none">
              <ChevronRight className="w-4 h-4 text-slate-400" />
            </AdminActionIcon>
@@ -88,7 +89,7 @@ export function AdminMemberRow({ member }: AdminMemberRowProps) {
 
       {/* Warning Modal */}
       {showPaymentWarning && (
-        <div 
+        <div
           className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4"
           onClick={(e) => e.stopPropagation()}
         >
@@ -97,28 +98,27 @@ export function AdminMemberRow({ member }: AdminMemberRowProps) {
               Mark as Paid?
             </h3>
             <p className="text-slate-600 dark:text-slate-400 text-sm mb-6 leading-relaxed">
-              Are you sure you want to mark <span className="font-semibold text-slate-900 dark:text-slate-100">{member.name}</span>'s dues as paid? This will record a cash transaction and cannot be easily undone.
+              Payment recording is not connected yet. <span className="font-semibold text-slate-900 dark:text-slate-100">{member.name}</span>&apos;s pending dues will not be changed.
             </p>
             <div className="flex justify-end gap-3">
-              <Button 
-                variant="outline" 
-                onClick={(e) => { 
-                  e.stopPropagation(); 
-                  setShowPaymentWarning(false); 
+              <Button
+                variant="outline"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowPaymentWarning(false);
                 }}
               >
                 Cancel
               </Button>
-              <Button 
-                onClick={(e) => { 
-                  e.stopPropagation(); 
-                  setIsPaid(true);
+              <Button
+                onClick={(e) => {
+                  e.stopPropagation();
                   setShowPaymentWarning(false);
-                  toast.success(`Payment status for ${member.name} updated to Paid.`);
-                }} 
+                  toast.info("Payment recording will be enabled in the payment phase.");
+                }}
                 className="bg-blue-600 text-white hover:bg-blue-700"
               >
-                Confirm Payment
+                Okay
               </Button>
             </div>
           </div>

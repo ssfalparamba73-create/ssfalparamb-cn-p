@@ -22,17 +22,17 @@ export class SupabasePaymentRepository implements PaymentRepository {
   async list(filters: PaymentFilters, pagination: PaginationInput): Promise<PaginatedResult<PaymentDTO>> {
     const supabase = createSupabaseBackendClient();
     let query = supabase.from("payments").select("*, payment_months(*)", { count: "exact" });
-    
+
     if (filters.status) query = query.eq("status", filters.status);
     if (filters.method) query = query.eq("method", filters.method);
     if (filters.category) query = query.eq("category", filters.category);
-    
+
     const page = pagination.page || 1;
     const pageSize = pagination.pageSize || 20;
     const { data, count } = await query.range((page - 1) * pageSize, page * pageSize - 1);
-    
+
     return {
-      items: (data || []).map((row: any) => mapRowToPaymentDTO(row, row.payment_months || [])),
+      items: (data || []).map((row) => mapRowToPaymentDTO(row, row.payment_months || [])),
       total: count || 0,
       page,
       pageSize,
@@ -42,14 +42,14 @@ export class SupabasePaymentRepository implements PaymentRepository {
 
   async listByMember(memberId: string, pagination: PaginationInput): Promise<PaginatedResult<MemberPaymentHistoryItemDTO>> {
     const supabase = createSupabaseBackendClient();
-    let query = supabase.from("payments").select("*", { count: "exact" }).eq("member_id", memberId);
-    
+    const query = supabase.from("payments").select("*", { count: "exact" }).eq("member_id", memberId);
+
     const page = pagination.page || 1;
     const pageSize = pagination.pageSize || 20;
     const { data, count } = await query.range((page - 1) * pageSize, page * pageSize - 1);
-    
+
     return {
-      items: (data || []).map((row: any) => mapRowToMemberPaymentHistoryItemDTO(row)),
+      items: (data || []).map((row) => mapRowToMemberPaymentHistoryItemDTO(row)),
       total: count || 0,
       page,
       pageSize,
@@ -62,19 +62,19 @@ export class SupabasePaymentRepository implements PaymentRepository {
     memberQuery?: string
   ): Promise<string | null> {
     if (!memberQuery) return null;
-    
+
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
     if (uuidRegex.test(memberQuery)) {
       const { data } = await supabase.from("members").select("id").eq("id", memberQuery).single();
       if (data) return data.id;
     }
-    
+
     const { data: byPhone } = await supabase.from("members").select("id").eq("phone", memberQuery).single();
     if (byPhone) return byPhone.id;
-    
+
     const { data: byCode } = await supabase.from("members").select("id").eq("member_code", memberQuery).single();
     if (byCode) return byCode.id;
-    
+
     return null;
   }
 
@@ -87,7 +87,7 @@ export class SupabasePaymentRepository implements PaymentRepository {
       if (input.customAmount <= 0) throw new Error("Payment amount must be greater than 0");
       return input.customAmount;
     }
-    
+
     if (input.category === "monthly_dues") {
       if (!memberId) {
         throw new Error("A valid member is required to resolve monthly dues amount.");
@@ -105,7 +105,7 @@ export class SupabasePaymentRepository implements PaymentRepository {
 
       return Number(data);
     }
-    
+
     if (input.category === "special_event" && input.eventId) {
       const { data, error } = await supabase.rpc("resolve_payment_amount", {
         p_member_id: memberId || null,
@@ -146,14 +146,14 @@ export class SupabasePaymentRepository implements PaymentRepository {
       collected_by_admin_id: input.receivedByAdminId,
       notes: input.notes,
     }]).select("*").single();
-    
+
     if (error) throw error;
     return mapRowToPaymentDTO(data);
   }
 
   async recordCashEntry(input: RecordCashEntryInput, actor: ActorContext): Promise<CashEntryDTO> {
     const supabase = createSupabaseBackendClient();
-    
+
     const { data: adminUser } = await supabase.from("admin_users").select("name").eq("id", input.receivedByAdminId).single();
     if (!adminUser) throw new Error("Invalid admin user for cash entry");
 
@@ -169,7 +169,7 @@ export class SupabasePaymentRepository implements PaymentRepository {
         .select("phone, name")
         .eq("id", input.memberId)
         .single();
-        
+
       if (member) {
         if (!payerPhone) payerPhone = member.phone;
         if (!payerName) payerName = member.name;
@@ -201,7 +201,7 @@ export class SupabasePaymentRepository implements PaymentRepository {
     if (paymentError || !payment) {
       throw new Error("Failed to create linked payment for cash entry");
     }
-    
+
     const { data, error } = await supabase.from("cash_entries").insert([{
       payment_id: payment.id,
       member_id: input.memberId,
@@ -216,7 +216,7 @@ export class SupabasePaymentRepository implements PaymentRepository {
       notes: input.notes,
       status: "recorded"
     }]).select("*").single();
-    
+
     if (error) {
       throw new Error(`Cash entry insertion failed. Payment ID was ${payment.id}: ${error.message}`);
     }
@@ -232,7 +232,7 @@ export class SupabasePaymentRepository implements PaymentRepository {
       verified_by_admin_id: actor.adminId,
       verified_at: new Date().toISOString()
     }).eq("id", paymentId).select("*").single();
-    
+
     if (error) throw error;
     return mapRowToPaymentDTO(data);
   }
@@ -245,7 +245,7 @@ export class SupabasePaymentRepository implements PaymentRepository {
       verified_by_admin_id: actor.adminId,
       verified_at: new Date().toISOString()
     }).eq("id", paymentId).select("*").single();
-    
+
     if (error) throw error;
     return mapRowToPaymentDTO(data);
   }
@@ -256,7 +256,7 @@ export class SupabasePaymentRepository implements PaymentRepository {
       status: "cancelled",
       notes: reason
     }).eq("id", paymentId).select("*").single();
-    
+
     if (error) throw error;
     return mapRowToPaymentDTO(data);
   }

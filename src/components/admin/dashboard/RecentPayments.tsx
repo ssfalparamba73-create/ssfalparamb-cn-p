@@ -3,10 +3,10 @@
 import React from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Payment } from "@/lib/admin/admin-types";
+import type { DashboardRecentPaymentDTO } from "@/lib/backend/dto/dashboard.dto";
 
 interface RecentPaymentsProps {
-  payments: Payment[];
+  payments: DashboardRecentPaymentDTO[];
 }
 
 export function RecentPayments({ payments }: RecentPaymentsProps) {
@@ -42,23 +42,23 @@ export function RecentPayments({ payments }: RecentPaymentsProps) {
                   </div>
                 </div>
               </div>
-              
+
               <div className="text-right">
                 <p className="text-sm font-bold font-mono text-slate-900 dark:text-slate-50">
                   ₹{payment.amount.toLocaleString("en-IN")}
                 </p>
                 <div className="mt-1 flex items-center justify-end gap-2">
-                  <Badge 
-                    variant="outline" 
+                  <Badge
+                    variant="outline"
                     className={
-                      payment.category === "special_event" 
+                      payment.category === "special_event"
                         ? "bg-amber-50 text-amber-700 border-amber-200"
                         : "bg-blue-50 text-blue-700 border-blue-200"
                     }
                   >
                     {payment.category === "special_event" ? "Event" : "Dues"}
                   </Badge>
-                  <Badge 
+                  <Badge
                     variant="outline"
                     className={
                       payment.status === "confirmed" ? "bg-green-50 text-green-700 border-green-200" :

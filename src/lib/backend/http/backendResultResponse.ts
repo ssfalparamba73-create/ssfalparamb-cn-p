@@ -8,10 +8,11 @@ import { fail } from "../errors/resultHelpers";
  * Implements standard HTTP status code mapping and secure headers.
  */
 export function createBackendResponse<T>(
-  result: BackendResult<T>, 
-  requestId: string
+  result: BackendResult<T>,
+  requestId: string,
+  successStatus = 200
 ): NextResponse {
-  let status = 200;
+  let status = successStatus;
 
   if (!result.ok) {
     switch (result.error?.code) {
@@ -44,6 +45,8 @@ export function createBackendResponse<T>(
         break;
       case "DUPLICATE_PHONE":
       case "DUPLICATE_MEMBER_CODE":
+      case "ADMIN_ALREADY_EXISTS":
+      case "ADMIN_GUARD_VIOLATION":
       case "PAYMENT_ALREADY_VERIFIED":
         status = 409;
         break;
@@ -60,7 +63,7 @@ export function createBackendResponse<T>(
         status = 500;
         break;
     }
-    
+
     if (status === 500) {
       console.error(`[${requestId}] Backend request failed.`, {
         code: result.error?.code ?? "INTERNAL_ERROR",
@@ -73,6 +76,14 @@ export function createBackendResponse<T>(
       );
     }
   }
+
+  result = {
+    ...result,
+    meta: {
+      ...result.meta,
+      requestId,
+    },
+  };
 
   const response = NextResponse.json(result, { status });
 

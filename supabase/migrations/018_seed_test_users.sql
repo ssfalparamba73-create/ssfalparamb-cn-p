@@ -1,0 +1,2 @@
+-- Historical remote-only test migration.
+-- Intentionally kept as a no-op in source control so known test credentials are never replayed.

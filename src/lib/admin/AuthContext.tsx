@@ -1,40 +1,73 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect } from "react";
-import { AdminUser } from "./admin-types";
-import { MOCK_ADMIN_USERS } from "./mock-data";
+import React, { createContext, useContext, useEffect, useState } from "react";
+import { getCurrentSession, loginAdmin, logoutSession } from "@/lib/api/authClient";
+
+interface CurrentAdminUser {
+  id: string;
+  name: string;
+  avatarInitials: string;
+  role?: string;
+}
 
 interface AuthContextType {
-  currentUser: AdminUser | null;
+  currentUser: CurrentAdminUser | null;
   isLoading: boolean;
   login: (phone: string, pin: string) => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  // Hardcoding "Farhan" (admin_1) for now to keep the UI exactly as it was, 
-  // but now it's managed centrally here.
-  const [currentUser, setCurrentUser] = useState<AdminUser | null>(
-    MOCK_ADMIN_USERS.find(u => u.id === "admin_1") || null
-  );
-  const [isLoading, setIsLoading] = useState(false);
+  const [currentUser, setCurrentUser] = useState<CurrentAdminUser | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    let active = true;
+    getCurrentSession()
+      .then((session) => {
+        if (!active || session.actorType !== "admin") return;
+        setCurrentUser({
+          id: session.actorId,
+          name: session.actorName,
+          avatarInitials: session.actorName.slice(0, 2).toUpperCase(),
+          role: session.actorRole,
+        });
+      })
+      .catch(() => {
+        if (active) setCurrentUser(null);
+      })
+      .finally(() => {
+        if (active) setIsLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const login = async (phone: string, pin: string) => {
     setIsLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      const user = MOCK_ADMIN_USERS.find(u => u.phone === phone);
-      if (user) {
-        setCurrentUser(user);
-      }
+    try {
+      const session = await loginAdmin(phone, pin);
+      setCurrentUser({
+        id: session.actorId,
+        name: session.actorName,
+        avatarInitials: session.actorName.slice(0, 2).toUpperCase(),
+        role: session.actorRole,
+      });
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
-  const logout = () => {
-    setCurrentUser(null);
+  const logout = async () => {
+    try {
+      await logoutSession();
+    } finally {
+      setCurrentUser(null);
+    }
   };
 
   return (

@@ -1,44 +1,71 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, Edit, Key, Banknote, Phone, Clock, Copy, X, ExternalLink } from "lucide-react";
-import { MOCK_MEMBERS } from "@/lib/admin/mock-data";
+import { ArrowLeft, Edit, Key, Banknote, Phone, Clock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { MemberDetailTabs } from "@/components/admin/members/MemberDetailTabs";
-import Link from "next/link";
+import type { Member } from "@/lib/admin/admin-types";
+import { mapMemberDto } from "@/lib/admin/mapMemberDto";
+import { BackendApiError } from "@/lib/api/backendClient";
+import { getAdminMember, issueAdminMemberPin } from "@/lib/api/memberClient";
+import type { IssuedMemberPinDTO } from "@/lib/backend/dto/member.dto";
+import { toast } from "sonner";
+import { MemberInvitationDialog } from "@/components/admin/members/MemberInvitationDialog";
 
 export default function MemberDetailPage() {
   const params = useParams();
   const router = useRouter();
-  const [isPinModalOpen, setIsPinModalOpen] = useState(false);
-  const [generatedPin, setGeneratedPin] = useState<string | null>(null);
-  const [isCopied, setIsCopied] = useState(false);
+  const [member, setMember] = useState<Member | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [issuedPin, setIssuedPin] = useState<IssuedMemberPinDTO | null>(null);
+  const [isIssuingPin, setIsIssuingPin] = useState(false);
+  const memberId = typeof params.id === "string" ? params.id : null;
 
-  const handleGeneratePin = () => {
-    const newPin = Math.floor(1000 + Math.random() * 9000).toString();
-    setGeneratedPin(newPin);
-    setIsCopied(false);
-    setIsPinModalOpen(true);
-  };
+  useEffect(() => {
+    let active = true;
+    if (!memberId) return;
 
-  const handleCopy = () => {
-    if (generatedPin) {
-      navigator.clipboard.writeText(generatedPin);
-      setIsCopied(true);
-      setTimeout(() => setIsCopied(false), 2000);
-    }
-  };
+    getAdminMember(memberId)
+      .then((result) => {
+        if (active) setMember(mapMemberDto(result));
+      })
+      .catch((requestError: unknown) => {
+        if (requestError instanceof BackendApiError && requestError.status === 401) {
+          router.replace("/admin/login");
+          return;
+        }
+        if (active && !(requestError instanceof BackendApiError && requestError.status === 404)) {
+          setLoadError(requestError instanceof Error ? requestError.message : "Unable to load member.");
+        }
+      })
+      .finally(() => {
+        if (active) setIsLoading(false);
+      });
 
-  const handleWhatsApp = () => {
-    if (!member || !generatedPin) return;
-    const message = `Hello ${member.name}, your SSF Alparamba account is ready. Your login PIN is: *${generatedPin}*. Please login at our website.`;
-    const whatsappUrl = `https://wa.me/91${member.phone}?text=${encodeURIComponent(message)}`;
-    window.open(whatsappUrl, '_blank');
-  };
-  
-  const member = MOCK_MEMBERS.find((m) => m.id === params.id);
+    return () => {
+      active = false;
+    };
+  }, [memberId, router]);
+
+  if (!memberId) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[50vh] text-center">
+        <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100 mb-2">Member Not Found</h2>
+        <Button onClick={() => router.push("/admin/members")}>Back to Directory</Button>
+      </div>
+    );
+  }
+
+  if (isLoading) {
+    return <p className="text-sm text-slate-500 dark:text-slate-400">Loading member...</p>;
+  }
+
+  if (loadError) {
+    return <p className="text-sm text-red-600 dark:text-red-400">{loadError}</p>;
+  }
 
   if (!member) {
     return (
@@ -50,14 +77,30 @@ export default function MemberDetailPage() {
     );
   }
 
-  const isDefaulter = member.status === "inactive" || member.pinStatus === "reset_required";
+  const isDefaulter = member.duesPending > 0;
+
+  const handleIssuePin = async () => {
+    if (!window.confirm("Generate a new PIN and invitation? The old PIN will stop working and any existing member login session will end.")) return;
+    setIsIssuingPin(true);
+    try {
+      setIssuedPin(await issueAdminMemberPin(member.id));
+    } catch (error) {
+      if (error instanceof BackendApiError && error.status === 401) {
+        router.replace("/admin/login");
+        return;
+      }
+      toast.error(error instanceof Error ? error.message : "Unable to generate PIN.");
+    } finally {
+      setIsIssuingPin(false);
+    }
+  };
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300 pb-10">
-      
+
       {/* Top Navigation */}
       <div className="flex items-center gap-2">
-        <button 
+        <button
           onClick={() => router.push("/admin/members")}
           className="p-2 -ml-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 transition-colors"
         >
@@ -86,7 +129,7 @@ export default function MemberDetailPage() {
                    )}
                  </div>
                  <div className="text-slate-500 dark:text-slate-400 font-mono mb-2">{member.memberId}</div>
-                 
+
                  <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm mt-4">
                     <div className="flex items-center text-slate-600 dark:text-slate-300">
                       <Phone className="w-4 h-4 mr-2 text-slate-400" />
@@ -102,15 +145,13 @@ export default function MemberDetailPage() {
 
            {/* Quick Actions */}
            <div className="grid grid-cols-2 md:flex items-center gap-2 w-full md:w-auto mt-6 md:mt-0">
-              <Link href={`/admin/members/${member.id}/edit`} className="w-full md:w-auto">
-                <Button variant="outline" className="w-full h-10 border-slate-200 text-slate-700 dark:border-slate-700 dark:text-slate-300">
+                <Button onClick={() => router.push(`/admin/members/${member.id}/edit`)} variant="outline" className="w-full md:w-auto h-10 border-slate-200 text-slate-700 dark:border-slate-700 dark:text-slate-300">
                   <Edit className="w-4 h-4 mr-2" /> Edit
                 </Button>
-              </Link>
-              <Button onClick={handleGeneratePin} variant="outline" className="w-full h-10 border-slate-200 text-slate-700 dark:border-slate-700 dark:text-slate-300">
-                <Key className="w-4 h-4 mr-2" /> Reset PIN
+              <Button onClick={handleIssuePin} disabled={isIssuingPin || member.status !== "active"} variant="outline" className="w-full h-10 border-slate-200 text-slate-700 dark:border-slate-700 dark:text-slate-300">
+                <Key className="w-4 h-4 mr-2" /> {isIssuingPin ? "Generating..." : "Reset PIN"}
               </Button>
-              <Button className="col-span-2 md:col-auto w-full h-10 bg-blue-600 hover:bg-blue-700 text-white">
+              <Button onClick={() => toast.info("Cash recording will be enabled in the payment phase.")} className="col-span-2 md:col-auto w-full h-10 bg-blue-600 hover:bg-blue-700 text-white">
                 <Banknote className="w-4 h-4 mr-2" /> Record Cash
               </Button>
            </div>
@@ -120,44 +161,18 @@ export default function MemberDetailPage() {
       {/* Detail Tabs */}
       <MemberDetailTabs member={member} />
 
-      {/* PIN Reset Modal */}
-      {isPinModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl w-full max-w-sm overflow-hidden shadow-xl border border-slate-200 dark:border-slate-800 animate-in zoom-in-95">
-            <div className="flex items-center justify-between p-4 border-b border-slate-100 dark:border-slate-800">
-              <h3 className="font-semibold text-slate-900 dark:text-slate-100 flex items-center">
-                <Key className="w-4 h-4 mr-2 text-blue-600" />
-                Generated PIN
-              </h3>
-              <button onClick={() => setIsPinModalOpen(false)} className="text-slate-400 hover:text-slate-600 p-1">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            
-            <div className="p-6 text-center space-y-4">
-              <p className="text-sm text-slate-500">
-                Share this 4-digit PIN with <strong>{member.name}</strong> to allow them to login.
-              </p>
-              
-              <div className="text-5xl font-mono font-bold tracking-widest text-slate-900 dark:text-slate-50 py-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800">
-                {generatedPin}
-              </div>
-
-              <div className="flex flex-col gap-2 pt-2">
-                <Button onClick={handleCopy} variant="outline" className="w-full h-12 bg-white dark:bg-slate-900">
-                  <Copy className="w-4 h-4 mr-2 text-slate-500" />
-                  {isCopied ? "Copied!" : "Copy PIN"}
-                </Button>
-                
-                <Button onClick={handleWhatsApp} className="w-full h-12 bg-[#25D366] hover:bg-[#128C7E] text-white">
-                  <ExternalLink className="w-4 h-4 mr-2" />
-                  Send via WhatsApp
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
+      {issuedPin && (
+        <MemberInvitationDialog
+          memberName={issuedPin.memberName}
+          phone={issuedPin.phone}
+          pin={issuedPin.pin}
+          message={issuedPin.message}
+          title="Member invitation ready"
+          description="Share this new login invitation now. The previous PIN no longer works, and this PIN is shown only once."
+          onClose={() => setIssuedPin(null)}
+        />
       )}
+
     </div>
   );
 }

@@ -1,20 +1,20 @@
-import { 
-  MOCK_MEMBERS, 
-  MOCK_PAYMENTS, 
-  MOCK_DASHBOARD_STATS, 
+import {
+  MOCK_MEMBERS,
+  MOCK_PAYMENTS,
+  MOCK_DASHBOARD_STATS,
   MOCK_SPECIAL_EVENTS,
   MOCK_AUDIT,
   MOCK_CONTACTS,
   MOCK_CASH_HANDOVERS,
-  MOCK_BLOOD_DONORS,
   MOCK_ADMIN_USERS
 } from './mock-data';
+import { getAllAdminBloodDonors } from '../api/memberClient';
 
 /**
  * Admin API Service Layer
- * 
+ *
  * This file serves as the single source of truth for all data fetching in the admin panel.
- * Currently, it returns mock data. When the real backend is ready, we will replace the 
+ * Currently, it returns mock data. When the real backend is ready, we will replace the
  * internals of these functions with actual fetch/Supabase calls.
  */
 
@@ -61,7 +61,7 @@ export async function getAuditLogs() {
 
 // --- Blood Donors ---
 export async function getBloodDonors() {
-  return MOCK_BLOOD_DONORS;
+  return getAllAdminBloodDonors();
 }
 
 // --- Settings & Config ---

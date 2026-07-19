@@ -113,7 +113,7 @@ export function ReportsDashboard() {
                    <p className="text-sm text-slate-500">Overview of pending dues</p>
                  </div>
                </div>
-               
+
                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
                  <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-red-100 dark:border-red-800/30">
                    <p className="text-sm text-slate-500 mb-1">Total Pending</p>
@@ -145,7 +145,7 @@ export function ReportsDashboard() {
                    <p className="text-sm text-slate-500">Availability by Blood Group</p>
                  </div>
                </div>
-               
+
                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                  {([
                    { group: "O+", count: 8 },
@@ -180,7 +180,7 @@ export function ReportsDashboard() {
                    <p className="text-sm text-slate-500">Recent actions performed by administrators</p>
                  </div>
                </div>
-               
+
                <div className="space-y-6 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-slate-200 dark:before:via-slate-700 before:to-transparent">
                  {[1, 2, 3, 4].map((i) => (
                    <div key={i} className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
@@ -192,7 +192,7 @@ export function ReportsDashboard() {
                          <h4 className="font-bold text-slate-900 dark:text-slate-100 text-sm">Shibili N added a member</h4>
                          <time className="text-xs text-slate-500">{i * 2} hours ago</time>
                        </div>
-                       <p className="text-sm text-slate-600 dark:text-slate-400">Member details for "Afsal T" updated successfully.</p>
+                       <p className="text-sm text-slate-600 dark:text-slate-400">Member details for &quot;Afsal T&quot; updated successfully.</p>
                      </div>
                    </div>
                  ))}
@@ -240,7 +240,7 @@ export function ReportsDashboard() {
             </Select>
           </div>
         </div>
-        
+
         <div className="flex flex-col sm:flex-row gap-2 w-full lg:w-auto shrink-0">
           <Button onClick={handleExportPDF} variant="outline" className="w-full sm:w-auto border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800">
             <Download className="w-4 h-4 mr-2" />

@@ -24,6 +24,7 @@ export interface Member {
   duesPending: number;
   createdAt: string;
   updatedAt: string;
+  familyMembers?: FamilyMember[];
 }
 
 export interface FamilyMember {

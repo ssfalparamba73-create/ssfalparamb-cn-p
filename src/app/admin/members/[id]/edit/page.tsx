@@ -1,18 +1,59 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { MemberForm } from "@/components/admin/members/MemberForm";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
-import { MOCK_MEMBERS } from "@/lib/admin/mock-data";
 import { Button } from "@/components/ui/button";
+import type { Member } from "@/lib/admin/admin-types";
+import { mapMemberDto } from "@/lib/admin/mapMemberDto";
+import { BackendApiError } from "@/lib/api/backendClient";
+import { getAdminMember } from "@/lib/api/memberClient";
 
 export default function EditMemberPage() {
   const params = useParams();
   const router = useRouter();
-  
-  const member = MOCK_MEMBERS.find((m) => m.id === params.id);
+  const memberId = typeof params.id === "string" ? params.id : null;
+  const [member, setMember] = useState<Member | null>(null);
+  const [isLoading, setIsLoading] = useState(Boolean(memberId));
+  const [loadError, setLoadError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    if (!memberId) {
+      return;
+    }
+
+    getAdminMember(memberId)
+      .then((result) => {
+        if (active) setMember(mapMemberDto(result));
+      })
+      .catch((error: unknown) => {
+        if (error instanceof BackendApiError && error.status === 401) {
+          router.replace("/admin/login");
+          return;
+        }
+        if (active && !(error instanceof BackendApiError && error.status === 404)) {
+          setLoadError(error instanceof Error ? error.message : "Unable to load member.");
+        }
+      })
+      .finally(() => {
+        if (active) setIsLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [memberId, router]);
+
+  if (isLoading) {
+    return <p className="text-sm text-slate-500 dark:text-slate-400">Loading member...</p>;
+  }
+
+  if (loadError) {
+    return <p className="text-sm text-red-600 dark:text-red-400">{loadError}</p>;
+  }
 
   if (!member) {
     return (
@@ -31,10 +72,10 @@ export default function EditMemberPage() {
         </Link>
         <div>
           <h2 className="text-xl font-bold text-slate-900 dark:text-slate-50">Edit Member</h2>
-          <p className="text-sm text-slate-500 dark:text-slate-400">Update {member.name}'s profile.</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400">Update {member.name}&apos;s profile.</p>
         </div>
       </div>
-      
+
       <MemberForm isEdit={true} initialData={member} />
     </div>
   );

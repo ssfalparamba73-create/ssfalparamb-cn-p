@@ -1,14 +1,14 @@
 import React from "react";
 
-export interface DataTableProps {
+export interface DataTableProps<T> {
   columns: { key: string; label: string; className?: string }[];
-  data: any[];
-  renderRow: (item: any) => React.ReactNode;
+  data: T[];
+  renderRow: (item: T) => React.ReactNode;
   emptyMessage?: string;
   className?: string;
 }
 
-export function DataTable({ columns, data, renderRow, emptyMessage = "No data available.", className = "" }: DataTableProps) {
+export function DataTable<T>({ columns, data, renderRow, emptyMessage = "No data available.", className = "" }: DataTableProps<T>) {
   return (
     <div className={`bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm ${className}`}>
       <div className="overflow-x-auto">
@@ -24,7 +24,7 @@ export function DataTable({ columns, data, renderRow, emptyMessage = "No data av
           </thead>
           <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
             {data.length > 0 ? (
-              data.map((item, index) => renderRow(item))
+              data.map((item) => renderRow(item))
             ) : (
               <tr>
                 <td colSpan={columns.length} className="px-4 py-8 text-center text-slate-500">

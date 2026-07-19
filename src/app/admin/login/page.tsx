@@ -2,16 +2,18 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Loader2 } from "lucide-react";
-import Image from "next/image";
 import { TransparentLogo } from "@/components/TransparentLogo";
+import { useAuth } from "@/lib/admin/AuthContext";
+import { toast } from "sonner";
 
 export default function AdminLoginPage() {
   const router = useRouter();
+  const { login } = useAuth();
   const [step, setStep] = useState<1 | 2>(1);
   const [phone, setPhone] = useState("");
   const [pin, setPin] = useState(["", "", "", ""]);
@@ -48,19 +50,24 @@ export default function AdminLoginPage() {
     }
   };
 
-  const handlePinSubmit = (e: React.FormEvent) => {
+  const handlePinSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (pin.every((p) => p !== "")) {
       setIsLoading(true);
-      setTimeout(() => {
+      try {
+        await login(phone, pin.join(""));
         router.push("/admin/dashboard");
-      }, 800);
+      } catch (error) {
+        toast.error(error instanceof Error ? error.message : "Unable to sign in.");
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
   return (
     <div className="min-h-screen flex flex-col justify-center items-center p-4 relative overflow-hidden bg-[radial-gradient(circle_at_18%_18%,rgba(59,130,246,0.24),transparent_24rem),radial-gradient(circle_at_86%_24%,rgba(34,197,94,0.24),transparent_20rem),linear-gradient(135deg,#f8fbff_0%,#eef8ff_48%,#effdf7_100%)]">
-      
+
       {/* Decorative background gradients from landing page */}
       <div className="pointer-events-none absolute inset-0 opacity-70 [background-image:radial-gradient(circle_at_1px_1px,rgba(37,99,235,0.16)_1px,transparent_0)] [background-size:34px_34px]" />
       <div className="pointer-events-none absolute -bottom-32 -left-24 h-80 w-[72rem] rotate-[-7deg] rounded-[100%] bg-gradient-to-r from-blue-500/30 via-cyan-300/28 to-emerald-300/30 blur-2xl" />
@@ -99,8 +106,8 @@ export default function AdminLoginPage() {
                   />
                 </div>
               </div>
-              <Button 
-                type="submit" 
+              <Button
+                type="submit"
                 className="w-full h-12 text-base font-semibold bg-blue-600 hover:bg-blue-700 text-white"
                 disabled={phone.length !== 10 || isLoading}
               >
@@ -131,8 +138,8 @@ export default function AdminLoginPage() {
                   ))}
                 </div>
               </div>
-              <Button 
-                type="submit" 
+              <Button
+                type="submit"
                 className="w-full h-12 text-base font-semibold bg-blue-600 hover:bg-blue-700 text-white mt-8"
                 disabled={pin.some((p) => p === "") || isLoading}
               >

@@ -34,7 +34,6 @@ function PayNowContent() {
 
     // requestIdleCallback ensures this only runs when the browser is completely free
     if ('requestIdleCallback' in window) {
-      // @ts-ignore - TS might not know requestIdleCallback in all environments
       window.requestIdleCallback(preloadImages);
     } else {
       setTimeout(preloadImages, 2500);
@@ -46,9 +45,9 @@ function PayNowContent() {
   const [selectedMonths, setSelectedMonths] = useState<string[]>(["current"]);
   const [duesTier, setDuesTier] = useState<50 | 100>(50);
   const [customAmount, setCustomAmount] = useState<string>("");
-  
+
   // Admin toggle for Special Event
-  const isSpecialEventActive = true; 
+  const isSpecialEventActive = true;
 
   const mockPendingMonths = [
     { id: "current", label: "July 2026 (Current Month)" },
@@ -57,7 +56,7 @@ function PayNowContent() {
   ];
 
   const handleMonthToggle = (id: string) => {
-    setSelectedMonths(prev => 
+    setSelectedMonths(prev =>
       prev.includes(id) ? prev.filter(m => m !== id) : [...prev, id]
     );
   };
@@ -69,8 +68,8 @@ function PayNowContent() {
     finalAmount = parseInt(customAmount) || 0;
   }
 
-  const isButtonDisabled = 
-    !memberQuery.trim() || 
+  const isButtonDisabled =
+    !memberQuery.trim() ||
     (paymentMethod === "cash" && !selectedAdmin) ||
     (activeTab === "dues" && selectedMonths.length === 0) ||
     (activeTab === "event" && finalAmount < 30);
@@ -94,7 +93,7 @@ function PayNowContent() {
 
   // Removed old isButtonDisabled
 
-  const MockQrCodeSvg = () => (
+  const renderMockQrCode = () => (
     <svg width="180" height="180" viewBox="0 0 29 29" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-40 h-40 mx-auto text-slate-800">
       <path d="M0 0h7v7H0V0zm1 1v5h5V1H1zm1 1h3v3H2V2zM0 22h7v7H0v-7zm1 1v5h5v-5H1zm2 2v-1h1v1H3zm-2-2h1v1H1v-1zm4 0h1v1H5v-1zm1 2h1v1H6v-1zm-4 2h1v1H2v-1zm3 0h1v1H5v-1zM22 0h7v7h-7V0zm1 1v5h5V1h-5zm1 1h3v3h-3V2zM22 22h7v7h-7v-7zm1 1h5v5h-5v-5zm2 2h1v1h-1v-1zM9 1h1v1H9V1zm2 0h1v1h-1V1zm3 0h2v1h-2V1zm4 0h1v1h-1V1zm-9 2h1v1H9V3zm2 0h2v1h-2V3zm3 0h1v1h-1V3zm2 0h1v1h-1V3zm-8 2h2v1H9V5zm3 0h1v1h-1V5zm1 0h1v1h-1V5zm2 0h1v1h-1V5zm-7 2h1v1H9V7zm2 0h1v1h-1V7zm2 0h2v1h-2V7zm3 0h1v1h-1V7zm-8 2h1v1H8V9zm3 0h2v1h-2V9zm4 0h1v1h-1V9zm-8 2h1v1H8v-1zm2 0h1v1h-1v-1zm3 0h1v1h-1v-1zm1 0h1v1h-1v-1zm2 0h1v1h-1v-1zm-9 2h2v1H8v-1zm3 0h1v1h-1v-1zm1 0h1v1h-1v-1zm3 0h1v1h-1v-1zm2 0h1v1h-1v-1zm-9 2h1v1H8v-1zm2 0h1v1h-1v-1zm2 0h2v1h-2v-1zm4 0h1v1h-1v-1zm-9 2h1v1H8v-1zm3 0h2v1h-2v-1zm3 0h1v1h-1v-1zm1 0h1v1h-1v-1zm-8 2h1v1H9v-1zm2 0h1v1h-1v-1zm1 0h1v1h-1v-1zm3 0h1v1h-1v-1zm-7 2h2v1H9v-1zm3 0h1v1h-1v-1zm1 0h1v1h-1v-1zm3 0h1v1h-1v-1zm-7 2h1v1H9v-1zm2 0h1v1h-1v-1zm2 0h2v1h-2v-1zm3 0h1v1h-1v-1z" fill="currentColor"/>
     </svg>
@@ -106,7 +105,7 @@ function PayNowContent() {
         <Link href={source === "member" ? "/member/dashboard" : "/"} className="inline-flex items-center text-sm font-medium text-muted-foreground hover:text-foreground">
           <ArrowLeft className="mr-2 size-4" /> {source === "member" ? "Back to Dashboard" : "Back to Home"}
         </Link>
-        
+
         <div className="text-center space-y-2 flex flex-col items-center">
           <img src="/logo/logo-transparent.svg" alt="SSF Logo" className="h-14 w-auto object-contain mb-1" />
           <h1 className="text-2xl font-bold tracking-tight text-foreground dark:text-slate-50">
@@ -123,16 +122,16 @@ function PayNowContent() {
           <CardContent className="space-y-5">
             <div className="space-y-2">
               <Label htmlFor="phone">Phone Number or Member ID</Label>
-              <Input 
-                id="phone" 
-                placeholder="Enter your 10 digit number" 
-                type="tel" 
+              <Input
+                id="phone"
+                placeholder="Enter your 10 digit number"
+                type="tel"
                 className="bg-white dark:bg-slate-900/50 dark:border-slate-700 dark:text-slate-50 dark:focus-visible:ring-blue-500/30 dark:focus-visible:border-blue-500/50"
                 value={memberQuery}
                 onChange={(e) => setMemberQuery(e.target.value)}
               />
             </div>
-            
+
             {/* Category Tabs */}
             <div className="bg-secondary/50 p-1 rounded-xl flex items-center mb-2 dark:bg-slate-800">
               <button
@@ -152,7 +151,7 @@ function PayNowContent() {
                 </button>
               )}
             </div>
-            
+
             {/* Tab Contents */}
             <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
               {activeTab === "dues" ? (
@@ -206,10 +205,10 @@ function PayNowContent() {
                     <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Enter Custom Amount</Label>
                     <div className="relative">
                       <span className="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-slate-400 text-lg">₹</span>
-                      <Input 
-                        type="number" 
-                        placeholder="0" 
-                        className="pl-9 h-14 text-lg font-bold bg-white dark:bg-slate-900/50 dark:border-slate-700 dark:text-slate-50 dark:focus-visible:ring-blue-500/30 dark:focus-visible:border-blue-500/50" 
+                      <Input
+                        type="number"
+                        placeholder="0"
+                        className="pl-9 h-14 text-lg font-bold bg-white dark:bg-slate-900/50 dark:border-slate-700 dark:text-slate-50 dark:focus-visible:ring-blue-500/30 dark:focus-visible:border-blue-500/50"
                         value={customAmount}
                         onChange={(e) => setCustomAmount(e.target.value)}
                         min="30"
@@ -228,18 +227,18 @@ function PayNowContent() {
             <div className="space-y-3">
               <Label>Payment Method</Label>
               <div className="grid grid-cols-2 gap-3">
-                <Button 
+                <Button
                   type="button"
-                  variant="outline" 
+                  variant="outline"
                   className={`h-16 flex flex-col gap-1 transition-all ${paymentMethod === "upi" ? "border-primary bg-primary/5 text-primary dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/50" : "text-muted-foreground hover:text-foreground dark:bg-slate-800 dark:border-slate-700 dark:hover:bg-slate-700 dark:hover:text-slate-200"}`}
                   onClick={() => setPaymentMethod("upi")}
                 >
                   <CreditCard className="size-5" />
                   <span className="text-xs">UPI App</span>
                 </Button>
-                <Button 
+                <Button
                   type="button"
-                  variant="outline" 
+                  variant="outline"
                   className={`h-16 flex flex-col gap-1 transition-all ${paymentMethod === "cash" ? "border-primary bg-primary/5 text-primary dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/50" : "text-muted-foreground hover:text-foreground dark:bg-slate-800 dark:border-slate-700 dark:hover:bg-slate-700 dark:hover:text-slate-200"}`}
                   onClick={() => setPaymentMethod("cash")}
                 >
@@ -253,29 +252,29 @@ function PayNowContent() {
                 <div className="mt-4 p-4 rounded-xl border bg-secondary/30 space-y-3 animate-in fade-in slide-in-from-top-2 duration-200 dark:bg-slate-800/50 dark:border-slate-700">
                   <p className="text-xs font-medium text-muted-foreground">Select your UPI App</p>
                   <div className="grid grid-cols-2 gap-2">
-                    <Button 
-                      variant="outline" 
+                    <Button
+                      variant="outline"
                       className={`justify-center h-12 hover:bg-accent/50 transition-colors ${selectedUpiApp === "gpay" ? "border-primary bg-primary/5 shadow-sm dark:bg-blue-500/10 dark:border-blue-500/50" : "bg-background dark:bg-slate-800 dark:border-slate-700 dark:hover:bg-slate-700"}`}
                       onClick={() => setSelectedUpiApp("gpay")}
                     >
                       <img src="/icons/googlepay.svg" alt="GPay" className="h-6 w-auto object-contain" />
                     </Button>
-                    <Button 
-                      variant="outline" 
+                    <Button
+                      variant="outline"
                       className={`justify-center h-12 hover:bg-accent/50 transition-colors ${selectedUpiApp === "phonepe" ? "border-primary bg-primary/5 shadow-sm dark:bg-blue-500/10 dark:border-blue-500/50" : "bg-background dark:bg-slate-800 dark:border-slate-700 dark:hover:bg-slate-700"}`}
                       onClick={() => setSelectedUpiApp("phonepe")}
                     >
                       <img src="/icons/phonepe.svg" alt="PhonePe" className="h-6 w-auto object-contain" />
                     </Button>
-                    <Button 
-                      variant="outline" 
+                    <Button
+                      variant="outline"
                       className={`justify-center h-12 hover:bg-accent/50 transition-colors ${selectedUpiApp === "paytm" ? "border-primary bg-primary/5 shadow-sm dark:bg-blue-500/10 dark:border-blue-500/50" : "bg-background dark:bg-slate-800 dark:border-slate-700 dark:hover:bg-slate-700"}`}
                       onClick={() => setSelectedUpiApp("paytm")}
                     >
                       <img src="/icons/paytm.svg" alt="Paytm" className="h-5 w-auto object-contain" />
                     </Button>
-                    <Button 
-                      variant="outline" 
+                    <Button
+                      variant="outline"
                       className={`justify-center gap-2 h-12 hover:bg-accent/50 transition-colors ${selectedUpiApp === "other" ? "border-primary bg-primary/5 shadow-sm dark:bg-blue-500/10 dark:border-blue-500/50" : "bg-background dark:bg-slate-800 dark:border-slate-700 dark:hover:bg-slate-700"}`}
                       onClick={() => setSelectedUpiApp("other")}
                     >
@@ -290,16 +289,16 @@ function PayNowContent() {
                         <Label htmlFor="upi-id" className="text-xs text-muted-foreground">Enter UPI ID</Label>
                         <Input id="upi-id" placeholder="example@okhdfcbank" className="mt-1 h-11 bg-background dark:bg-slate-900/50 dark:border-slate-700 dark:text-slate-50 dark:focus-visible:ring-blue-500/30 dark:focus-visible:border-blue-500/50" />
                       </div>
-                      
+
                       <div className="relative flex items-center py-1">
                         <div className="flex-grow border-t border-slate-200 dark:border-slate-700"></div>
                         <span className="flex-shrink mx-3 text-slate-400 text-[10px] uppercase font-semibold tracking-wider">Or</span>
                         <div className="flex-grow border-t border-slate-200 dark:border-slate-700"></div>
                       </div>
 
-                      <Button 
-                        type="button" 
-                        variant="outline" 
+                      <Button
+                        type="button"
+                        variant="outline"
                         className="w-full h-11 flex items-center justify-center gap-2 rounded-xl border-[#E5EAF3] hover:bg-slate-50 transition-all dark:border-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700"
                         onClick={handleQrClick}
                       >
@@ -311,7 +310,7 @@ function PayNowContent() {
                         <div className="pt-2 pb-1 border-t border-slate-100 flex flex-col items-center justify-center animate-in fade-in zoom-in duration-200">
                           <p className="text-xs font-semibold text-slate-500 mb-2">Scan & Pay ₹100</p>
                           <div className="border border-slate-200 p-2 rounded-xl bg-white shadow-sm">
-                            <MockQrCodeSvg />
+                            {renderMockQrCode()}
                           </div>
                         </div>
                       )}
@@ -326,7 +325,7 @@ function PayNowContent() {
                   <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                     Received By
                   </Label>
-                  
+
                   <div className="relative">
                     <button
                       type="button"
@@ -334,8 +333,8 @@ function PayNowContent() {
                       onClick={() => setIsAdminDropdownOpen(!isAdminDropdownOpen)}
                     >
                       <span className={selectedAdmin ? "text-foreground font-medium" : "text-muted-foreground"}>
-                        {selectedAdmin 
-                          ? `${selectedAdmin} (${admins.find(a => a.name === selectedAdmin)?.role})` 
+                        {selectedAdmin
+                          ? `${selectedAdmin} (${admins.find(a => a.name === selectedAdmin)?.role})`
                           : "Select Admin"}
                       </span>
                       <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform duration-200 ${isAdminDropdownOpen ? "rotate-180" : ""}`} />
@@ -343,8 +342,8 @@ function PayNowContent() {
 
                     {isAdminDropdownOpen && (
                       <>
-                        <div 
-                          className="fixed inset-0 z-20" 
+                        <div
+                          className="fixed inset-0 z-20"
                           onClick={() => setIsAdminDropdownOpen(false)}
                         />
                         <div className="absolute left-0 right-0 mt-2 z-30 max-h-40 overflow-auto rounded-xl border border-[#E5EAF3] bg-white p-1 shadow-lg animate-in fade-in slide-in-from-top-2 duration-150 dark:border-slate-700 dark:bg-slate-800">
@@ -353,8 +352,8 @@ function PayNowContent() {
                               key={admin.id}
                               type="button"
                               className={`w-full text-left px-4 py-1.5 rounded-lg transition-colors flex flex-col ${
-                                selectedAdmin === admin.name 
-                                  ? "bg-primary/10 text-primary font-medium dark:bg-blue-500/15 dark:text-blue-400" 
+                                selectedAdmin === admin.name
+                                  ? "bg-primary/10 text-primary font-medium dark:bg-blue-500/15 dark:text-blue-400"
                                   : "text-slate-700 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-700"
                               }`}
                               onClick={() => {
@@ -375,12 +374,12 @@ function PayNowContent() {
             </div>
           </CardContent>
           <CardFooter className="flex-col gap-4">
-            <Link 
-              href={isButtonDisabled ? "#" : `/success?method=${paymentMethod}&admin=${encodeURIComponent(selectedAdmin)}&phone=${encodeURIComponent(memberQuery)}&amount=${finalAmount}${activeTab === 'event' ? '&category=special_event' : ''}${source === 'member' ? '&source=member' : ''}`} 
+            <Link
+              href={isButtonDisabled ? "#" : `/success?method=${paymentMethod}&admin=${encodeURIComponent(selectedAdmin)}&phone=${encodeURIComponent(memberQuery)}&amount=${finalAmount}${activeTab === 'event' ? '&category=special_event' : ''}${source === 'member' ? '&source=member' : ''}`}
               className={`w-full ${isButtonDisabled ? "pointer-events-none" : ""}`}
             >
-              <Button 
-                size="lg" 
+              <Button
+                size="lg"
                 className="w-full text-lg h-14 rounded-xl"
                 disabled={isButtonDisabled}
               >
@@ -396,7 +395,7 @@ function PayNowContent() {
 
       {showQrModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div 
+          <div
             className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-all animate-in fade-in duration-200"
             onClick={() => setShowQrModal(false)}
           />
@@ -409,8 +408,8 @@ function PayNowContent() {
                   <span className="font-cooper font-normal">SSF</span> Alparamba Unit
                 </span>
               </div>
-              <button 
-                type="button" 
+              <button
+                type="button"
                 className="text-slate-400 hover:text-slate-600 transition-colors p-1"
                 onClick={() => setShowQrModal(false)}
               >
@@ -425,9 +424,9 @@ function PayNowContent() {
               <span className="bg-green-50 text-green-700 text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full border border-green-100 mb-4">
                 Official UPI Terminal
               </span>
-              
+
               <div className="border border-[#E5EAF3] p-4 rounded-2xl bg-white shadow-[0_4px_20px_rgba(0,0,0,0.02)] mb-5 dark:border-slate-700 dark:bg-slate-800">
-                <MockQrCodeSvg />
+                {renderMockQrCode()}
               </div>
 
               {/* Transaction Detail Card */}
@@ -451,8 +450,8 @@ function PayNowContent() {
                 <ShieldCheck className="size-4 text-green-600" /> Powered by BHIM UPI / Secure Transaction
               </p>
 
-              <Button 
-                type="button" 
+              <Button
+                type="button"
                 className="w-full h-11 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold transition-all"
                 onClick={() => setShowQrModal(false)}
               >

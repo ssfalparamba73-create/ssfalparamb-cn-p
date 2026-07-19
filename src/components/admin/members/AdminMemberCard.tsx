@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { AdminActionIcon } from "@/components/admin/layout/AdminActionIcon";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { MemberInvitationAction } from "./MemberInvitationAction";
 
 interface AdminMemberCardProps {
   member: Member;
@@ -16,12 +17,11 @@ interface AdminMemberCardProps {
 export function AdminMemberCard({ member }: AdminMemberCardProps) {
   const router = useRouter();
   const [showPaymentWarning, setShowPaymentWarning] = useState(false);
-  const [isPaid, setIsPaid] = useState(false);
 
-  const isDefaulter = !isPaid && (member.status === "inactive" || member.pinStatus === "reset_required");
+  const isDefaulter = member.duesPending > 0;
 
   return (
-    <div 
+    <div
       onClick={() => router.push(`/admin/members/${member.id}`)}
       className="block bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-4 mb-3 sm:hidden shadow-sm hover:shadow-md transition-all active:scale-[0.98] cursor-pointer"
     >
@@ -56,7 +56,7 @@ export function AdminMemberCard({ member }: AdminMemberCardProps) {
         <div>
           <div className="text-xs text-slate-500 mb-0.5">Status</div>
           {isDefaulter ? (
-             <button 
+             <button
                onClick={(e) => {
                  e.stopPropagation();
                  setShowPaymentWarning(true);
@@ -65,12 +65,10 @@ export function AdminMemberCard({ member }: AdminMemberCardProps) {
              >
                <Clock className="w-3 h-3 mr-1" /> Overdue
              </button>
-          ) : isPaid ? (
-             <div className="text-green-600 dark:text-green-400 flex items-center text-xs mt-0.5 font-medium bg-green-50 dark:bg-green-900/20 px-2 py-0.5 rounded w-fit">
-               <CheckCircle2 className="w-3 h-3 mr-1" /> Paid
-             </div>
           ) : (
-             <div className="text-slate-700 dark:text-slate-300 text-xs mt-0.5">Clear</div>
+             <div className="text-green-600 dark:text-green-400 flex items-center text-xs mt-0.5 font-medium bg-green-50 dark:bg-green-900/20 px-2 py-0.5 rounded w-fit">
+               <CheckCircle2 className="w-3 h-3 mr-1" /> Clear
+             </div>
           )}
         </div>
       </div>
@@ -84,15 +82,18 @@ export function AdminMemberCard({ member }: AdminMemberCardProps) {
             </span>
           )}
         </div>
-        
-        <AdminActionIcon aria-label="View Details" className="h-8 w-8 pointer-events-none">
-          <ChevronRight className="w-4 h-4 text-slate-400" />
-        </AdminActionIcon>
+
+        <div className="flex items-center gap-2">
+          <MemberInvitationAction member={member} compact />
+          <AdminActionIcon aria-label="View Details" className="h-8 w-8 pointer-events-none">
+            <ChevronRight className="w-4 h-4 text-slate-400" />
+          </AdminActionIcon>
+        </div>
       </div>
 
       {/* Warning Modal */}
       {showPaymentWarning && (
-        <div 
+        <div
           className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4"
           onClick={(e) => e.stopPropagation()}
         >
@@ -101,28 +102,27 @@ export function AdminMemberCard({ member }: AdminMemberCardProps) {
               Mark as Paid?
             </h3>
             <p className="text-slate-600 dark:text-slate-400 text-sm mb-6 leading-relaxed">
-              Are you sure you want to mark <span className="font-semibold text-slate-900 dark:text-slate-100">{member.name}</span>'s dues as paid? This will record a cash transaction.
+              Payment recording is not connected yet. <span className="font-semibold text-slate-900 dark:text-slate-100">{member.name}</span>&apos;s pending dues will not be changed.
             </p>
             <div className="flex justify-end gap-3">
-              <Button 
-                variant="outline" 
-                onClick={(e) => { 
-                  e.stopPropagation(); 
-                  setShowPaymentWarning(false); 
+              <Button
+                variant="outline"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowPaymentWarning(false);
                 }}
               >
                 Cancel
               </Button>
-              <Button 
-                onClick={(e) => { 
-                  e.stopPropagation(); 
-                  setIsPaid(true);
+              <Button
+                onClick={(e) => {
+                  e.stopPropagation();
                   setShowPaymentWarning(false);
-                  toast.success(`Payment status for ${member.name} updated to Paid.`);
-                }} 
+                  toast.info("Payment recording will be enabled in the payment phase.");
+                }}
                 className="bg-blue-600 text-white hover:bg-blue-700"
               >
-                Confirm Payment
+                Okay
               </Button>
             </div>
           </div>

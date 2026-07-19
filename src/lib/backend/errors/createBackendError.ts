@@ -60,6 +60,17 @@ export function permissionError(
   });
 }
 
+export function rateLimitError(
+  message = "Too many attempts. Please try again later."
+): BackendError {
+  return createBackendError({
+    code: ERROR_CODES.TOO_MANY_ATTEMPTS,
+    type: "rate_limit",
+    message,
+    retryable: true,
+  });
+}
+
 export function notFoundError(
   message: string,
   code: ErrorCode

@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, ChevronRight, Activity, Edit2, ShieldAlert, PlusCircle, Trash2, X, ArrowRight, Eye } from "lucide-react";
+import { Search, ChevronRight, Activity, Edit2, ShieldAlert, PlusCircle, Trash2, X, Eye } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
@@ -17,24 +17,84 @@ interface AuditLogEntry {
   entity: string;
   target: string;
   summary: string;
-  severity: "info" | "warning" | "error";
+  severity: "info" | "warning" | "error" | "critical";
   ip?: string;
   device?: string;
-  changes: { field: string; before: string; after: string };
+  changes?: { field: string; before: string; after: string };
 }
 
-import { MOCK_AUDIT } from "@/lib/admin/mock-data";
+import type { AuditLogDTO } from "@/lib/backend/dto/admin.dto";
+import { BackendApiError } from "@/lib/api/backendClient";
+import { getAllAuditLogs } from "@/lib/api/auditClient";
+import { useRouter } from "next/navigation";
+
+function actionCategory(action: string): AuditLogEntry["action"] {
+  if (action.includes("created") || action.includes("issued")) return "create";
+  if (action.includes("updated") || action.includes("reset")) return "update";
+  if (action.includes("deleted") || action.includes("removed")) return "delete";
+  if (action.includes("failed") || action.includes("lock") || action.includes("security")) return "alert";
+  return action;
+}
+
+function formatAuditValue(value: unknown): string {
+  if (value === undefined || value === null) return "--";
+  try {
+    return JSON.stringify(value);
+  } catch {
+    return "Unable to display";
+  }
+}
+
+function mapAuditLog(log: AuditLogDTO): AuditLogEntry {
+  return {
+    id: log.id,
+    time: new Date(log.createdAt).toLocaleString(),
+    actor: log.actorName,
+    action: actionCategory(log.action),
+    entity: log.entityType,
+    target: log.target || log.entityId,
+    summary: log.summary,
+    severity: log.severity,
+    ip: log.ip,
+    device: log.device,
+    changes: log.before !== undefined || log.after !== undefined
+      ? { field: "Recorded data", before: formatAuditValue(log.before), after: formatAuditValue(log.after) }
+      : undefined,
+  };
+}
 
 export function AuditLogTable() {
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [actionFilter, setActionFilter] = useState("all");
   const [selectedLog, setSelectedLog] = useState<AuditLogEntry | null>(null);
+  const [logs, setLogs] = useState<AuditLogEntry[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
-  // Assuming current user is a super admin for this demo
-  const isCurrentUserSuperAdmin = true;
+  useEffect(() => {
+    let active = true;
+    getAllAuditLogs()
+      .then((result) => {
+        if (active) setLogs(result.map(mapAuditLog));
+      })
+      .catch((error: unknown) => {
+        if (error instanceof BackendApiError && error.status === 401) {
+          router.replace("/admin/login");
+          return;
+        }
+        if (active) setLoadError(error instanceof Error ? error.message : "Unable to load audit logs.");
+      })
+      .finally(() => {
+        if (active) setIsLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [router]);
 
-  const filteredLogs = MOCK_AUDIT.filter(log => {
-    const matchesSearch = log.actor.toLowerCase().includes(searchQuery.toLowerCase()) || 
+  const filteredLogs = logs.filter(log => {
+    const matchesSearch = log.actor.toLowerCase().includes(searchQuery.toLowerCase()) ||
                           log.target.toLowerCase().includes(searchQuery.toLowerCase()) ||
                           log.summary.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesAction = actionFilter === "all" || log.action === actionFilter;
@@ -57,8 +117,8 @@ export function AuditLogTable() {
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-          <Input 
-            placeholder="Search actor, target, or summary..." 
+          <Input
+            placeholder="Search actor, target, or summary..."
             className="pl-9 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 h-10"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -78,12 +138,13 @@ export function AuditLogTable() {
             </SelectContent>
           </Select>
         </div>
-        {isCurrentUserSuperAdmin && (
-          <Button variant="outline" className="flex shrink-0 text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700 dark:border-red-900/50 dark:hover:bg-red-900/20 dark:text-red-400">
-            <Trash2 className="w-4 h-4 mr-2" /> Purge Old Logs
-          </Button>
-        )}
+        <Button disabled variant="outline" title="Audit purge is not enabled" className="flex shrink-0 text-red-600 border-red-200 dark:border-red-900/50 dark:text-red-400">
+          <Trash2 className="w-4 h-4 mr-2" /> Purge Old Logs
+        </Button>
       </div>
+
+      {isLoading && <div className="p-4 text-sm text-slate-500">Loading audit logs...</div>}
+      {loadError && <div className="p-4 text-sm text-red-600 dark:text-red-400">{loadError}</div>}
 
       {/* Desktop Table */}
       <div className="hidden md:block bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
@@ -101,13 +162,13 @@ export function AuditLogTable() {
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
               {filteredLogs.map((log) => (
-                <tr 
-                  key={log.id} 
-                  onClick={() => setSelectedLog(log as any)} 
+                <tr
+                  key={log.id}
+                  onClick={() => setSelectedLog(log)}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' || e.key === ' ') {
                       e.preventDefault();
-                      setSelectedLog(log as any);
+                      setSelectedLog(log);
                     }
                   }}
                   tabIndex={0}
@@ -133,7 +194,7 @@ export function AuditLogTable() {
                     {log.summary}
                   </td>
                   <td className="px-4 py-3 text-right">
-                    <Button variant="ghost" size="icon" aria-label={`View details for ${log.id}`} className="h-8 w-8 text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20" onClick={(e) => { e.stopPropagation(); setSelectedLog(log as any); }}>
+                    <Button variant="ghost" size="icon" aria-label={`View details for ${log.id}`} className="h-8 w-8 text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20" onClick={(e) => { e.stopPropagation(); setSelectedLog(log); }}>
                       <Eye className="w-4 h-4" />
                     </Button>
                   </td>
@@ -150,13 +211,13 @@ export function AuditLogTable() {
       {/* Mobile Cards */}
       <div className="md:hidden space-y-3">
         {filteredLogs.map((log) => (
-          <Card 
-            key={log.id} 
-            onClick={() => setSelectedLog(log as any)} 
+          <Card
+            key={log.id}
+            onClick={() => setSelectedLog(log)}
             onKeyDown={(e) => {
               if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
-                setSelectedLog(log as any);
+                setSelectedLog(log);
               }
             }}
             tabIndex={0}
@@ -169,7 +230,7 @@ export function AuditLogTable() {
               </div>
               <span className="text-[10px] font-mono text-slate-500">{log.time}</span>
             </div>
-            
+
             <div className="mb-2">
               <Badge variant="outline" className="bg-slate-50 dark:bg-slate-800 shadow-none mb-1">{log.entity}</Badge>
               <div className="text-sm font-medium text-slate-700 dark:text-slate-300">{log.target}</div>
@@ -190,9 +251,9 @@ export function AuditLogTable() {
       {selectedLog && (
         <>
           <div className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm transition-opacity" onClick={() => setSelectedLog(null)} aria-hidden="true" />
-          <div 
-            role="dialog" 
-            aria-modal="true" 
+          <div
+            role="dialog"
+            aria-modal="true"
             aria-labelledby="drawer-title"
             className="fixed inset-y-0 right-0 z-50 w-full max-w-md bg-white dark:bg-slate-900 shadow-2xl border-l border-slate-200 dark:border-slate-800 transform transition-transform animate-in slide-in-from-right duration-300 flex flex-col"
           >
@@ -205,7 +266,7 @@ export function AuditLogTable() {
                 <X className="w-5 h-5" />
               </Button>
             </div>
-            
+
             <div className="flex-1 overflow-y-auto p-6 space-y-6">
               <div>
                 <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Metadata</h3>
@@ -267,7 +328,7 @@ export function AuditLogTable() {
                 </div>
               )}
             </div>
-            
+
             <div className="p-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950">
               <Button className="w-full" variant="outline" onClick={() => setSelectedLog(null)}>Close Details</Button>
             </div>
@@ -277,4 +338,3 @@ export function AuditLogTable() {
     </div>
   );
 }
-

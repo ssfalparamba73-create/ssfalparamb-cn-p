@@ -1,10 +1,11 @@
 "use client";
 
-import React from "react";
-import { 
-  Users, 
-  Banknote, 
-  AlertOctagon, 
+import React, { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import {
+  Users,
+  Banknote,
+  AlertOctagon,
   TrendingUp,
   CreditCard,
   Droplet,
@@ -17,23 +18,60 @@ import { RecentCashHandovers } from "@/components/admin/dashboard/RecentCashHand
 import { AdminActionIcon } from "@/components/admin/layout/AdminActionIcon";
 import { CollectionTrendChart } from "@/components/admin/dashboard/CollectionTrendChart";
 import { PaymentMethodChart } from "@/components/admin/dashboard/PaymentMethodChart";
-import { MOCK_DASHBOARD_STATS, MOCK_PAYMENTS } from "@/lib/admin/mock-data";
+import type { AdminDashboardDTO } from "@/lib/backend/dto/dashboard.dto";
+import { getAdminDashboard } from "@/lib/api/dashboardClient";
+import { BackendApiError } from "@/lib/api/backendClient";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
 export default function AdminDashboardPage() {
-  const stats = MOCK_DASHBOARD_STATS;
+  const router = useRouter();
+  const [dashboard, setDashboard] = useState<AdminDashboardDTO | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    getAdminDashboard()
+      .then((data) => {
+        if (active) setDashboard(data);
+      })
+      .catch((requestError: unknown) => {
+        if (requestError instanceof BackendApiError && requestError.status === 401) {
+          router.replace("/admin/login");
+          return;
+        }
+        if (active) {
+          setError(requestError instanceof Error ? requestError.message : "Unable to load dashboard.");
+        }
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [router]);
+
+  if (!dashboard) {
+    return (
+      <div className="space-y-8 animate-in fade-in duration-300 pb-10">
+        <p className="text-sm text-slate-500 dark:text-slate-400">
+          {error ?? "Loading dashboard..."}
+        </p>
+      </div>
+    );
+  }
+
+  const stats = dashboard.stats;
 
   return (
     <div className="space-y-8 animate-in fade-in duration-300 pb-10">
-      
+
       {/* Header & Quick Actions */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold text-slate-900 tracking-tight dark:text-slate-50">Dashboard</h2>
           <p className="text-slate-500 mt-1 dark:text-slate-400">Overview of collections and community health.</p>
         </div>
-        
+
         <div className="flex flex-wrap items-center gap-3">
           <Button variant="outline" className="h-10 border-slate-200 text-slate-700 font-medium hidden sm:flex">
             <FileText className="w-4 h-4 mr-2" />
@@ -102,31 +140,31 @@ export default function AdminDashboardPage() {
 
       {/* Main Stats Grid (Desktop Only) */}
       <div className="hidden sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-        <StatsCard 
-          label="Total Collected" 
+        <StatsCard
+          label="Total Collected"
           metric={`₹${stats.totalCollected.toLocaleString("en-IN")}`}
           helper="This month"
           icon={TrendingUp}
           variant="success"
           href="/admin/payments"
         />
-        <StatsCard 
-          label="Pending Amount" 
+        <StatsCard
+          label="Pending Amount"
           metric={`₹${stats.pendingAmount.toLocaleString("en-IN")}`}
           helper="Across all active members"
           icon={AlertOctagon}
           variant="destructive"
           href="/admin/defaulters"
         />
-        <StatsCard 
-          label="Paid Members" 
+        <StatsCard
+          label="Paid Members"
           metric={stats.paidMembers}
-          helper="Out of 168 active"
+          helper={`Out of ${stats.activeMembers} active`}
           icon={Users}
           href="/admin/members"
         />
-        <StatsCard 
-          label="Cash Handovers" 
+        <StatsCard
+          label="Cash Handovers"
           metric={stats.pendingCashHandovers}
           helper="Pending verification"
           icon={Banknote}
@@ -137,28 +175,28 @@ export default function AdminDashboardPage() {
 
       {/* Secondary Stats & Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        
+
         {/* Left Column (Wider on Desktop) */}
         <div className="lg:col-span-2 space-y-6">
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <CollectionTrendChart data={stats.collectionTrend} />
-            <PaymentMethodChart data={stats.paymentMethodSplit} />
+            <CollectionTrendChart data={stats.collectionTrend.map((item) => ({ month: item.label, amount: item.amount }))} />
+            <PaymentMethodChart data={stats.paymentMethodSplit.map((item) => ({ ...item, color: item.color ?? "bg-blue-500" }))} />
           </div>
 
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-            <RecentPayments payments={MOCK_PAYMENTS} />
-            <RecentCashHandovers />
+            <RecentPayments payments={dashboard.recentPayments} />
+            <RecentCashHandovers handovers={dashboard.recentCashHandovers} />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-             <StatsCard 
-              label="Monthly Dues" 
+             <StatsCard
+              label="Monthly Dues"
               metric={`₹${stats.monthlyDues.toLocaleString("en-IN")}`}
               icon={CreditCard}
             />
-            <StatsCard 
-              label="Special Events" 
+            <StatsCard
+              label="Special Events"
               metric={`₹${stats.specialEvents.toLocaleString("en-IN")}`}
               icon={Banknote}
             />
@@ -188,8 +226,8 @@ export default function AdminDashboardPage() {
           </div>
 
           <div>
-              <StatsCard 
-                label="Available Blood Donors" 
+              <StatsCard
+                label="Available Blood Donors"
                 metric={stats.availableDonors}
                 helper="Ready for emergency"
                 icon={Droplet}

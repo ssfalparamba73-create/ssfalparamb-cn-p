@@ -8,6 +8,7 @@ import type {
 export function mapRowToAdminUserDTO(row: any, roles: string[] = [], permissions: string[] = []): AdminUserDTO {
   return {
     id: row.id,
+    memberId: row.member_id ?? undefined,
     name: row.name,
     phone: row.phone,
     avatarInitials: row.name ? row.name.substring(0, 2).toUpperCase() : "AD",

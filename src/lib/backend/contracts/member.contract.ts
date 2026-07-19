@@ -10,7 +10,18 @@ import type {
   MemberDashboardDTO,
   MemberDirectoryItemDTO,
   MemberListFilters,
+  BloodGroup,
 } from "../dto/member.dto";
+
+export interface FamilyMemberInput {
+  id?: string;
+  name: string;
+  relationship: string;
+  age?: number;
+  bloodGroup?: BloodGroup;
+  isBloodDonor?: boolean;
+  phone?: string;
+}
 
 export interface CreateMemberInput {
   name: string;
@@ -22,13 +33,16 @@ export interface CreateMemberInput {
   occupation?: string;
   monthlyTier: MemberDTO["monthlyTier"];
   monthlyAmount: number;
-}
-
-export interface UpdateMemberInput extends Partial<CreateMemberInput> {
-  status?: MemberDTO["status"];
+  status?: Exclude<MemberDTO["status"], "left">;
+  joinedAt?: string;
   bloodGroup?: MemberDTO["bloodGroup"];
   isBloodDonor?: boolean;
   donorAvailable?: boolean;
+  familyMembers?: FamilyMemberInput[];
+}
+
+export interface UpdateMemberInput extends Omit<Partial<CreateMemberInput>, "status"> {
+  status?: Exclude<MemberDTO["status"], "left">;
 }
 
 export interface UpdateMemberProfileInput {
@@ -51,6 +65,7 @@ export interface MemberRepository {
   update(id: string, input: UpdateMemberInput, actor: ActorContext): Promise<MemberDTO>;
   updateProfile(memberId: string, input: UpdateMemberProfileInput, actor: ActorContext): Promise<MemberProfileDTO>;
   softDelete(id: string, actor: ActorContext): Promise<void>;
+  issuePin(memberId: string, pin: string, actor: ActorContext): Promise<string>;
   getProfile(memberId: string): Promise<MemberProfileDTO | null>;
   getDashboard(memberId: string): Promise<MemberDashboardDTO>;
   incrementReminderCount(memberId: string, actor: ActorContext): Promise<MemberDTO>;

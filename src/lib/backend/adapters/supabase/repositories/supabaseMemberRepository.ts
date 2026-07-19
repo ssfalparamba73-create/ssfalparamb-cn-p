@@ -3,13 +3,43 @@ import type { CreateMemberInput, MemberRepository, UpdateMemberInput, UpdateMemb
 import type { MemberDTO, MemberDirectoryItemDTO, MemberListFilters, MemberProfileDTO, MemberDashboardDTO } from "../../../dto/member.dto";
 import { createSupabaseBackendClient } from "../client";
 import { mapRowToMemberDirectoryItemDTO, mapRowToMemberDTO, mapRowToMemberProfileDTO } from "../mappers/member.mapper";
+import { conflictError, permissionError, rateLimitError, validationError } from "../../../errors/createBackendError";
+import { ERROR_CODES } from "../../../errors/errorCodes";
+
+function actorRpcParams(actor: ActorContext) {
+  if (!actor.adminId) throw new Error("Admin actor ID is required.");
+  return {
+    p_actor_admin_id: actor.adminId,
+    p_actor_name: actor.actorName ?? null,
+    p_ip: actor.ip ?? null,
+    p_device: actor.device ?? null,
+  };
+}
+
+function throwMutationError(error: { code?: string; message?: string }): never {
+  if (error.code === "23505") {
+    const isMemberCode = error.message?.includes("member_code");
+    throw conflictError(
+      isMemberCode ? "Member code already exists." : "Phone number already exists.",
+      isMemberCode ? ERROR_CODES.DUPLICATE_MEMBER_CODE : ERROR_CODES.DUPLICATE_PHONE
+    );
+  }
+  throw error;
+}
 
 export class SupabaseMemberRepository implements MemberRepository {
   async findById(id: string): Promise<MemberDTO | null> {
     const supabase = createSupabaseBackendClient();
-    const { data, error } = await supabase.from("members").select("*").eq("id", id).single();
-    if (error || !data) return null;
-    return mapRowToMemberDTO(data);
+    const { data, error } = await supabase.from("members").select("*").eq("id", id).maybeSingle();
+    if (error) throw error;
+    if (!data) return null;
+    const { data: family, error: familyError } = await supabase
+      .from("family_members")
+      .select("*")
+      .eq("member_id", id)
+      .order("created_at", { ascending: true });
+    if (familyError) throw familyError;
+    return mapRowToMemberDTO(data, family || []);
   }
 
   async findByPhone(phone: string): Promise<MemberDTO | null> {
@@ -29,16 +59,33 @@ export class SupabaseMemberRepository implements MemberRepository {
   async list(filters: MemberListFilters, pagination: PaginationInput): Promise<PaginatedResult<MemberDTO>> {
     const supabase = createSupabaseBackendClient();
     let query = supabase.from("members").select("*", { count: "exact" });
-    
+
     if (filters.status) query = query.eq("status", filters.status);
+    else query = query.neq("status", "left");
     if (filters.bloodGroup) query = query.eq("blood_group", filters.bloodGroup);
-    
+    if (filters.area) query = query.eq("area", filters.area);
+    if (filters.monthlyTier) query = query.eq("monthly_tier", filters.monthlyTier);
+    if (filters.isBloodDonor !== undefined) query = query.eq("is_blood_donor", filters.isBloodDonor);
+    if (filters.donorAvailable !== undefined) query = query.eq("donor_available", filters.donorAvailable);
+    if (filters.paymentStatus === "clear") query = query.lte("dues_pending", 0);
+    if (filters.paymentStatus === "arrears") query = query.gt("dues_pending", 0);
+    if (filters.paymentStatus === "long_overdue") query = query.gt("dues_pending", 0);
+    if (filters.search) {
+      const search = filters.search.replace(/[,()%]/g, "").trim();
+      if (search) {
+        query = query.or(`name.ilike.%${search}%,phone.ilike.%${search}%,member_code.ilike.%${search}%`);
+      }
+    }
+
     const page = pagination.page || 1;
     const pageSize = pagination.pageSize || 20;
-    const { data, count } = await query.range((page - 1) * pageSize, page * pageSize - 1);
-    
+    const { data, count, error } = await query
+      .order("created_at", { ascending: false })
+      .range((page - 1) * pageSize, page * pageSize - 1);
+    if (error) throw error;
+
     return {
-      items: (data || []).map((row: any) => mapRowToMemberDTO(row)),
+      items: (data || []).map((row) => mapRowToMemberDTO(row)),
       total: count || 0,
       page,
       pageSize,
@@ -48,16 +95,30 @@ export class SupabaseMemberRepository implements MemberRepository {
 
   async listDirectory(filters: MemberListFilters, pagination: PaginationInput): Promise<PaginatedResult<MemberDirectoryItemDTO>> {
     const supabase = createSupabaseBackendClient();
-    let query = supabase.from("members").select("*", { count: "exact" });
-    
-    if (filters.status) query = query.eq("status", filters.status);
-    
+    let query = supabase
+      .from("members")
+      .select("id, member_code, name, phone, area, blood_group, is_blood_donor, donor_available", { count: "exact" })
+      .eq("status", "active");
+
+    if (filters.bloodGroup) query = query.eq("blood_group", filters.bloodGroup);
+    if (filters.area) query = query.eq("area", filters.area);
+    if (filters.donorAvailable !== undefined) query = query.eq("donor_available", filters.donorAvailable);
+    if (filters.search) {
+      const search = filters.search.replace(/[,()%]/g, "").trim();
+      if (search) {
+        query = query.or(`name.ilike.%${search}%,phone.ilike.%${search}%,member_code.ilike.%${search}%`);
+      }
+    }
+
     const page = pagination.page || 1;
     const pageSize = pagination.pageSize || 20;
-    const { data, count } = await query.range((page - 1) * pageSize, page * pageSize - 1);
-    
+    const { data, count, error } = await query
+      .order("name", { ascending: true })
+      .range((page - 1) * pageSize, page * pageSize - 1);
+    if (error) throw error;
+
     return {
-      items: (data || []).map((row: any) => mapRowToMemberDirectoryItemDTO(row)),
+      items: (data || []).map((row) => mapRowToMemberDirectoryItemDTO(row)),
       total: count || 0,
       page,
       pageSize,
@@ -67,68 +128,101 @@ export class SupabaseMemberRepository implements MemberRepository {
 
   async create(input: CreateMemberInput, actor: ActorContext): Promise<MemberDTO> {
     const supabase = createSupabaseBackendClient();
-    const { data, error } = await supabase.from("members").insert([{
-      name: input.name,
-      phone: input.phone,
-      alternate_phone: input.alternatePhone,
-      age: input.age,
-      address: input.address,
-      area: input.area,
-      occupation: input.occupation,
-      monthly_tier: input.monthlyTier,
-      monthly_amount: input.monthlyAmount,
-    }]).select("*").single();
-    
-    if (error) throw error;
-    return mapRowToMemberDTO(data);
+    const { familyMembers, ...memberInput } = input;
+    const { data, error } = await supabase.rpc("admin_create_member", {
+      p_input: memberInput,
+      p_family: familyMembers ?? [],
+      ...actorRpcParams(actor),
+    });
+    if (error) throwMutationError(error);
+    const row = Array.isArray(data) ? data[0] : data;
+    if (!row?.id) throw new Error("Member was not returned after creation.");
+    const member = await this.findById(row.id);
+    if (!member) throw new Error("Member was not found after creation.");
+    return member;
   }
 
   async update(id: string, input: UpdateMemberInput, actor: ActorContext): Promise<MemberDTO> {
     const supabase = createSupabaseBackendClient();
-    const updateData: Record<string, unknown> = {};
-    if (input.name) updateData.name = input.name;
-    if (input.phone) updateData.phone = input.phone;
-    if (input.status) updateData.status = input.status;
-    
-    const { data, error } = await supabase.from("members").update(updateData).eq("id", id).select("*").single();
-    if (error) throw error;
-    return mapRowToMemberDTO(data);
+    const { familyMembers, ...memberInput } = input;
+    const { error } = await supabase.rpc("admin_update_member", {
+      p_member_id: id,
+      p_input: memberInput,
+      p_family: familyMembers ?? null,
+      ...actorRpcParams(actor),
+    });
+    if (error) throwMutationError(error);
+    const member = await this.findById(id);
+    if (!member) throw new Error("Member was not found after update.");
+    return member;
   }
 
   async updateProfile(memberId: string, input: UpdateMemberProfileInput, actor: ActorContext): Promise<MemberProfileDTO> {
     const supabase = createSupabaseBackendClient();
-    const updateData: Record<string, unknown> = {};
-    if (input.name) updateData.name = input.name;
-    if (input.whatsapp) updateData.whatsapp = input.whatsapp;
-    if (input.age !== undefined) updateData.age = input.age;
-    if (input.bloodGroup) updateData.blood_group = input.bloodGroup;
-    if (input.address) updateData.address = input.address;
-    if (input.occupation) updateData.occupation = input.occupation;
-    if (input.biometricEnabled !== undefined) updateData.biometric_enabled = input.biometricEnabled;
-
-    const { data, error } = await supabase.from("members").update(updateData).eq("id", memberId).select("*").single();
+    const { error } = await supabase.rpc("member_update_profile", {
+      p_member_id: memberId,
+      p_input: input,
+      p_actor_name: actor.actorName ?? null,
+      p_ip: actor.ip ?? null,
+      p_device: actor.device ?? null,
+    });
     if (error) throw error;
-    return mapRowToMemberProfileDTO(data);
+    const profile = await this.getProfile(memberId);
+    if (!profile) throw new Error("Profile was not found after update.");
+    return profile;
   }
 
   async softDelete(id: string, actor: ActorContext): Promise<void> {
     const supabase = createSupabaseBackendClient();
-    await supabase.from("members").update({ status: "left" }).eq("id", id);
+    const { error } = await supabase.rpc("admin_soft_delete_member", {
+      p_member_id: id,
+      ...actorRpcParams(actor),
+    });
+    if (error) throw error;
+  }
+
+  async issuePin(memberId: string, pin: string, actor: ActorContext): Promise<string> {
+    const supabase = createSupabaseBackendClient();
+    const { data, error } = await supabase.rpc("admin_issue_member_pin", {
+      p_member_id: memberId,
+      p_pin: pin,
+      ...actorRpcParams(actor),
+    });
+    if (error) {
+      if (error.code === "P0001" && error.message?.includes("MEMBER_INVITATION_RATE_LIMITED")) {
+        throw rateLimitError("Please wait before generating another member invitation.");
+      }
+      if (error.code === "42501") {
+        throw permissionError("Member update permission required.");
+      }
+      if (error.code === "22023") {
+        throw validationError("A login invitation can only be issued to an active member.", "id");
+      }
+      throw error;
+    }
+    if (typeof data !== "string") throw new Error("PIN issue timestamp was not returned.");
+    return data;
   }
 
   async getProfile(memberId: string): Promise<MemberProfileDTO | null> {
     const supabase = createSupabaseBackendClient();
-    const { data, error } = await supabase.from("members").select("*").eq("id", memberId).single();
-    if (error || !data) return null;
-    
-    const { data: familyData } = await supabase.from("family_members").select("*").eq("member_id", memberId);
+    const { data, error } = await supabase.from("members").select("*").eq("id", memberId).maybeSingle();
+    if (error) throw error;
+    if (!data) return null;
+
+    const { data: familyData, error: familyError } = await supabase
+      .from("family_members")
+      .select("*")
+      .eq("member_id", memberId)
+      .order("created_at", { ascending: true });
+    if (familyError) throw familyError;
     return mapRowToMemberProfileDTO(data, familyData || []);
   }
 
   async getDashboard(memberId: string): Promise<MemberDashboardDTO> {
     const profile = await this.findById(memberId);
     if (!profile) throw new Error("Member not found");
-    
+
     return {
       member: {
         id: profile.id,
@@ -148,10 +242,11 @@ export class SupabaseMemberRepository implements MemberRepository {
   }
 
   async incrementReminderCount(memberId: string, actor: ActorContext): Promise<MemberDTO> {
+    void actor;
     const supabase = createSupabaseBackendClient();
     const { error } = await supabase.rpc("increment_reminder_count", { p_member_id: memberId });
     if (error) throw error;
-    
+
     const { data: member } = await supabase.from("members").select("*").eq("id", memberId).single();
     if (!member) throw new Error("Member not found after increment");
     return mapRowToMemberDTO(member);

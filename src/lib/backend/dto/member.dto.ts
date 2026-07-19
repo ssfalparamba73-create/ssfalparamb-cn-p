@@ -43,6 +43,16 @@ export interface MemberDTO {
   reminderCount: number;
   createdAt: ISODateTime;
   updatedAt: ISODateTime;
+  familyMembers?: FamilyMemberDTO[];
+}
+
+export interface IssuedMemberPinDTO {
+  memberId: ID;
+  memberName: string;
+  phone: string;
+  pin: string;
+  message: string;
+  issuedAt: ISODateTime;
 }
 
 export interface MemberProfileDTO {
@@ -107,5 +117,6 @@ export interface MemberListFilters {
   monthlyTier?: MonthlyTier;
   paymentStatus?: "clear" | "arrears" | "long_overdue";
   bloodGroup?: BloodGroup;
+  isBloodDonor?: boolean;
   donorAvailable?: boolean;
 }

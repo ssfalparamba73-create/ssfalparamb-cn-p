@@ -4,13 +4,13 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
+import type { DashboardRecentCashHandoverDTO } from "@/lib/backend/dto/dashboard.dto";
 
-  import { MOCK_CASH_HANDOVERS } from "@/lib/admin/mock-data";
-
-export function RecentCashHandovers() {
-  // Mock data for handovers
-  const handovers = MOCK_CASH_HANDOVERS;
-
+export function RecentCashHandovers({
+  handovers,
+}: {
+  handovers: DashboardRecentCashHandoverDTO[];
+}) {
   return (
     <Card className="border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
       <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -40,7 +40,7 @@ export function RecentCashHandovers() {
                     )}
                   </div>
                   <div className="text-xs text-slate-500 mt-1">
-                    From <span className="font-medium text-slate-700 dark:text-slate-300">{item.admin}</span> • {item.date}
+                    From <span className="font-medium text-slate-700 dark:text-slate-300">{item.adminName}</span> • {new Intl.DateTimeFormat("en-IN", { day: "2-digit", month: "short", year: "numeric" }).format(new Date(item.date))}
                   </div>
                 </div>
                 {item.status === "pending" && (

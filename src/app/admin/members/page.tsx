@@ -1,30 +1,58 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AdminMemberFilters } from "@/components/admin/members/AdminMemberFilters";
 import { AdminMemberRow } from "@/components/admin/members/AdminMemberRow";
 import { AdminMemberCard } from "@/components/admin/members/AdminMemberCard";
-import { MOCK_MEMBERS } from "@/lib/admin/mock-data";
+import type { Member } from "@/lib/admin/admin-types";
+import { mapMemberDto } from "@/lib/admin/mapMemberDto";
+import { BackendApiError } from "@/lib/api/backendClient";
+import { getAllAdminMembers } from "@/lib/api/memberClient";
 import Link from "next/link";
 
 export default function AdminMembersPage() {
-  const [members] = useState(MOCK_MEMBERS);
+  const router = useRouter();
+  const [members, setMembers] = useState<Member[]>([]);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [bloodGroupFilter, setBloodGroupFilter] = useState("all");
-  
+
   // New Filters
   const [areaFilter, setAreaFilter] = useState("all");
   const [tierFilter, setTierFilter] = useState("all");
   const [arrearsFilter, setArrearsFilter] = useState("all");
   const [sortOption, setSortOption] = useState("newest");
 
+  useEffect(() => {
+    let active = true;
+    getAllAdminMembers()
+      .then((result) => {
+        if (!active) return;
+        setMembers(result.map(mapMemberDto));
+      })
+      .catch((requestError: unknown) => {
+        if (requestError instanceof BackendApiError && requestError.status === 401) {
+          router.replace("/admin/login");
+          return;
+        }
+        if (active) {
+          setLoadError(requestError instanceof Error ? requestError.message : "Unable to load members.");
+        }
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [router]);
+
   const filteredMembers = members.filter((member) => {
     // Search query filter
     const searchLower = searchQuery.toLowerCase();
-    const matchesSearch = !searchQuery || 
+    const matchesSearch = !searchQuery ||
       member.name.toLowerCase().includes(searchLower) ||
       member.phone.includes(searchQuery) ||
       member.memberId.toLowerCase().includes(searchLower);
@@ -65,7 +93,7 @@ export default function AdminMembersPage() {
           <h2 className="text-2xl font-bold text-slate-900 tracking-tight dark:text-slate-50">Members</h2>
           <p className="text-slate-500 mt-1 dark:text-slate-400">Manage directory, profiles, and dues.</p>
         </div>
-        
+
         <div className="flex items-center gap-3">
           <Link href="/admin/members/new" className="w-full sm:w-auto">
             <Button className="h-10 bg-blue-600 hover:bg-blue-700 text-white font-medium w-full">
@@ -77,7 +105,7 @@ export default function AdminMembersPage() {
       </div>
 
       <div className="bg-white dark:bg-slate-900/50 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
-        <AdminMemberFilters 
+        <AdminMemberFilters
           searchQuery={searchQuery}
           setSearchQuery={setSearchQuery}
           statusFilter={statusFilter}
@@ -96,6 +124,9 @@ export default function AdminMembersPage() {
       </div>
 
       <div className="mt-4">
+        {loadError && (
+          <p className="mb-4 text-sm text-red-600 dark:text-red-400">{loadError}</p>
+        )}
         {/* Desktop Table View */}
         <div className="hidden sm:block bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
           <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-800">

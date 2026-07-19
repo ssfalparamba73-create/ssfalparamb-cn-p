@@ -21,7 +21,7 @@ const colorMap: Record<string, string> = {
 };
 
 export function PaymentMethodChart({ data }: PaymentMethodChartProps) {
-  let cumulativePercent = 0;
+  const totalPercent = data.reduce((sum, item) => sum + item.percentage, 0);
 
   return (
     <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm transition-colors duration-300 dark:border-slate-700 dark:bg-slate-800 dark:shadow-none h-full flex flex-col">
@@ -34,7 +34,7 @@ export function PaymentMethodChart({ data }: PaymentMethodChartProps) {
           <PieChart className="w-5 h-5" />
         </div>
       </div>
-      
+
       <div className="flex-1 flex flex-col sm:flex-row items-center justify-center gap-8 mt-4">
         {/* SVG Donut Chart */}
         <div className="relative w-40 h-40 shrink-0">
@@ -48,10 +48,12 @@ export function PaymentMethodChart({ data }: PaymentMethodChartProps) {
             />
             {data.map((item, index) => {
               const dashArray = `${item.percentage} ${100 - item.percentage}`;
-              const dashOffset = 100 - cumulativePercent;
-              cumulativePercent += item.percentage;
+              const priorPercent = data
+                .slice(0, index)
+                .reduce((sum, entry) => sum + entry.percentage, 0);
+              const dashOffset = 100 - priorPercent;
               const strokeColor = colorMap[item.color] || "#3b82f6";
-              
+
               return (
                 <circle
                   key={index}
@@ -69,11 +71,11 @@ export function PaymentMethodChart({ data }: PaymentMethodChartProps) {
           </svg>
           {/* Center Text */}
           <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-            <span className="text-2xl font-bold text-slate-900 dark:text-slate-50">100%</span>
+            <span className="text-2xl font-bold text-slate-900 dark:text-slate-50">{totalPercent > 0 ? "100%" : "0%"}</span>
             <span className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold">Total</span>
           </div>
         </div>
-        
+
         {/* Legend */}
         <div className="w-full sm:w-auto flex-1 space-y-3">
           {data.map((item, index) => {
@@ -81,7 +83,7 @@ export function PaymentMethodChart({ data }: PaymentMethodChartProps) {
             return (
               <div key={index} className="flex items-center justify-between group hover:bg-slate-50 dark:hover:bg-slate-700/50 p-2 rounded-lg transition-colors cursor-pointer -mx-2">
                 <div className="flex items-center">
-                  <div 
+                  <div
                     className="w-3 h-3 rounded-full mr-3 shadow-sm transition-transform group-hover:scale-125"
                     style={{ backgroundColor: dotColor }}
                   ></div>
