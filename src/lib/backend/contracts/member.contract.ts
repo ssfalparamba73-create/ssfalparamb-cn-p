@@ -55,6 +55,14 @@ export interface UpdateMemberProfileInput {
   biometricEnabled?: boolean;
 }
 
+export interface CompleteMemberProfileInput {
+  whatsapp: string;
+  age: number;
+  bloodGroup: string;
+  address: string;
+  occupation: string;
+}
+
 export interface MemberRepository {
   findById(id: string): Promise<MemberDTO | null>;
   findByPhone(phone: string): Promise<MemberDTO | null>;
@@ -64,8 +72,10 @@ export interface MemberRepository {
   create(input: CreateMemberInput, actor: ActorContext): Promise<MemberDTO>;
   update(id: string, input: UpdateMemberInput, actor: ActorContext): Promise<MemberDTO>;
   updateProfile(memberId: string, input: UpdateMemberProfileInput, actor: ActorContext): Promise<MemberProfileDTO>;
+  completeProfile(memberId: string, input: CompleteMemberProfileInput, actor: ActorContext): Promise<MemberProfileDTO>;
   softDelete(id: string, actor: ActorContext): Promise<void>;
   issuePin(memberId: string, pin: string, actor: ActorContext): Promise<string>;
+  getCurrentPin(memberId: string, actor: ActorContext): Promise<{ pin: string; issuedAt: string } | null>;
   getProfile(memberId: string): Promise<MemberProfileDTO | null>;
   getDashboard(memberId: string): Promise<MemberDashboardDTO>;
   incrementReminderCount(memberId: string, actor: ActorContext): Promise<MemberDTO>;
@@ -75,6 +85,7 @@ export interface MemberService {
   getCurrentMemberProfile(actor: ActorContext): Promise<BackendResult<MemberProfileDTO>>;
   getDashboard(actor: ActorContext): Promise<BackendResult<MemberDashboardDTO>>;
   updateProfile(input: UpdateMemberProfileInput, actor: ActorContext): Promise<BackendResult<MemberProfileDTO>>;
+  completeProfile(input: CompleteMemberProfileInput, actor: ActorContext): Promise<BackendResult<MemberProfileDTO>>;
   listDirectory(
     filters: MemberListFilters,
     pagination: PaginationInput,

@@ -1,5 +1,6 @@
 import type {
   CreateMemberInput,
+  CompleteMemberProfileInput,
   FamilyMemberInput,
   UpdateMemberInput,
   UpdateMemberProfileInput,
@@ -218,6 +219,46 @@ export function validateUpdateMemberProfileInput(
   }
 
   return ok(output);
+}
+
+export function validateCompleteMemberProfileInput(
+  input: CompleteMemberProfileInput
+): BackendResult<CompleteMemberProfileInput> {
+  if (!input || typeof input !== "object" || Array.isArray(input)) {
+    return fail(validationError("Profile completion input must be an object."));
+  }
+
+  const whatsapp = validatePhone(input.whatsapp, "whatsapp");
+  if (!whatsapp.ok) return fail(whatsapp.error!);
+
+  const age = validateAge(input.age, "age");
+  if (!age.ok || age.data === undefined || age.data === null) {
+    return fail(age.error ?? validationError("Age is required.", "age"));
+  }
+
+  if (!input.bloodGroup || !includesValue(bloodGroups, input.bloodGroup)) {
+    return fail(validationError("Blood group is required.", "bloodGroup"));
+  }
+
+  const address = validateRequiredString(input.address, "address", "Address");
+  if (!address.ok) return fail(address.error!);
+  if (address.data!.length > 500) {
+    return fail(validationError("Address is too long.", "address"));
+  }
+
+  const occupation = validateRequiredString(input.occupation, "occupation", "Occupation");
+  if (!occupation.ok) return fail(occupation.error!);
+  if (occupation.data!.length > 120) {
+    return fail(validationError("Occupation is too long.", "occupation"));
+  }
+
+  return ok({
+    whatsapp: whatsapp.data!,
+    age: age.data,
+    bloodGroup: input.bloodGroup,
+    address: address.data!,
+    occupation: occupation.data!,
+  });
 }
 
 export function validateMemberListFilters(input: MemberListFilters): BackendResult<MemberListFilters> {

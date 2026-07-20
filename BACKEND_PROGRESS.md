@@ -952,3 +952,72 @@ Deferred by product-owner instruction:
   receipt, dues, cash-entry, defaulter, or payment-report records.
 - Unit logo and receipt-asset storage, dynamic authentication-policy enforcement, and
   biometric authentication remain explicitly disabled rather than simulated.
+
+## Codex - Member Payment Visibility Gate - 2026-07-20
+
+Completed:
+- Hid the member Payments navigation entry on desktop and mobile for the initial
+  client-testing phase.
+- Hid the member dashboard Pay Now action and payment-history `View all` entry.
+- Added route-level redirects from `/member/payments` and member-originated
+  `/pay?source=member` requests back to `/member/dashboard`.
+- Preserved every payment page, component, backend layer, migration, and database
+  structure behind the single `MEMBER_PAYMENTS_ENABLED` phase flag.
+- Recorded the next-phase enablement checklist separately in
+  `MEMBER_PAYMENT_VISIBILITY_GATE.md` so the payment experience can be restored
+  without losing or rebuilding the approved UI.
+
+Scope:
+- Public and Admin payment surfaces were not changed by this visibility gate.
+- No payment record or Supabase schema was changed.
+
+## Codex - Malayalam Member Invitation Default - 2026-07-20
+
+Completed:
+- Replaced the legacy member invitation copy with the approved Arabic/Malayalam
+  information-collection message while preserving dynamic phone and PIN values.
+- Added the deployment-aware `{loginUrl}` placeholder. The server resolves it from
+  `APP_BASE_URL`, Vercel deployment variables, or localhost during development.
+- Updated the editable Admin Settings preview and database validation to support
+  `{name}`, `{phone}`, `{pin}`, and `{loginUrl}`.
+- Corrected the duplicate pending `033` migration number before deployment.
+- Rejected the pending raw reusable-PIN storage design during pre-deployment audit
+  and replaced it with AES-256 encrypted-at-rest storage plus a permission-checked
+  server-only retrieval RPC. The member login hash remains the authentication source
+  of truth, and raw PIN columns are not present in the database.
+- Applied remote migrations `034_member_invitation_default_message.sql` and
+  `035_encrypted_reusable_member_invitation_pins.sql` to the linked Supabase project.
+
+Verification:
+- Local TypeScript and targeted ESLint checks pass with zero errors.
+- Remote migration history is synchronized through version `035`.
+- Remote database lint reports no schema errors.
+- Remote read-only checks confirm the approved template placeholders, encrypted PIN
+  column availability, and absence of a raw `pin` column.
+
+## Codex - First-Login Member Profile Completion - 2026-07-20
+
+Completed:
+- Added a mandatory `/member/complete-profile` journey for members whose profile is
+  not yet complete. Login responses now route incomplete members there before the
+  dashboard.
+- Added a member route shell that prevents direct navigation to dashboard, directory,
+  profile, or other member pages until profile completion is recorded.
+- Displays the admin-established member name and phone as read-only identity fields.
+- Reuses the current profile data model for required age, blood group, WhatsApp,
+  occupation, and address collection; existing values are prefilled.
+- Added a dedicated API/service/repository path for profile completion. UI remains
+  isolated from Supabase.
+- Added `profile_completed_at` as the durable completion marker, with safe backfill
+  only for existing records that already contain every required field.
+- Added database-side required-field validation, audit logging, active-member checks,
+  and prevention of clearing required fields after completion.
+- Applied remote migration `036_member_profile_completion.sql`.
+
+Verification:
+- TypeScript and targeted ESLint checks pass.
+- Remote migration history is synchronized through version `036` and database lint
+  reports no schema errors.
+- In-app browser verification confirmed the current incomplete member is redirected
+  from `/member/dashboard` to `/member/complete-profile`, name/phone are read-only,
+  existing values are prefilled, and no browser console errors are present.

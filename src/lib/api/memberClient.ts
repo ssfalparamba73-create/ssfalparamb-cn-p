@@ -1,7 +1,7 @@
 import type { PaginatedResult } from "@/lib/backend/contracts/common.contract";
 import type { MemberDTO } from "@/lib/backend/dto/member.dto";
 import type { IssuedMemberPinDTO } from "@/lib/backend/dto/member.dto";
-import type { CreateMemberInput, UpdateMemberInput } from "@/lib/backend/contracts/member.contract";
+import type { CompleteMemberProfileInput, CreateMemberInput, UpdateMemberInput } from "@/lib/backend/contracts/member.contract";
 import type { UpdateMemberProfileInput } from "@/lib/backend/contracts/member.contract";
 import type { MemberDirectoryItemDTO, MemberListFilters, MemberProfileDTO } from "@/lib/backend/dto/member.dto";
 import { requestBackend, requestBackendVoid } from "./backendClient";
@@ -37,6 +37,12 @@ export function softDeleteAdminMember(id: string): Promise<void> {
 }
 
 export function issueAdminMemberPin(id: string): Promise<IssuedMemberPinDTO> {
+  return requestBackend<IssuedMemberPinDTO>(`/api/v1/admin/members/${encodeURIComponent(id)}/invitation`, {
+    method: "POST",
+  });
+}
+
+export function resetAdminMemberPin(id: string): Promise<IssuedMemberPinDTO> {
   return requestBackend<IssuedMemberPinDTO>(`/api/v1/admin/members/${encodeURIComponent(id)}/pin`, {
     method: "POST",
   });
@@ -83,6 +89,13 @@ export function getCurrentMemberProfile(): Promise<MemberProfileDTO> {
 export function updateCurrentMemberProfile(input: UpdateMemberProfileInput): Promise<MemberProfileDTO> {
   return requestBackend<MemberProfileDTO>("/api/v1/member/profile", {
     method: "PATCH",
+    body: JSON.stringify(input),
+  });
+}
+
+export function completeCurrentMemberProfile(input: CompleteMemberProfileInput): Promise<MemberProfileDTO> {
+  return requestBackend<MemberProfileDTO>("/api/v1/member/profile/complete", {
+    method: "POST",
     body: JSON.stringify(input),
   });
 }

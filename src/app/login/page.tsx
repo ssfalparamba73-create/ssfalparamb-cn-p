@@ -1,17 +1,23 @@
-"use client";
-
-import React, { useState } from "react";
-import { useRouter } from "next/navigation";
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Card, CardContent } from "@/components/ui/card";
 import { ShieldCheck } from "lucide-react";
 import { InlineLoginForm } from "@/components/auth/InlineLoginForm";
 import { TransparentLogo } from "@/components/TransparentLogo";
 
-export default function LoginPage() {
-  const router = useRouter();
+interface LoginPageProps {
+  searchParams: Promise<{ phone?: string | string[] }>;
+}
+
+function getInitialPhone(phoneParam: string | string[] | undefined): string {
+  const value = Array.isArray(phoneParam) ? phoneParam[0] : phoneParam;
+  if (!value) return "";
+
+  const phone = value.replace(/\D/g, "").slice(0, 15);
+  return /^\d{7,15}$/.test(phone) ? phone : "";
+}
+
+export default async function LoginPage({ searchParams }: LoginPageProps) {
+  const { phone } = await searchParams;
+  const initialPhone = getInitialPhone(phone);
 
   return (
     <div className="min-h-screen flex flex-col justify-center items-center p-4 relative overflow-hidden bg-[radial-gradient(circle_at_18%_18%,rgba(59,130,246,0.24),transparent_24rem),radial-gradient(circle_at_86%_24%,rgba(34,197,94,0.24),transparent_20rem),linear-gradient(135deg,#f8fbff_0%,#eef8ff_48%,#effdf7_100%)]">
@@ -46,7 +52,7 @@ export default function LoginPage() {
               </p>
             </div>
 
-            <InlineLoginForm isGlass={false} />
+            <InlineLoginForm isGlass={false} initialPhone={initialPhone} />
 
           </CardContent>
         </Card>

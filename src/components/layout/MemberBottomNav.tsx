@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Receipt, History, User, Users } from "lucide-react";
+import { LayoutDashboard, History, User, Users } from "lucide-react";
+import { MEMBER_PAYMENTS_ENABLED } from "@/lib/featureFlags";
 
 export function MemberBottomNav() {
   const pathname = usePathname();
@@ -13,11 +14,11 @@ export function MemberBottomNav() {
       href: "/member/dashboard",
       icon: LayoutDashboard,
     },
-    {
+    ...(MEMBER_PAYMENTS_ENABLED ? [{
       name: "Payments",
       href: "/member/payments",
       icon: History,
-    },
+    }] : []),
     {
       name: "Community",
       href: "/member/directory",

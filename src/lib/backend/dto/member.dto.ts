@@ -71,6 +71,7 @@ export interface MemberProfileDTO {
   joinedYear?: string;
   occupation?: string;
   biometricEnabled: boolean;
+  profileComplete: boolean;
   familyMembers: FamilyMemberDTO[];
 }
 

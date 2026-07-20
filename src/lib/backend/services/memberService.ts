@@ -1,9 +1,9 @@
-import type { MemberService, MemberRepository, UpdateMemberProfileInput } from "../contracts/member.contract";
+import type { CompleteMemberProfileInput, MemberService, MemberRepository, UpdateMemberProfileInput } from "../contracts/member.contract";
 import type { ActorContext, BackendResult, PaginatedResult, PaginationInput } from "../contracts/common.contract";
 import type { MemberDashboardDTO, MemberDirectoryItemDTO, MemberListFilters, MemberProfileDTO } from "../dto/member.dto";
 import { authError, notFoundError } from "../errors/createBackendError";
 import { ok, fail, fromThrowable } from "../errors/resultHelpers";
-import { validateUpdateMemberProfileInput, validateMemberListFilters } from "../validation/memberSchemas";
+import { validateCompleteMemberProfileInput, validateUpdateMemberProfileInput, validateMemberListFilters } from "../validation/memberSchemas";
 import { validatePagination } from "../validation/commonSchemas";
 
 export function createMemberService(deps: {
@@ -63,6 +63,25 @@ export function createMemberService(deps: {
         if (!validation.ok) return fail(validation.error!);
 
         const updated = await memberRepository.updateProfile(memberIdCheck.data!, validation.data!, actor);
+        return ok(updated);
+      } catch (err) {
+        return fail(fromThrowable(err));
+      }
+    },
+
+    async completeProfile(input: CompleteMemberProfileInput, actor: ActorContext): Promise<BackendResult<MemberProfileDTO>> {
+      try {
+        const memberIdCheck = requireMember(actor);
+        if (!memberIdCheck.ok) return fail(memberIdCheck.error!);
+
+        const validation = validateCompleteMemberProfileInput(input);
+        if (!validation.ok) return fail(validation.error!);
+
+        const updated = await memberRepository.completeProfile(
+          memberIdCheck.data!,
+          validation.data!,
+          actor
+        );
         return ok(updated);
       } catch (err) {
         return fail(fromThrowable(err));

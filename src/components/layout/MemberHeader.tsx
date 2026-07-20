@@ -9,6 +9,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { toast } from "sonner";
 import { useTheme } from "next-themes";
 import { getCurrentSession, logoutSession } from "@/lib/api/authClient";
+import { MEMBER_PAYMENTS_ENABLED } from "@/lib/featureFlags";
 
 const subscribeToHydration = () => () => undefined;
 
@@ -57,7 +58,7 @@ export function MemberHeader() {
   const navItems = [
     { name: "Dashboard", href: "/member/dashboard" },
     { name: "Community", href: "/member/directory" },
-    { name: "Payments", href: "/member/payments" },
+    ...(MEMBER_PAYMENTS_ENABLED ? [{ name: "Payments", href: "/member/payments" }] : []),
     { name: "Profile", href: "/member/profile" },
   ];
 

@@ -1,5 +1,6 @@
+import { createHash } from "node:crypto";
 import type { ActorContext, PaginatedResult, PaginationInput } from "../../../contracts/common.contract";
-import type { CreateMemberInput, MemberRepository, UpdateMemberInput, UpdateMemberProfileInput } from "../../../contracts/member.contract";
+import type { CompleteMemberProfileInput, CreateMemberInput, MemberRepository, UpdateMemberInput, UpdateMemberProfileInput } from "../../../contracts/member.contract";
 import type { MemberDTO, MemberDirectoryItemDTO, MemberListFilters, MemberProfileDTO, MemberDashboardDTO } from "../../../dto/member.dto";
 import { createSupabaseBackendClient } from "../client";
 import { mapRowToMemberDirectoryItemDTO, mapRowToMemberDTO, mapRowToMemberProfileDTO } from "../mappers/member.mapper";
@@ -14,6 +15,14 @@ function actorRpcParams(actor: ActorContext) {
     p_ip: actor.ip ?? null,
     p_device: actor.device ?? null,
   };
+}
+
+function memberPinEncryptionKey(): string {
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!serviceRoleKey) throw new Error("Missing server PIN encryption material.");
+  return createHash("sha256")
+    .update(`ssf-member-invitation-pin:v1:${serviceRoleKey}`)
+    .digest("hex");
 }
 
 function throwMutationError(error: { code?: string; message?: string }): never {
@@ -172,6 +181,21 @@ export class SupabaseMemberRepository implements MemberRepository {
     return profile;
   }
 
+  async completeProfile(memberId: string, input: CompleteMemberProfileInput, actor: ActorContext): Promise<MemberProfileDTO> {
+    const supabase = createSupabaseBackendClient();
+    const { error } = await supabase.rpc("member_complete_profile", {
+      p_member_id: memberId,
+      p_input: input,
+      p_actor_name: actor.actorName ?? null,
+      p_ip: actor.ip ?? null,
+      p_device: actor.device ?? null,
+    });
+    if (error) throw error;
+    const profile = await this.getProfile(memberId);
+    if (!profile) throw new Error("Profile was not found after completion.");
+    return profile;
+  }
+
   async softDelete(id: string, actor: ActorContext): Promise<void> {
     const supabase = createSupabaseBackendClient();
     const { error } = await supabase.rpc("admin_soft_delete_member", {
@@ -186,6 +210,7 @@ export class SupabaseMemberRepository implements MemberRepository {
     const { data, error } = await supabase.rpc("admin_issue_member_pin", {
       p_member_id: memberId,
       p_pin: pin,
+      p_pin_encryption_key: memberPinEncryptionKey(),
       ...actorRpcParams(actor),
     });
     if (error) {
@@ -202,6 +227,22 @@ export class SupabaseMemberRepository implements MemberRepository {
     }
     if (typeof data !== "string") throw new Error("PIN issue timestamp was not returned.");
     return data;
+  }
+
+  async getCurrentPin(memberId: string, actor: ActorContext): Promise<{ pin: string; issuedAt: string } | null> {
+    const supabase = createSupabaseBackendClient();
+    const { data, error } = await supabase.rpc("admin_get_member_pin_secret", {
+      p_member_id: memberId,
+      p_pin_encryption_key: memberPinEncryptionKey(),
+      p_actor_admin_id: actor.adminId,
+    });
+    if (error) throw error;
+    const row = Array.isArray(data) ? data[0] : data;
+    if (!row?.pin || !row.issued_at) return null;
+    return {
+      pin: row.pin,
+      issuedAt: row.issued_at,
+    };
   }
 
   async getProfile(memberId: string): Promise<MemberProfileDTO | null> {

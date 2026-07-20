@@ -10,7 +10,8 @@ interface AuthSessionRow {
 export function mapAuthSessionRow(
   row: AuthSessionRow,
   actorName: string,
-  actorRole?: string
+  actorRole?: string,
+  profileComplete?: boolean
 ): AuthSessionDTO {
   const actorId = row.actor_type === "member" ? row.member_id : row.admin_id;
   if (!actorId) {
@@ -22,6 +23,7 @@ export function mapAuthSessionRow(
     actorId,
     actorName,
     actorRole,
+    profileComplete: row.actor_type === "member" ? Boolean(profileComplete) : undefined,
     expiresAt: row.expires_at,
   };
 }

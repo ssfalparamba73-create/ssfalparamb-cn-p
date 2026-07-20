@@ -26,6 +26,17 @@ interface AdminRoleRow {
 }
 
 export class SupabaseAuthRepository implements AuthRepository {
+  private async getMemberProfileComplete(memberId: string): Promise<boolean> {
+    const supabase = createSupabaseBackendClient();
+    const { data, error } = await supabase
+      .from("members")
+      .select("profile_completed_at")
+      .eq("id", memberId)
+      .maybeSingle();
+    if (error) throw error;
+    return Boolean(data?.profile_completed_at);
+  }
+
   private async getAdminRole(adminId: string): Promise<string> {
     const supabase = createSupabaseBackendClient();
     const { data, error } = await supabase
@@ -83,7 +94,10 @@ export class SupabaseAuthRepository implements AuthRepository {
     const actorRole = input.actorType === "admin"
       ? await this.getAdminRole(input.actorId)
       : undefined;
-    return mapAuthSessionRow(data as SessionRow, input.actorName, actorRole);
+    const profileComplete = input.actorType === "member"
+      ? await this.getMemberProfileComplete(input.actorId)
+      : undefined;
+    return mapAuthSessionRow(data as SessionRow, input.actorName, actorRole, profileComplete);
   }
 
   async resolveSession(tokenHash: string): Promise<AuthSessionDTO | null> {
@@ -104,15 +118,17 @@ export class SupabaseAuthRepository implements AuthRepository {
 
     let actorName: string | null = null;
     let actorRole: string | undefined;
+    let profileComplete: boolean | undefined;
     if (session.actor_type === "member" && session.member_id) {
       const { data: member, error: memberError } = await supabase
         .from("members")
-        .select("name, status, pin_status")
+        .select("name, status, pin_status, profile_completed_at")
         .eq("id", session.member_id)
         .maybeSingle();
       if (memberError) throw memberError;
       if (!member || member.status !== "active" || member.pin_status !== "issued") return null;
       actorName = member.name;
+      profileComplete = Boolean(member.profile_completed_at);
     } else if (session.actor_type === "admin" && session.admin_id) {
       const { data: admin, error: adminError } = await supabase
         .from("admin_users")
@@ -137,7 +153,7 @@ export class SupabaseAuthRepository implements AuthRepository {
       console.warn("Auth session last-seen update failed.");
     }
 
-    return mapAuthSessionRow(session, actorName, actorRole);
+    return mapAuthSessionRow(session, actorName, actorRole, profileComplete);
   }
 
   async revokeSession(tokenHash: string): Promise<void> {

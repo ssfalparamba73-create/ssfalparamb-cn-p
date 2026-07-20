@@ -127,6 +127,7 @@ export interface AdminMemberService {
   createMember(input: CreateMemberInput, actor: ActorContext): Promise<BackendResult<MemberDTO>>;
   updateMember(id: string, input: UpdateMemberInput, actor: ActorContext): Promise<BackendResult<MemberDTO>>;
   softDeleteMember(id: string, actor: ActorContext): Promise<BackendResult<void>>;
+  prepareMemberInvitation(id: string, actor: ActorContext): Promise<BackendResult<IssuedMemberPinDTO>>;
   issueMemberPin(id: string, actor: ActorContext): Promise<BackendResult<IssuedMemberPinDTO>>;
 }
 

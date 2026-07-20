@@ -381,7 +381,7 @@ export function MemberForm({ initialData, isEdit }: MemberFormProps) {
         <div className="space-y-4">
           <div className="p-4 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-900/50">
             <p className="text-sm text-blue-800 dark:text-blue-300">
-               Save the member first. Then use Reset PIN on the member details page to generate a secure 4-digit login code. The code is shown only once.
+               Save the member first. A secure 4-digit login code will be prepared for invitation. Use Reset PIN on the member details page only when the code must change.
             </p>
           </div>
         </div>
@@ -407,6 +407,7 @@ export function MemberForm({ initialData, isEdit }: MemberFormProps) {
           phone={invitation.phone}
           pin={invitation.pin}
           message={invitation.message}
+          description="Share this member's login invitation. The PIN will stay the same until Reset PIN is used."
           onClose={() => {
             const memberId = invitation.memberId;
             setInvitation(null);

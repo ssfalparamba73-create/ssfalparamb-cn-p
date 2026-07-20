@@ -1,6 +1,7 @@
 import { ReceiptText, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import type { MemberDashboardActivityDTO } from "@/lib/backend/dto/dashboard.dto";
+import { MEMBER_PAYMENTS_ENABLED } from "@/lib/featureFlags";
 
 function activityType(activity: MemberDashboardActivityDTO): string {
   if (activity.method === "cash_handover") return "Cash Handover";
@@ -18,9 +19,11 @@ export function RecentActivityCard({
     <div className="bg-white rounded-2xl border border-[#E5EAF3] shadow-sm overflow-hidden transition-colors duration-300 dark:border-slate-700 dark:bg-slate-800 dark:shadow-none">
       <div className="flex items-center justify-between p-4 border-b border-[#E5EAF3] dark:border-slate-700">
         <h3 className="font-bold text-slate-800 dark:text-slate-50">Recent Activity</h3>
-        <Link href="/member/payments" className="text-xs font-medium text-[#2563EB] flex items-center gap-1 hover:underline">
-          View all <ArrowRight className="size-3" />
-        </Link>
+        {MEMBER_PAYMENTS_ENABLED && (
+          <Link href="/member/payments" className="text-xs font-medium text-[#2563EB] flex items-center gap-1 hover:underline">
+            View all <ArrowRight className="size-3" />
+          </Link>
+        )}
       </div>
 
       <div className="divide-y divide-[#E5EAF3] dark:divide-slate-700">

@@ -45,7 +45,7 @@ export function MemberInvitationDialog({
                   {title}
                 </h2>
                 <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                  {description ?? `Send ${memberName}'s login invitation now. This PIN is shown only once.`}
+                  {description ?? `Send ${memberName}'s login invitation now. Keep this PIN private.`}
                 </p>
               </div>
             </div>

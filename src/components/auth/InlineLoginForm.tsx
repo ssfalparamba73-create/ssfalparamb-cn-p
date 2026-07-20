@@ -9,43 +9,39 @@ import { loginMember } from "@/lib/api/authClient";
 
 interface InlineLoginFormProps {
   isGlass?: boolean; // To match the desktop hero section style
+  initialPhone?: string;
 }
 
-export function InlineLoginForm({ isGlass = false }: InlineLoginFormProps) {
+function normalizePhoneInput(input: string): string {
+  let value = input.replace(/\D/g, "");
+
+  if (value.length >= 12 && value.startsWith("91")) {
+    value = value.slice(2);
+  } else if (value.length >= 14 && value.startsWith("0091")) {
+    value = value.slice(4);
+  }
+
+  return value.slice(0, 15);
+}
+
+export function InlineLoginForm({ isGlass = false, initialPhone = "" }: InlineLoginFormProps) {
   const router = useRouter();
+  const invitedPhone = normalizePhoneInput(initialPhone);
+  const hasInvitedPhone = /^\d{7,15}$/.test(invitedPhone);
 
   // State
-  const [step, setStep] = useState<"phone" | "otp">("phone");
-  const [phone, setPhone] = useState("");
+  const [step, setStep] = useState<"phone" | "otp">(hasInvitedPhone ? "otp" : "phone");
+  const [phone, setPhone] = useState(hasInvitedPhone ? invitedPhone : "");
   const [otp, setOtp] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // Only allow digits, strip spaces and special characters
-    let val = e.target.value.replace(/\D/g, "");
-
-    // Handle autofill that bypasses onPaste (e.g., Chrome autofilling "+91 9876543210")
-    if (val.length >= 12 && val.startsWith("91")) {
-      val = val.slice(2);
-    } else if (val.length >= 14 && val.startsWith("0091")) {
-      val = val.slice(4);
-    }
-
-    setPhone(val.slice(0, 15));
+    setPhone(normalizePhoneInput(e.target.value));
   };
 
   const handlePhonePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
     e.preventDefault();
-    let pasted = e.clipboardData.getData("text/plain").replace(/\D/g, "");
-
-    // Smart sanitation for common Indian formats
-    if (pasted.length >= 12 && pasted.startsWith("91")) {
-      pasted = pasted.slice(2);
-    } else if (pasted.length >= 14 && pasted.startsWith("0091")) {
-      pasted = pasted.slice(4);
-    }
-
-    setPhone(pasted.slice(0, 15));
+    setPhone(normalizePhoneInput(e.clipboardData.getData("text/plain")));
   };
 
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
@@ -108,9 +104,9 @@ export function InlineLoginForm({ isGlass = false }: InlineLoginFormProps) {
     setIsLoading(true);
 
     try {
-      await loginMember(phone, otp);
+      const session = await loginMember(phone, otp);
       toast.success("Verification Successful!");
-      router.push("/member/dashboard");
+      router.push(session.profileComplete ? "/member/dashboard" : "/member/complete-profile");
     } catch (loginError) {
       const message = loginError instanceof Error ? loginError.message : "Invalid Code";
       toast.error(message);

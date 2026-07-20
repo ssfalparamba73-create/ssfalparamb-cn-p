@@ -9,7 +9,7 @@ import { MemberDetailTabs } from "@/components/admin/members/MemberDetailTabs";
 import type { Member } from "@/lib/admin/admin-types";
 import { mapMemberDto } from "@/lib/admin/mapMemberDto";
 import { BackendApiError } from "@/lib/api/backendClient";
-import { getAdminMember, issueAdminMemberPin } from "@/lib/api/memberClient";
+import { getAdminMember, resetAdminMemberPin } from "@/lib/api/memberClient";
 import type { IssuedMemberPinDTO } from "@/lib/backend/dto/member.dto";
 import { toast } from "sonner";
 import { MemberInvitationDialog } from "@/components/admin/members/MemberInvitationDialog";
@@ -83,7 +83,7 @@ export default function MemberDetailPage() {
     if (!window.confirm("Generate a new PIN and invitation? The old PIN will stop working and any existing member login session will end.")) return;
     setIsIssuingPin(true);
     try {
-      setIssuedPin(await issueAdminMemberPin(member.id));
+      setIssuedPin(await resetAdminMemberPin(member.id));
     } catch (error) {
       if (error instanceof BackendApiError && error.status === 401) {
         router.replace("/admin/login");
@@ -168,7 +168,7 @@ export default function MemberDetailPage() {
           pin={issuedPin.pin}
           message={issuedPin.message}
           title="Member invitation ready"
-          description="Share this new login invitation now. The previous PIN no longer works, and this PIN is shown only once."
+          description="Share this new login invitation now. The previous PIN no longer works, and this PIN will stay the same until Reset PIN is used again."
           onClose={() => setIssuedPin(null)}
         />
       )}

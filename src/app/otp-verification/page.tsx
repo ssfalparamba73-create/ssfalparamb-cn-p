@@ -28,10 +28,10 @@ function OtpVerificationForm() {
     setError("");
 
     try {
-      await loginMember(phone, otp);
+      const session = await loginMember(phone, otp);
       setIsLoading(false);
       setSuccess(true);
-      router.replace("/member/dashboard");
+      router.replace(session.profileComplete ? "/member/dashboard" : "/member/complete-profile");
     } catch (loginError) {
       setIsLoading(false);
       setError(loginError instanceof Error ? loginError.message : "Invalid member PIN.");

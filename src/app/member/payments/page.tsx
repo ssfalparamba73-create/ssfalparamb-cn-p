@@ -1,5 +1,7 @@
 import { ShieldCheck, CalendarRange } from "lucide-react";
 import { TransactionCard, Transaction } from "@/components/payments/TransactionCard";
+import { redirect } from "next/navigation";
+import { MEMBER_PAYMENTS_ENABLED } from "@/lib/featureFlags";
 
 const MOCK_TRANSACTIONS: Transaction[] = [
   {
@@ -29,6 +31,8 @@ const MOCK_TRANSACTIONS: Transaction[] = [
 ];
 
 export default function PaymentsPage() {
+  if (!MEMBER_PAYMENTS_ENABLED) redirect("/member/dashboard");
+
   const totalPaid = MOCK_TRANSACTIONS.reduce((sum, tx) => sum + (tx.status === "COMPLETED" ? tx.amount : 0), 0);
 
   return (

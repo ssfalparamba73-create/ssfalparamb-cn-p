@@ -7,6 +7,7 @@ export interface AuthSessionDTO {
   actorId: ID;
   actorName: string;
   actorRole?: string;
+  profileComplete?: boolean;
   expiresAt: ISODateTime;
 }
 

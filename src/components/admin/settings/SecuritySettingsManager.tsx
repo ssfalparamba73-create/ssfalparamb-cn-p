@@ -85,6 +85,7 @@ export function SecuritySettingsManager() {
     ? renderMemberInvitationTemplate(invitationTemplate, {
         name: "Sample Member",
         phone: "9876543210",
+        loginUrl: "https://portal.example/login",
         pin: "••••",
       })
     : "";

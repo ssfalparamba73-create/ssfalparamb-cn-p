@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { AlertCircle, CheckCircle2, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { MEMBER_PAYMENTS_ENABLED } from "@/lib/featureFlags";
 
 interface DueStatusCardProps {
   amountDue: number;
@@ -32,7 +33,7 @@ export function DueStatusCard({ amountDue }: DueStatusCardProps) {
         </div>
       </div>
 
-      {!isClear && (
+      {!isClear && MEMBER_PAYMENTS_ENABLED && (
         <div className="mt-5">
           <Link href="/pay?source=member" className="block w-full">
             <Button className="w-full bg-[#2563EB] hover:bg-blue-700 text-white rounded-xl h-12 text-base font-semibold shadow-sm transition-all flex items-center justify-center gap-2">

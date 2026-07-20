@@ -60,6 +60,7 @@ export function mapRowToMemberProfileDTO(row: any, familyRows: any[] = []): Memb
     joinedYear: row.joined_at ? new Date(row.joined_at).getFullYear().toString() : undefined,
     occupation: row.occupation,
     biometricEnabled: Boolean(row.biometric_enabled),
+    profileComplete: Boolean(row.profile_completed_at),
     familyMembers: familyRows.map((fam) => mapFamilyRow(fam)),
   };
 }

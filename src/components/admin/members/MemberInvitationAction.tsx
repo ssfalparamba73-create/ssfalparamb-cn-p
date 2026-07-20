@@ -17,14 +17,11 @@ interface MemberInvitationActionProps {
 export function MemberInvitationAction({ member, compact = false }: MemberInvitationActionProps) {
   const [isGenerating, setIsGenerating] = useState(false);
   const [invitation, setInvitation] = useState<IssuedMemberPinDTO | null>(null);
+  const canPrepareInvitation = member.status === "active";
 
   const generate = async (event: MouseEvent) => {
     event.stopPropagation();
-    if (member.status !== "active") return;
-    const confirmed = window.confirm(
-      `Generate a new login PIN for ${member.name}? The previous PIN will stop working and active member sessions will be logged out.`
-    );
-    if (!confirmed) return;
+    if (!canPrepareInvitation) return;
 
     setIsGenerating(true);
     try {
@@ -36,19 +33,21 @@ export function MemberInvitationAction({ member, compact = false }: MemberInvita
     }
   };
 
+  if (!canPrepareInvitation) return null;
+
   return (
     <>
       <Button
         type="button"
         variant="outline"
         size="sm"
-        disabled={isGenerating || member.status !== "active"}
-        title={member.status === "active" ? "Generate a new one-time login invitation" : "Only active members can receive invitations"}
+        disabled={isGenerating}
+        title="Send member login invitation"
         onClick={generate}
         className={compact ? "h-8 px-2" : ""}
       >
         <MessageCircle className="h-4 w-4" />
-        {!compact && <span className="ml-2">{isGenerating ? "Generating..." : member.pinStatus === "issued" ? "Resend Invite" : "Invite"}</span>}
+        {!compact && <span className="ml-2">{isGenerating ? "Preparing..." : "Invite"}</span>}
       </Button>
       {invitation && (
         <MemberInvitationDialog
@@ -57,7 +56,7 @@ export function MemberInvitationAction({ member, compact = false }: MemberInvita
           pin={invitation.pin}
           message={invitation.message}
           title="Member invitation ready"
-          description="Share this new login invitation now. The previous PIN no longer works, and this PIN is shown only once."
+          description="Share this member's current login invitation. The PIN will stay the same until Reset PIN is used."
           onClose={() => setInvitation(null)}
         />
       )}
