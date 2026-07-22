@@ -57,6 +57,7 @@ export interface ActorContext {
   memberId?: ID;
   adminId?: ID;
   actorName?: string;
+  permissions?: readonly string[];
   ip?: string;
   device?: string;
   requestId: string;

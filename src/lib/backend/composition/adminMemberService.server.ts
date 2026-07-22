@@ -27,6 +27,11 @@ export function getAdminMemberService() {
     },
     async requirePermission(actor: ActorContext, permission: string) {
       if (!actor.adminId) return fail(permissionError("Admin access required."));
+      if (actor.permissions !== undefined) {
+        return actor.permissions.includes(permission)
+          ? ok(true)
+          : fail(permissionError(`Permission denied: requires ${permission}`));
+      }
       const permissions = await adminRepository.getAdminPermissions(actor.adminId);
       return permissions.includes(permission)
         ? ok(true)

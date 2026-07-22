@@ -25,6 +25,16 @@ interface AdminRoleRow {
   roles: { name: string } | { name: string }[] | null;
 }
 
+interface ResolvedSessionContextRow {
+  actor_type: AuthActorType;
+  actor_id: string;
+  actor_name: string;
+  actor_role: string | null;
+  permissions: string[] | null;
+  profile_complete: boolean | null;
+  expires_at: string;
+}
+
 export class SupabaseAuthRepository implements AuthRepository {
   private async getMemberProfileComplete(memberId: string): Promise<boolean> {
     const supabase = createSupabaseBackendClient();
@@ -103,57 +113,27 @@ export class SupabaseAuthRepository implements AuthRepository {
   async resolveSession(tokenHash: string): Promise<AuthSessionDTO | null> {
     const supabase = createSupabaseBackendClient();
     const { data, error } = await supabase
-      .from("auth_sessions")
-      .select("actor_type, member_id, admin_id, expires_at, revoked_at")
-      .eq("session_token_hash", tokenHash)
-      .maybeSingle();
+      .rpc("resolve_app_session_context", { p_session_token_hash: tokenHash });
 
     if (error) throw error;
-    if (!data) return null;
+    const row = (Array.isArray(data) ? data[0] : data) as ResolvedSessionContextRow | null;
+    if (!row) return null;
 
-    const session = data as SessionRow;
-    if (session.revoked_at || Date.parse(session.expires_at) <= Date.now()) {
-      return null;
-    }
+    const session: SessionRow = {
+      actor_type: row.actor_type,
+      member_id: row.actor_type === "member" ? row.actor_id : null,
+      admin_id: row.actor_type === "admin" ? row.actor_id : null,
+      expires_at: row.expires_at,
+      revoked_at: null,
+    };
 
-    let actorName: string | null = null;
-    let actorRole: string | undefined;
-    let profileComplete: boolean | undefined;
-    if (session.actor_type === "member" && session.member_id) {
-      const { data: member, error: memberError } = await supabase
-        .from("members")
-        .select("name, status, pin_status, profile_completed_at")
-        .eq("id", session.member_id)
-        .maybeSingle();
-      if (memberError) throw memberError;
-      if (!member || member.status !== "active" || member.pin_status !== "issued") return null;
-      actorName = member.name;
-      profileComplete = Boolean(member.profile_completed_at);
-    } else if (session.actor_type === "admin" && session.admin_id) {
-      const { data: admin, error: adminError } = await supabase
-        .from("admin_users")
-        .select("name, status")
-        .eq("id", session.admin_id)
-        .maybeSingle();
-      if (adminError) throw adminError;
-      if (!admin || admin.status !== "active") return null;
-      actorName = admin.name;
-      actorRole = await this.getAdminRole(session.admin_id);
-    }
-
-    if (!actorName) return null;
-
-    const { error: touchError } = await supabase
-      .from("auth_sessions")
-      .update({ last_seen_at: new Date().toISOString() })
-      .eq("session_token_hash", tokenHash)
-      .is("revoked_at", null);
-
-    if (touchError) {
-      console.warn("Auth session last-seen update failed.");
-    }
-
-    return mapAuthSessionRow(session, actorName, actorRole, profileComplete);
+    return mapAuthSessionRow(
+      session,
+      row.actor_name,
+      row.actor_role ?? undefined,
+      row.profile_complete ?? undefined,
+      row.permissions ?? []
+    );
   }
 
   async revokeSession(tokenHash: string): Promise<void> {

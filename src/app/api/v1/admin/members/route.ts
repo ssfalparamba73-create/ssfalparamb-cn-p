@@ -7,9 +7,12 @@ import { serverError, validationError } from "@/lib/backend/errors/createBackend
 import { fail } from "@/lib/backend/errors/resultHelpers";
 import { createBackendResponse } from "@/lib/backend/http/backendResultResponse";
 import { buildPublicActorContext } from "@/lib/backend/http/requestContext";
+import { logBackendTiming } from "@/lib/backend/observability/performanceTiming";
 
 export async function GET(request: NextRequest) {
   const requestContext = buildPublicActorContext(request);
+  const startedAt = performance.now();
+  let status: "ok" | "error" = "error";
   try {
     const actorResult = await resolveAuthenticatedActor(request, requestContext.requestId);
     if (!actorResult.ok) return createBackendResponse(actorResult, requestContext.requestId);
@@ -38,14 +41,17 @@ export async function GET(request: NextRequest) {
       paymentStatus: (params.get("paymentStatus") || undefined) as MemberListFilters["paymentStatus"],
       isBloodDonor: isBloodDonor === null ? undefined : isBloodDonor === "true",
       donorAvailable: donorAvailable === null ? undefined : donorAvailable === "true",
+      sort: (params.get("sort") || undefined) as MemberListFilters["sort"],
     };
     const pagination = {
       page: Number(params.get("page") || 1),
       pageSize: Number(params.get("pageSize") || 20),
     };
 
+    const result = await getAdminMemberService().listMembers(filters, pagination, actorResult.data!);
+    status = result.ok ? "ok" : "error";
     return createBackendResponse(
-      await getAdminMemberService().listMembers(filters, pagination, actorResult.data!),
+      result,
       requestContext.requestId
     );
   } catch {
@@ -53,6 +59,8 @@ export async function GET(request: NextRequest) {
       fail(serverError(), { requestId: requestContext.requestId }),
       requestContext.requestId
     );
+  } finally {
+    logBackendTiming(requestContext.requestId, "members.request", startedAt, status);
   }
 }
 

@@ -6,10 +6,34 @@ import type { UpdateMemberProfileInput } from "@/lib/backend/contracts/member.co
 import type { MemberDirectoryItemDTO, MemberListFilters, MemberProfileDTO } from "@/lib/backend/dto/member.dto";
 import { requestBackend, requestBackendVoid } from "./backendClient";
 
-export function getAdminMembers(page = 1, pageSize = 100, search?: string): Promise<PaginatedResult<MemberDTO>> {
-  const params = new URLSearchParams({ page: String(page), pageSize: String(pageSize) });
-  if (search?.trim()) params.set("search", search.trim());
-  return requestBackend<PaginatedResult<MemberDTO>>(`/api/v1/admin/members?${params}`);
+export interface AdminMemberQuery extends MemberListFilters {
+  page?: number;
+  pageSize?: number;
+}
+
+export function getAdminMembers(
+  pageOrQuery: number | AdminMemberQuery = 1,
+  pageSize = 100,
+  search?: string,
+  signal?: AbortSignal
+): Promise<PaginatedResult<MemberDTO>> {
+  const query: AdminMemberQuery = typeof pageOrQuery === "number"
+    ? { page: pageOrQuery, pageSize, search }
+    : pageOrQuery;
+  const params = new URLSearchParams({
+    page: String(query.page ?? 1),
+    pageSize: String(query.pageSize ?? 20),
+  });
+  if (query.search?.trim()) params.set("search", query.search.trim());
+  if (query.status) params.set("status", query.status);
+  if (query.bloodGroup) params.set("bloodGroup", query.bloodGroup);
+  if (query.area?.trim()) params.set("area", query.area.trim());
+  if (query.monthlyTier) params.set("monthlyTier", query.monthlyTier);
+  if (query.paymentStatus) params.set("paymentStatus", query.paymentStatus);
+  if (query.isBloodDonor !== undefined) params.set("isBloodDonor", String(query.isBloodDonor));
+  if (query.donorAvailable !== undefined) params.set("donorAvailable", String(query.donorAvailable));
+  if (query.sort) params.set("sort", query.sort);
+  return requestBackend<PaginatedResult<MemberDTO>>(`/api/v1/admin/members?${params}`, { signal });
 }
 
 export function getAdminMember(id: string): Promise<MemberDTO> {

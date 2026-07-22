@@ -1021,3 +1021,43 @@ Verification:
 - In-app browser verification confirmed the current incomplete member is redirected
   from `/member/dashboard` to `/member/complete-profile`, name/phone are read-only,
   existing values are prefilled, and no browser console errors are present.
+
+## Codex - Admin Members Performance Pass - 2026-07-22
+
+Completed:
+- Replaced the Admin Members page's full-directory download and browser-only
+  filtering with 20-row server-side pagination, validated search/filter/sort query
+  parameters, and stale-request cancellation.
+- Added a 300 ms search debounce, previous/next controls, retained-data refresh
+  behavior, table/card loading skeletons, an empty result state, and retry handling
+  without changing the approved member row/card design.
+- Replaced the members-list `select("*")` query with an explicit safe projection that
+  excludes authentication hashes, encrypted invitation PIN material, and detail-only
+  profile fields.
+- Added the service-role-only `resolve_app_session_context` RPC to resolve the app
+  session, active actor, role, permissions, profile-completion state, expiry, and
+  conditional ten-minute last-seen update in one database round trip.
+- Permission checks now reuse the permissions verified by session resolution, while
+  preserving the existing repository fallback for non-request service contexts.
+- Added safe request/session/permission/query timing logs containing no tokens, PINs,
+  phone numbers, member data, or Supabase secrets.
+
+Database:
+- Applied forward-only migrations `037_admin_members_performance.sql` and
+  `038_session_last_seen_after_actor_validation.sql` to the linked staging Supabase
+  project. The follow-up keeps last-seen updates strictly after active-actor checks.
+- Added `(status, created_at DESC)` and `(blood_group, created_at DESC)` member indexes.
+- Revoked the consolidated session RPC from `PUBLIC`, `anon`, and `authenticated`;
+  only `service_role` can execute it.
+
+Verification:
+- `npx tsc --noEmit`, targeted ESLint, full production build, migration dry-run, and
+  linked database lint passed.
+- Authenticated localhost smoke testing confirmed the two real members load, loading
+  skeletons render, pagination metadata is correct, and debounced server search for
+  `Farhan` returns exactly one real member.
+- Timing evidence confirms a normal members request now uses one session-context RPC
+  plus one member query. The permission check is in-memory and measured at 0 ms.
+- Local remote-database timings were approximately 0.74-0.87 seconds per members API
+  request; Vercel Preview p95 still needs measurement after deployment because local
+  network distance is the dominant remaining cost.

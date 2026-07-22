@@ -120,4 +120,5 @@ export interface MemberListFilters {
   bloodGroup?: BloodGroup;
   isBloodDonor?: boolean;
   donorAvailable?: boolean;
+  sort?: "newest" | "name-asc" | "name-desc" | "dues-desc";
 }

@@ -20,6 +20,7 @@ const memberStatuses = ["active", "inactive", "blocked"] as const;
 const monthlyTiers = ["base", "premium", "custom", "flexible"] as const;
 const bloodGroups = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"] as const;
 const paymentStatuses = ["clear", "arrears", "long_overdue"] as const;
+const memberSortOptions = ["newest", "name-asc", "name-desc", "dues-desc"] as const;
 const MAX_FAMILY_MEMBERS = 25;
 
 export function validateCreateMemberInput(input: Partial<CreateMemberInput>): BackendResult<CreateMemberInput> {
@@ -285,6 +286,10 @@ export function validateMemberListFilters(input: MemberListFilters): BackendResu
 
   if (input.donorAvailable !== undefined && typeof input.donorAvailable !== "boolean") {
     return fail(validationError("Invalid donor availability filter.", "donorAvailable"));
+  }
+
+  if (input.sort && !includesValue(memberSortOptions, input.sort)) {
+    return fail(validationError("Invalid member sort option.", "sort"));
   }
 
   return ok(input);

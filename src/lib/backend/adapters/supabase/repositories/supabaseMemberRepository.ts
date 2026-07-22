@@ -7,6 +7,35 @@ import { mapRowToMemberDirectoryItemDTO, mapRowToMemberDTO, mapRowToMemberProfil
 import { conflictError, permissionError, rateLimitError, validationError } from "../../../errors/createBackendError";
 import { ERROR_CODES } from "../../../errors/errorCodes";
 
+const MEMBER_LIST_COLUMNS = [
+  "id",
+  "member_code",
+  "name",
+  "phone",
+  "alternate_phone",
+  "age",
+  "blood_group",
+  "is_blood_donor",
+  "donor_available",
+  "address",
+  "area",
+  "unit",
+  "sector",
+  "occupation",
+  "family_count",
+  "status",
+  "monthly_tier",
+  "monthly_amount",
+  "pin_status",
+  "joined_at",
+  "last_paid_at",
+  "dues_pending",
+  "last_reminded_at",
+  "reminder_count",
+  "created_at",
+  "updated_at",
+].join(", ");
+
 function actorRpcParams(actor: ActorContext) {
   if (!actor.adminId) throw new Error("Admin actor ID is required.");
   return {
@@ -67,7 +96,7 @@ export class SupabaseMemberRepository implements MemberRepository {
 
   async list(filters: MemberListFilters, pagination: PaginationInput): Promise<PaginatedResult<MemberDTO>> {
     const supabase = createSupabaseBackendClient();
-    let query = supabase.from("members").select("*", { count: "exact" });
+    let query = supabase.from("members").select(MEMBER_LIST_COLUMNS, { count: "exact" });
 
     if (filters.status) query = query.eq("status", filters.status);
     else query = query.neq("status", "left");
@@ -88,8 +117,16 @@ export class SupabaseMemberRepository implements MemberRepository {
 
     const page = pagination.page || 1;
     const pageSize = pagination.pageSize || 20;
+    const sort = filters.sort ?? "newest";
+    const sortColumn = sort === "name-asc" || sort === "name-desc"
+      ? "name"
+      : sort === "dues-desc"
+        ? "dues_pending"
+        : "created_at";
+    const ascending = sort === "name-asc";
     const { data, count, error } = await query
-      .order("created_at", { ascending: false })
+      .order(sortColumn, { ascending })
+      .order("id", { ascending: true })
       .range((page - 1) * pageSize, page * pageSize - 1);
     if (error) throw error;
 

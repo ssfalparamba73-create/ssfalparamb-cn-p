@@ -17,6 +17,7 @@ import {
   MEMBER_INVITATION_DEFAULT_TEMPLATE,
   renderMemberInvitationTemplate,
 } from "@/lib/memberInvitation";
+import { logBackendTiming } from "../observability/performanceTiming";
 
 export function createAdminMemberService(deps: {
   memberRepository: MemberRepository;
@@ -96,7 +97,15 @@ export function createAdminMemberService(deps: {
       actor: ActorContext
     ): Promise<BackendResult<PaginatedResult<MemberDTO>>> {
       try {
+        const permissionStartedAt = performance.now();
         const accessCheck = await checkAccess(actor, "members.view");
+        logBackendTiming(
+          actor.requestId,
+          "members.permission",
+          permissionStartedAt,
+          accessCheck.ok ? "ok" : "error",
+          accessCheck.error?.code
+        );
         if (!accessCheck.ok) return fail(accessCheck.error!);
 
         const filterValidation = validateMemberListFilters(filters);
@@ -104,7 +113,9 @@ export function createAdminMemberService(deps: {
 
         const validPagination = validatePagination(pagination);
 
+        const queryStartedAt = performance.now();
         const result = await memberRepository.list(filterValidation.data!, validPagination);
+        logBackendTiming(actor.requestId, "members.query", queryStartedAt, "ok");
         return ok(result);
       } catch (err) {
         return fail(fromThrowable(err));
