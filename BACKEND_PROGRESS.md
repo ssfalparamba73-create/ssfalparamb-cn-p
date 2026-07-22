@@ -1061,3 +1061,19 @@ Verification:
 - Local remote-database timings were approximately 0.74-0.87 seconds per members API
   request; Vercel Preview p95 still needs measurement after deployment because local
   network distance is the dominant remaining cost.
+
+## Codex - Member Form Responsive Submit Fix - 2026-07-22
+
+Completed:
+- Corrected the Add/Edit Member sticky footer breakpoint to match the Admin sidebar,
+  which appears only at the `lg` breakpoint.
+- Positioned the form actions above the mobile/tablet bottom navigation and added
+  enough form-bottom space to keep the final sections scrollable.
+- Preserved the existing form, button labels, styling, validation, invitation flow,
+  and backend behavior.
+
+Verification:
+- TypeScript and targeted ESLint checks pass.
+- Browser layout checks at 390x844, 768x1024, and 1280x720 confirm the Add Member
+  button is visible and unobstructed. Desktop footer alignment starts at the exact
+  260px sidebar boundary.

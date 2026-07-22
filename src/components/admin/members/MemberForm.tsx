@@ -180,7 +180,7 @@ export function MemberForm({ initialData, isEdit }: MemberFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-8 animate-in fade-in duration-300 pb-24">
+    <form onSubmit={handleSubmit} className="space-y-8 animate-in fade-in duration-300 pb-44 lg:pb-24">
 
       {/* Photo Upload Section */}
       <div className="flex flex-col items-center justify-center p-6 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
@@ -394,7 +394,7 @@ export function MemberForm({ initialData, isEdit }: MemberFormProps) {
       </div>
 
       {/* Sticky Footer */}
-      <div className="fixed bottom-0 left-0 right-0 sm:left-64 md:left-72 z-10 p-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-t border-slate-200 dark:border-slate-800 flex items-center justify-end gap-3 shadow-[0_-4px_12px_rgba(0,0,0,0.05)]">
+      <div className="fixed bottom-[calc(4rem+env(safe-area-inset-bottom))] left-0 right-0 z-30 p-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-t border-slate-200 dark:border-slate-800 flex items-center justify-end gap-3 shadow-[0_-4px_12px_rgba(0,0,0,0.05)] lg:bottom-0 lg:left-[260px]">
          <Button type="button" variant="outline" onClick={() => router.back()}>Cancel</Button>
          <Button type="submit" disabled={isSubmitting} className="bg-blue-600 hover:bg-blue-700 text-white min-w-[120px]">
            {isSubmitting ? "Saving..." : isEdit ? "Save Changes" : "Add Member"}
