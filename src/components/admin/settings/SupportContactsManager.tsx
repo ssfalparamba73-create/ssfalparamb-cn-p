@@ -16,6 +16,7 @@ import {
   reorderAdminSupportContacts,
   updateAdminSupportContact,
 } from "@/lib/api/supportClient";
+import { CardCollectionSkeleton } from "@/components/ui/loading-skeletons";
 
 interface ContactFormState {
   name: string;
@@ -162,7 +163,7 @@ export function SupportContactsManager() {
       {!isAdding && !editingId && <Button onClick={() => { setIsAdding(true); setForm(emptyForm); }} className="bg-blue-600 text-white"><Plus className="mr-2 h-4 w-4" /> Add Support Contact</Button>}
       {isAdding && renderForm()}
       {error && <div role="alert" className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">{error} <Button variant="link" onClick={() => void load()}>Retry</Button></div>}
-      {isLoading && <p className="text-sm text-slate-500">Loading support contacts...</p>}
+      {isLoading && <CardCollectionSkeleton count={3} />}
       {!isLoading && !error && contacts.length === 0 && <Card className="p-6 text-center text-sm text-slate-500">No support contacts have been added yet.</Card>}
       {contacts.map((contact, index) => (
         <Card key={contact.id} className="p-4 border-slate-200 shadow-sm dark:border-slate-800 dark:bg-slate-900">

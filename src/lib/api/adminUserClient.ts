@@ -19,8 +19,9 @@ export function updateAdminUserAccess(id: string, input: UpdateAdminUserAccessIn
   return requestBackend<AdminUserDTO>(`/api/v1/admin/admin-users/${encodeURIComponent(id)}`, { method: "PATCH", body: JSON.stringify(input) });
 }
 
-export function deactivateAdminUser(id: string): Promise<void> {
-  return requestBackendVoid(`/api/v1/admin/admin-users/${encodeURIComponent(id)}`, { method: "DELETE" });
+export function deactivateAdminUser(id: string, permanent = false): Promise<void> {
+  const query = permanent ? "?permanent=true" : "";
+  return requestBackendVoid(`/api/v1/admin/admin-users/${encodeURIComponent(id)}${query}`, { method: "DELETE" });
 }
 
 export function resetAdminUserCode(id: string): Promise<IssuedAdminCodeDTO> {

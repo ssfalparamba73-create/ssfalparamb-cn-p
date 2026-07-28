@@ -288,4 +288,13 @@ export class SupabaseAdminRepository implements AdminRepository {
     });
     if (error) throwAdminMutationError(error);
   }
+
+  async hardDeleteAdmin(adminId: string, actor: ActorContext): Promise<void> {
+    const supabase = createSupabaseBackendClient();
+    const { error } = await supabase.rpc("admin_delete_user", {
+      p_admin_id: adminId,
+      ...actorRpcParams(actor),
+    });
+    if (error) throwAdminMutationError(error);
+  }
 }

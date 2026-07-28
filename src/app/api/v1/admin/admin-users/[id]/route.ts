@@ -28,6 +28,9 @@ export async function DELETE(request: NextRequest, routeContext: RouteContext) {
     const actor = await resolveAuthenticatedActor(request, context.requestId);
     if (!actor.ok) return createBackendResponse(actor, context.requestId);
     const { id } = await routeContext.params;
-    return createBackendResponse(await getAdminUserService().softDeactivateAdmin(id, actor.data!), context.requestId);
+    const result = request.nextUrl.searchParams.get("permanent") === "true"
+      ? await getAdminUserService().hardDeleteAdmin(id, actor.data!)
+      : await getAdminUserService().softDeactivateAdmin(id, actor.data!);
+    return createBackendResponse(result, context.requestId);
   } catch { return createBackendResponse(fail(serverError()), context.requestId); }
 }

@@ -91,5 +91,14 @@ export function createAdminUserService(deps: {
         return ok(undefined);
       } catch (error) { return fail(fromThrowable(error)); }
     },
+
+    async hardDeleteAdmin(adminId: string, actor: ActorContext) {
+      try {
+        const allowed = await access(actor); if (!allowed.ok) return fail(allowed.error!);
+        const validId = validateAdminId(adminId); if (!validId.ok) return fail(validId.error!);
+        await deps.repository.hardDeleteAdmin(validId.data!, actor);
+        return ok(undefined);
+      } catch (error) { return fail(fromThrowable(error)); }
+    },
   };
 }

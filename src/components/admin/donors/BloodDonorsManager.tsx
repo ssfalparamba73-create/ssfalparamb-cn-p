@@ -12,8 +12,11 @@ import { toast } from "sonner";
 import type { MemberDTO } from "@/lib/backend/dto/member.dto";
 import { BackendApiError } from "@/lib/api/backendClient";
 import { getAllAdminBloodDonors, updateAdminMember } from "@/lib/api/memberClient";
+import { TablePagination } from "@/components/ui/table-pagination";
+import { CardCollectionSkeleton, TableRowsSkeleton } from "@/components/ui/loading-skeletons";
 
 const BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"];
+const PAGE_SIZE = 10;
 
 interface BloodDonorView {
   id: string;
@@ -46,6 +49,7 @@ export function BloodDonorsManager() {
   const [searchQuery, setSearchQuery] = useState("");
   const [groupFilter, setGroupFilter] = useState("all");
   const [availabilityFilter, setAvailabilityFilter] = useState("all");
+  const [page, setPage] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [togglingId, setTogglingId] = useState<string | null>(null);
@@ -83,6 +87,8 @@ export function BloodDonorsManager() {
 
     return matchesSearch && matchesGroup && matchesAvailability;
   });
+  const currentPage = Math.min(page, Math.max(1, Math.ceil(filteredDonors.length / PAGE_SIZE)));
+  const paginatedDonors = filteredDonors.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
   const handleToggleStatus = async (id: string, name: string, currentStatus: boolean) => {
     const newStatus = !currentStatus;
@@ -134,11 +140,17 @@ export function BloodDonorsManager() {
             placeholder="Search donors..."
             className="pl-9 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 h-10"
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              setPage(1);
+            }}
           />
         </div>
         <div className="relative min-w-[140px]">
-          <Select value={groupFilter} onValueChange={setGroupFilter}>
+          <Select value={groupFilter} onValueChange={(value) => {
+            setGroupFilter(value);
+            setPage(1);
+          }}>
             <SelectTrigger className="w-full bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
               <SelectValue placeholder="All Groups" />
             </SelectTrigger>
@@ -151,7 +163,10 @@ export function BloodDonorsManager() {
           </Select>
         </div>
         <div className="relative min-w-[160px]">
-          <Select value={availabilityFilter} onValueChange={setAvailabilityFilter}>
+          <Select value={availabilityFilter} onValueChange={(value) => {
+            setAvailabilityFilter(value);
+            setPage(1);
+          }}>
             <SelectTrigger className="w-full bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
               <SelectValue placeholder="Availability" />
             </SelectTrigger>
@@ -167,7 +182,6 @@ export function BloodDonorsManager() {
         </Button>
       </div>
 
-      {isLoading && <p className="p-4 text-sm text-slate-500 dark:text-slate-400">Loading blood donors...</p>}
       {loadError && <p className="p-4 text-sm text-red-600 dark:text-red-400">{loadError}</p>}
 
       {/* Desktop Table */}
@@ -185,7 +199,7 @@ export function BloodDonorsManager() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-              {filteredDonors.map((donor) => (
+              {isLoading ? <TableRowsSkeleton rows={10} columns={6} /> : paginatedDonors.map((donor) => (
                 <tr key={donor.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
                   <td className="px-4 py-3">
                     <div className="font-semibold text-slate-900 dark:text-slate-100">{donor.name}</div>
@@ -234,7 +248,7 @@ export function BloodDonorsManager() {
 
       {/* Mobile Cards */}
       <div className="md:hidden space-y-3">
-        {filteredDonors.map((donor) => (
+        {isLoading ? <CardCollectionSkeleton count={4} /> : paginatedDonors.map((donor) => (
           <Card key={donor.id} className="p-4 border-slate-200 dark:border-slate-800 shadow-sm">
             <div className="flex justify-between items-start mb-3">
               <div>
@@ -274,6 +288,13 @@ export function BloodDonorsManager() {
         )}
       </div>
 
+      <TablePagination
+        page={currentPage}
+        totalItems={filteredDonors.length}
+        pageSize={PAGE_SIZE}
+        itemLabel="donors"
+        onPageChange={setPage}
+      />
     </div>
   );
 }

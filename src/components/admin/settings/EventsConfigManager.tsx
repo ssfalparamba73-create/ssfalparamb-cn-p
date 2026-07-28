@@ -11,6 +11,7 @@ import { CalendarDays, Edit2, Trash2, Plus, Calendar } from "lucide-react";
 import { toast } from "sonner";
 import type { EventReceiptTheme, SpecialEventDTO } from "@/lib/backend/dto/event.dto";
 import { archiveAdminEvent, createAdminEvent, getAdminEvents, updateAdminEvent } from "@/lib/api/eventClient";
+import { CardCollectionSkeleton } from "@/components/ui/loading-skeletons";
 
 interface EventFormState {
   name: string;
@@ -100,7 +101,7 @@ export function EventsConfigManager() {
       {!isAdding && !editingId && <Button onClick={() => { setIsAdding(true); setForm(emptyForm); }} className="bg-blue-600 text-white"><Plus className="w-4 h-4 mr-2" /> Create New Event</Button>}
       {isAdding && renderForm()}
       {error && <Card className="p-4 text-sm text-red-700">{error} <Button variant="link" onClick={() => void load()}>Retry</Button></Card>}
-      {isLoading && <p className="text-sm text-slate-500">Loading events...</p>}
+      {isLoading && <CardCollectionSkeleton count={3} />}
       {!isLoading && !error && events.length === 0 && <Card className="p-6 text-center text-sm text-slate-500">No special events have been created yet.</Card>}
       <div className="grid grid-cols-1 gap-4">
         {events.map((event) => (

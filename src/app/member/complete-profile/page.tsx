@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { logoutSession } from "@/lib/api/authClient";
 import { completeCurrentMemberProfile, getCurrentMemberProfile } from "@/lib/api/memberClient";
 import type { MemberProfileDTO } from "@/lib/backend/dto/member.dto";
+import { FormPageSkeleton } from "@/components/ui/loading-skeletons";
 
 const BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"] as const;
 const INPUT_CLASS = "min-h-11 w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 outline-none transition-colors focus:border-blue-500 focus:ring-2 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-50 dark:focus:ring-blue-500/20";
@@ -91,7 +92,11 @@ export default function CompleteProfilePage() {
   };
 
   if (isLoading || !profile) {
-    return <div className="min-h-screen flex items-center justify-center px-4"><p className={`text-sm ${error ? "text-red-600" : "text-slate-500"}`}>{error ?? "Loading your details..."}</p></div>;
+    return (
+      <div className="min-h-screen px-4 py-6 md:px-6 md:py-10">
+        {error ? <p className="text-sm text-red-600">{error}</p> : <FormPageSkeleton />}
+      </div>
+    );
   }
 
   return (

@@ -10,6 +10,7 @@ import type { Member } from "@/lib/admin/admin-types";
 import { mapMemberDto } from "@/lib/admin/mapMemberDto";
 import { BackendApiError } from "@/lib/api/backendClient";
 import { getAdminMember } from "@/lib/api/memberClient";
+import { FormPageSkeleton } from "@/components/ui/loading-skeletons";
 
 export default function EditMemberPage() {
   const params = useParams();
@@ -48,7 +49,7 @@ export default function EditMemberPage() {
   }, [memberId, router]);
 
   if (isLoading) {
-    return <p className="text-sm text-slate-500 dark:text-slate-400">Loading member...</p>;
+    return <FormPageSkeleton />;
   }
 
   if (loadError) {

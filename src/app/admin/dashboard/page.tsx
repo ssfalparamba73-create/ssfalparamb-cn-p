@@ -23,6 +23,7 @@ import { getAdminDashboard } from "@/lib/api/dashboardClient";
 import { BackendApiError } from "@/lib/api/backendClient";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { PageContentSkeleton } from "@/components/ui/loading-skeletons";
 
 export default function AdminDashboardPage() {
   const router = useRouter();
@@ -53,9 +54,7 @@ export default function AdminDashboardPage() {
   if (!dashboard) {
     return (
       <div className="space-y-8 animate-in fade-in duration-300 pb-10">
-        <p className="text-sm text-slate-500 dark:text-slate-400">
-          {error ?? "Loading dashboard..."}
-        </p>
+        {error ? <p className="text-sm text-red-600 dark:text-red-400">{error}</p> : <PageContentSkeleton />}
       </div>
     );
   }

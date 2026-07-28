@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { Save, UploadCloud } from "lucide-react";
 import type { UnitSettingsDTO } from "@/lib/backend/dto/unitSettings.dto";
 import { getUnitSettings, updateUnitSettings } from "@/lib/api/settingsClient";
+import { FormPageSkeleton } from "@/components/ui/loading-skeletons";
 
 const emptySettings: UnitSettingsDTO = {
   unitName: "",
@@ -56,6 +57,10 @@ export function UnitSettingsManager() {
   };
 
   const field = (key: keyof UnitSettingsDTO, value: string) => setSettings((current) => ({ ...current, [key]: value }));
+
+  if (isLoading && settings === emptySettings) {
+    return <FormPageSkeleton />;
+  }
 
   return (
     <div className="space-y-6">

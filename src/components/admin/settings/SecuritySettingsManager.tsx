@@ -18,6 +18,7 @@ import {
   MEMBER_INVITATION_TEMPLATE_MAX_LENGTH,
   renderMemberInvitationTemplate,
 } from "@/lib/memberInvitation";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export function SecuritySettingsManager() {
   const router = useRouter();
@@ -287,9 +288,17 @@ export function SecuritySettingsManager() {
             <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
               Message Preview
             </p>
-            <p className="whitespace-pre-wrap text-sm leading-6 text-slate-700 dark:text-slate-300">
-              {isTemplateLoading ? "Loading invitation message..." : invitationPreview || "--"}
-            </p>
+            {isTemplateLoading ? (
+              <div className="space-y-2" aria-hidden>
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-5/6" />
+                <Skeleton className="h-4 w-2/3" />
+              </div>
+            ) : (
+              <p className="whitespace-pre-wrap text-sm leading-6 text-slate-700 dark:text-slate-300">
+                {invitationPreview || "--"}
+              </p>
+            )}
           </div>
 
           <div className="flex justify-end pt-2">

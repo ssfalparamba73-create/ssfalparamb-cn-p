@@ -71,4 +71,15 @@ export class SupabaseAuditRepository implements AuditRepository {
     if (error) throw error;
     return mapRowToAuditLogDTO(data);
   }
+
+  async purgeOlderThan(cutoff: string): Promise<number> {
+    const supabase = createSupabaseBackendClient();
+    const { data, error } = await supabase
+      .from("audit_logs")
+      .delete()
+      .lt("created_at", cutoff)
+      .select("id");
+    if (error) throw error;
+    return data?.length ?? 0;
+  }
 }

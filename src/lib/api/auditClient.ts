@@ -1,5 +1,5 @@
 import type { PaginatedResult } from "@/lib/backend/contracts/common.contract";
-import type { AuditLogDTO } from "@/lib/backend/dto/admin.dto";
+import type { AuditLogDTO, AuditLogPurgeDTO } from "@/lib/backend/dto/admin.dto";
 import { requestBackend } from "./backendClient";
 
 export function getAuditLogs(page = 1, pageSize = 100): Promise<PaginatedResult<AuditLogDTO>> {
@@ -16,4 +16,10 @@ export async function getAllAuditLogs(): Promise<AuditLogDTO[]> {
     if (!result.hasMore) return logs;
     page += 1;
   }
+}
+
+export function purgeOldAuditLogs(): Promise<AuditLogPurgeDTO> {
+  return requestBackend<AuditLogPurgeDTO>("/api/v1/admin/audit-logs", {
+    method: "DELETE",
+  });
 }

@@ -12,6 +12,7 @@ export function AdminProfileMenu() {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const { currentUser, logout } = useAuth();
+  const canOpenSettings = currentUser?.permissions.includes("settings.view") ?? false;
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -56,15 +57,17 @@ export function AdminProfileMenu() {
               <p className="text-slate-800 font-bold text-base truncate dark:text-slate-100">{currentUser?.name || "Admin"}</p>
               <p className="text-[11px] mt-0.5 text-blue-600 dark:text-blue-400 font-semibold capitalize">{currentUser?.role?.replace("_", " ") || "Admin"}</p>
             </div>
-            <button
-              onClick={() => {
-                setIsMenuOpen(false);
-                router.push("/admin/settings");
-              }}
-              className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors dark:text-slate-300 dark:hover:bg-slate-700"
-            >
-              <Settings className="h-4 w-4" /> Admin Settings
-            </button>
+            {canOpenSettings && (
+              <button
+                onClick={() => {
+                  setIsMenuOpen(false);
+                  router.push("/admin/settings");
+                }}
+                className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors dark:text-slate-300 dark:hover:bg-slate-700"
+              >
+                <Settings className="h-4 w-4" /> Admin Settings
+              </button>
+            )}
             <button
               onClick={async () => {
                 setIsMenuOpen(false);

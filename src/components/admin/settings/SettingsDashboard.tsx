@@ -2,8 +2,10 @@
 
 import React from "react";
 import { Card } from "@/components/ui/card";
-import { ShieldCheck, Banknote, CalendarDays, Phone, ChevronRight, Building, Lock } from "lucide-react";
+import { ShieldCheck, Banknote, CalendarDays, Phone, ChevronRight, Building, Lock, MessageCircle } from "lucide-react";
 import Link from "next/link";
+import { useAuth } from "@/lib/admin/AuthContext";
+import { canAccessAdminPath } from "@/lib/admin/accessControl";
 
 const SETTINGS_PAGES = [
   {
@@ -35,6 +37,13 @@ const SETTINGS_PAGES = [
     color: "text-rose-600 bg-rose-50 dark:text-rose-400 dark:bg-rose-900/20",
   },
   {
+    title: "WhatsApp Invitation",
+    description: "Edit the default member invitation and check the final WhatsApp alignment.",
+    icon: <MessageCircle className="w-6 h-6" />,
+    href: "/admin/settings/member-invitation",
+    color: "text-emerald-600 bg-emerald-50 dark:text-emerald-400 dark:bg-emerald-900/20",
+  },
+  {
     title: "Payment Configuration",
     description: "Configure UPI, QR codes, monthly dues minimums, and receipt settings.",
     icon: <Banknote className="w-6 h-6" />,
@@ -58,9 +67,14 @@ const SETTINGS_PAGES = [
 ];
 
 export function SettingsDashboard() {
+  const { currentUser } = useAuth();
+  const visiblePages = SETTINGS_PAGES.filter((page) =>
+    canAccessAdminPath(currentUser?.permissions, page.href)
+  );
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      {SETTINGS_PAGES.map((page) => (
+      {visiblePages.map((page) => (
         <Link href={page.href} key={page.title} className="block group">
           <Card className="p-6 border-slate-200 dark:border-slate-800 shadow-sm bg-white dark:bg-slate-900 hover:border-blue-300 dark:hover:border-blue-800/50 transition-all flex items-start gap-4">
             <div className={`p-3 rounded-xl shrink-0 ${page.color}`}>

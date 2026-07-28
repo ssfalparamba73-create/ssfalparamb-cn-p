@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import type { BloodGroup, MemberDirectoryItemDTO } from "@/lib/backend/dto/member.dto";
 import { BackendApiError } from "@/lib/api/backendClient";
 import { getMemberDirectory } from "@/lib/api/memberClient";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const BLOOD_GROUPS = ["O+ve", "O-ve", "A+ve", "A-ve", "B+ve", "B-ve", "AB+ve", "AB-ve"];
 
@@ -139,8 +140,22 @@ export default function DirectoryPage() {
       <div className="bg-white rounded-2xl border border-[#E5EAF3] shadow-sm overflow-hidden transition-colors duration-300 dark:border-slate-700 dark:bg-slate-800 dark:shadow-none">
         <div className="divide-y divide-[#E5EAF3] dark:divide-slate-700">
           {isLoading && (
-            <div className="p-6 text-center text-sm text-slate-500 dark:text-slate-400">
-              Loading members...
+            <div aria-hidden>
+              {Array.from({ length: 6 }, (_, index) => (
+                <div key={index} className="flex items-center justify-between p-4">
+                  <div className="flex min-w-0 flex-1 items-center gap-3">
+                    <Skeleton className="size-11 shrink-0 rounded-full" />
+                    <div className="w-full max-w-44 space-y-2">
+                      <Skeleton className="h-4 w-3/4" />
+                      <Skeleton className="h-3 w-1/2" />
+                    </div>
+                  </div>
+                  <div className="flex gap-3">
+                    <Skeleton className="size-11 rounded-full" />
+                    <Skeleton className="size-11 rounded-full" />
+                  </div>
+                </div>
+              ))}
             </div>
           )}
           {loadError && !isLoading && (

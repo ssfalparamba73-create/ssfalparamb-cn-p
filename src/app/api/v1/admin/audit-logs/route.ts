@@ -37,3 +37,17 @@ export async function GET(request: NextRequest) {
     return createBackendResponse(fail(serverError()), requestContext.requestId);
   }
 }
+
+export async function DELETE(request: NextRequest) {
+  const requestContext = buildPublicActorContext(request);
+  try {
+    const actorResult = await resolveAuthenticatedActor(request, requestContext.requestId);
+    if (!actorResult.ok) return createBackendResponse(actorResult, requestContext.requestId);
+    return createBackendResponse(
+      await getAuditService().purgeOldAuditLogs(actorResult.data!),
+      requestContext.requestId
+    );
+  } catch {
+    return createBackendResponse(fail(serverError()), requestContext.requestId);
+  }
+}

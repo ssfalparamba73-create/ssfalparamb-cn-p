@@ -14,8 +14,9 @@ import { getAdminMembers } from "@/lib/api/memberClient";
 import type { BloodGroup, MemberStatus, MonthlyTier } from "@/lib/backend/dto/member.dto";
 import { Skeleton } from "@/components/ui/skeleton";
 import Link from "next/link";
+import { TablePagination } from "@/components/ui/table-pagination";
 
-const PAGE_SIZE = 20;
+const PAGE_SIZE = 10;
 
 function MemberTableSkeleton() {
   return (
@@ -57,7 +58,6 @@ export default function AdminMembersPage() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
-  const [hasMore, setHasMore] = useState(false);
   const [retryKey, setRetryKey] = useState(0);
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
@@ -100,7 +100,6 @@ export default function AdminMembersPage() {
       .then((result) => {
         setMembers(result.items.map(mapMemberDto));
         setTotal(result.total ?? 0);
-        setHasMore(result.hasMore);
         hasLoadedMembers.current = true;
       })
       .catch((requestError: unknown) => {
@@ -218,15 +217,14 @@ export default function AdminMembersPage() {
         )}
 
         {!isLoading && total > 0 && (
-          <div className="mt-4 flex items-center justify-between gap-3">
-            <p className="text-sm text-slate-500 dark:text-slate-400">
-              {isRefreshing ? "Updating..." : `Showing ${(page - 1) * PAGE_SIZE + 1}-${Math.min(page * PAGE_SIZE, total)} of ${total}`}
-            </p>
-            <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" disabled={page === 1 || isRefreshing} onClick={() => changePage(Math.max(1, page - 1))}>Previous</Button>
-              <Button variant="outline" size="sm" disabled={!hasMore || isRefreshing} onClick={() => changePage(page + 1)}>Next</Button>
-            </div>
-          </div>
+          <TablePagination
+            page={page}
+            totalItems={total}
+            pageSize={PAGE_SIZE}
+            itemLabel="members"
+            disabled={isRefreshing}
+            onPageChange={changePage}
+          />
         )}
       </div>
     </div>

@@ -13,6 +13,7 @@ import { getAdminMember, resetAdminMemberPin } from "@/lib/api/memberClient";
 import type { IssuedMemberPinDTO } from "@/lib/backend/dto/member.dto";
 import { toast } from "sonner";
 import { MemberInvitationDialog } from "@/components/admin/members/MemberInvitationDialog";
+import { CardCollectionSkeleton } from "@/components/ui/loading-skeletons";
 
 export default function MemberDetailPage() {
   const params = useParams();
@@ -60,7 +61,7 @@ export default function MemberDetailPage() {
   }
 
   if (isLoading) {
-    return <p className="text-sm text-slate-500 dark:text-slate-400">Loading member...</p>;
+    return <CardCollectionSkeleton count={3} />;
   }
 
   if (loadError) {

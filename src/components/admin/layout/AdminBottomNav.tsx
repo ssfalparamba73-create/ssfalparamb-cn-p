@@ -10,6 +10,8 @@ import {
   Wallet, 
   Menu 
 } from "lucide-react";
+import { useAuth } from "@/lib/admin/AuthContext";
+import { canAccessAdminPath } from "@/lib/admin/accessControl";
 
 interface AdminBottomNavProps {
   onOpenMobileMenu: () => void;
@@ -17,17 +19,21 @@ interface AdminBottomNavProps {
 
 export function AdminBottomNav({ onOpenMobileMenu }: AdminBottomNavProps) {
   const pathname = usePathname();
+  const { currentUser } = useAuth();
 
   const navItems = [
     { name: "Home", href: "/admin/dashboard", icon: LayoutDashboard },
     { name: "Members", href: "/admin/members", icon: Users },
     { name: "Payments", href: "/admin/payments", icon: Wallet },
   ];
+  const visibleItems = navItems.filter((item) =>
+    canAccessAdminPath(currentUser?.permissions, item.href)
+  );
 
   return (
     <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40">
       <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-t border-slate-200/50 dark:border-slate-700/50 shadow-[0_-8px_30px_rgb(0,0,0,0.05)] flex items-center justify-around px-2 pb-[env(safe-area-inset-bottom)] pt-2">
-        {navItems.map((item) => {
+        {visibleItems.map((item) => {
           const isActive = pathname.startsWith(item.href);
           const Icon = item.icon;
           

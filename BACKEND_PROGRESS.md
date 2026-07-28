@@ -1077,3 +1077,135 @@ Verification:
 - Browser layout checks at 390x844, 768x1024, and 1280x720 confirm the Add Member
   button is visible and unobstructed. Desktop footer alignment starts at the exact
   260px sidebar boundary.
+
+## Codex - Admin Role Access Hardening - 2026-07-28
+
+Completed:
+- Permanently removed the disabled legacy `9999999999` Test Admin record after
+  verifying its phone, name, status, and unique identity.
+- Added a database uniqueness guard so each admin account can hold exactly one role.
+  Role changes continue to replace the previous assignment atomically.
+- Re-synchronized the then-current system roles to their canonical permission matrix,
+  removing any stale or unintended role-permission assignments.
+- Included the assigned role permissions in newly issued admin login sessions as well
+  as restored sessions.
+- Added permission-aware admin route, desktop sidebar, mobile drawer, bottom
+  navigation, global member search, profile settings link, and Settings dashboard
+  visibility without changing the approved visual design.
+- Corrected payment approve/reject authorization to use the configured
+  `payments.verify` permission.
+- Applied remote migration `039_admin_role_access_hardening.sql` to the linked
+  staging Supabase project.
+
+Verification:
+- Confirmed the legacy Test Admin no longer exists in Supabase.
+- Confirmed every remaining admin has one role assignment and the canonical role
+  permission counts are synchronized.
+- `npx tsc --noEmit`, full ESLint, and the full Next.js production build pass with
+  zero errors.
+
+## Codex - Two-Role Admin Model - 2026-07-28
+
+Completed:
+- Replaced the six-role model with only `admin` and `super_admin`.
+- Gave both roles the same full operational access across members, payments, cash
+  entry, reports, audit viewing, settings, and other admin modules.
+- Reserved only `admin_users.manage` and `audit.delete` for Super Admins.
+- Added permanent deletion for inactive admin accounts while retaining their member
+  record, actor names in historical audit entries, and a deletion audit event.
+- Enabled Super Admin-only purging of audit logs older than 90 days; each purge keeps
+  a new audit record containing its cutoff and deleted count.
+- Migrated all role assignments and removed the retired role rows.
+- Restored both approved active Super Admins: `6282911853` and `9074884847`.
+- Preserved the existing maximum of two active Super Admins and the minimum of one.
+- Applied migrations `040_two_role_admin_model.sql` and
+  `041_restore_second_super_admin.sql` to linked staging Supabase.
+
+Verification:
+- Supabase contains only `admin` and `super_admin` roles.
+- Both approved phone numbers resolve to active `super_admin` assignments, with an
+  active Super Admin count of exactly two.
+- Regular Admin lacks only admin management and audit deletion; Super Admin has both.
+- Linked database lint, TypeScript, ESLint, and the full production build pass with
+  zero errors.
+
+## Codex - WhatsApp Invitation Template Editor - 2026-07-28
+
+Completed:
+- Added a dedicated Settings option and route at
+  `/admin/settings/member-invitation` without removing the existing invitation
+  workflow or changing its stored data.
+- Added a multiline WhatsApp message editor with character count, undo, project
+  default reset, and cursor-aware insertion controls for `{name}`, `{phone}`,
+  `{pin}`, and `{loginUrl}`.
+- Added a live WhatsApp-style preview using sample member data. Line breaks,
+  WhatsApp `*bold*` markers, Malayalam/Arabic mixed-direction text, and the login
+  URL are rendered safely for alignment review.
+- Reused the existing authenticated settings API, service layer, repository, and
+  Supabase `app_settings` storage path. No database migration or duplicate storage
+  table was introduced.
+- Kept saving disabled for unchanged or invalid content and warned when the required
+  `{phone}` or `{pin}` placeholders are missing.
+
+Verification:
+- TypeScript, targeted ESLint, and the full Next.js production build pass.
+- Authenticated browser checks at desktop and mobile widths confirmed the editor and
+  preview are responsive, readable, and free from horizontal overflow.
+- The stored invitation message was not changed during testing.
+
+## Codex - Shared shadcn Pagination UI - 2026-07-28
+
+Completed:
+- Added the shared shadcn/ui pagination primitives under
+  `src/components/ui/pagination.tsx`.
+- Replaced the Members list's custom Previous/Next buttons with numbered pagination,
+  active-page styling, responsive labels, ellipses for large page ranges, and
+  accessible disabled states.
+- Added a reusable table-pagination wrapper and applied it to Members, Payments,
+  Defaulters, Blood Donors, and Audit Log.
+- Standardized all table and matching mobile-card views to 10 records per page.
+- Preserved server-side pagination for Members and added safe client-side slicing to
+  the current complete-dataset tables. Search and filter changes reset to page one.
+- Preserved retained-data loading, result counts, exports of the complete filtered
+  donor dataset, row actions, and the existing API behavior.
+
+Verification:
+- TypeScript, targeted ESLint, and the full Next.js production build pass.
+- Authenticated browser testing covered all five table routes without horizontal
+  overflow. Audit Log page navigation was verified from page one to page two with
+  exactly 10 rows and the correct `Showing 11-20 of 31 logs` summary.
+
+## Codex - Shared Skeleton Loading States - 2026-07-28
+
+Completed:
+- Updated the shared Skeleton primitive to the shadcn/ui `data-slot="skeleton"` and
+  theme-aware `bg-muted` implementation.
+- Added reusable table-row, card-collection, dashboard/content, and form skeleton
+  patterns without changing data fetching, API calls, actions, or final loaded UI.
+- Applied skeleton loading states to async admin members, audit logs, blood donors,
+  dashboards, admin users, events, support contacts, unit settings, security message
+  preview, WhatsApp invitation settings, member details, member editing, member
+  dashboard, profile completion, profile details, directory, and support contacts.
+- Preserved button spinners for submit/login actions, where a skeleton would be the
+  wrong interaction feedback.
+
+Verification:
+- Targeted ESLint passes with zero errors.
+- Authenticated browser testing confirmed Audit Log initially renders skeletons with
+  no loading text, then replaces them with 10 real rows and pagination without
+  horizontal overflow.
+- Full TypeScript and production build verification pass after the unrelated
+  `AdminSidebar` type mismatch was corrected.
+
+## Codex - CurrentAdminUser Sidebar Type Fix - 2026-07-28
+
+Completed:
+- Removed the invalid `currentUser.phone` Sidebar reference because phone is not part
+  of the authenticated session contract.
+- Preserved the existing role subtitle and `Staff` fallback without expanding the
+  session DTO, backend response, or authentication data flow.
+- Removed trailing whitespace from the same import block.
+
+Verification:
+- TypeScript, targeted Sidebar ESLint, the full Next.js production build, and
+  `git diff --check` pass.

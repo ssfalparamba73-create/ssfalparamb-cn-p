@@ -7,6 +7,7 @@ import { RecentActivityCard } from "@/components/dashboard/RecentActivityCard";
 import { BackendApiError } from "@/lib/api/backendClient";
 import { getMemberDashboard } from "@/lib/api/dashboardClient";
 import type { MemberDashboardViewDTO } from "@/lib/backend/dto/dashboard.dto";
+import { PageContentSkeleton } from "@/components/ui/loading-skeletons";
 
 export default function MemberDashboardPage() {
   const router = useRouter();
@@ -37,9 +38,7 @@ export default function MemberDashboardPage() {
   if (!dashboard) {
     return (
       <div className="p-4 md:p-6 space-y-6 animate-in fade-in duration-300">
-        <p className="text-sm text-slate-500 dark:text-slate-400">
-          {error ?? "Loading dashboard..."}
-        </p>
+        {error ? <p className="text-sm text-red-600 dark:text-red-400">{error}</p> : <PageContentSkeleton />}
       </div>
     );
   }

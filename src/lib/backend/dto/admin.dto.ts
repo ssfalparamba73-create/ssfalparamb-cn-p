@@ -2,11 +2,7 @@ import type { ID, ISODateTime } from "../contracts/common.contract";
 
 export type AdminRole =
   | "super_admin"
-  | "president"
-  | "secretary"
-  | "treasurer"
-  | "collector"
-  | "viewer";
+  | "admin";
 
 export interface AdminPermissionDTO {
   code: string;
@@ -83,4 +79,9 @@ export interface AuditLogDTO {
   before?: unknown;
   after?: unknown;
   createdAt: ISODateTime;
+}
+
+export interface AuditLogPurgeDTO {
+  deletedCount: number;
+  cutoff: ISODateTime;
 }

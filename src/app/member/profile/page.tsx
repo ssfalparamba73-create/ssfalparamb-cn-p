@@ -13,6 +13,7 @@ import { BackendApiError } from "@/lib/api/backendClient";
 import { logoutSession } from "@/lib/api/authClient";
 import { getCurrentMemberProfile, updateCurrentMemberProfile } from "@/lib/api/memberClient";
 import { getSupportContacts } from "@/lib/api/supportClient";
+import { CardCollectionSkeleton } from "@/components/ui/loading-skeletons";
 
 function toUiBloodGroup(value?: string): string {
   if (!value) return "";
@@ -142,7 +143,7 @@ export default function ProfilePage() {
       </div>
 
       {/* Main Profile Card */}
-      {isLoading && <p className="mb-6 text-sm text-slate-500 dark:text-slate-400">Loading profile...</p>}
+      {isLoading && <CardCollectionSkeleton count={1} className="mb-6" cardClassName="min-h-48" />}
       {loadError && <p className="mb-6 text-sm text-red-600 dark:text-red-400">{loadError}</p>}
       {member && <MemberProfileDetails member={member} />}
 

@@ -11,11 +11,15 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { MOCK_DEFAULTERS } from "@/lib/admin/mock-data";
+import { TablePagination } from "@/components/ui/table-pagination";
+
+const PAGE_SIZE = 10;
 
 export function DefaultersManager() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
+  const [page, setPage] = useState(1);
 
   const [members, setMembers] = useState(MOCK_DEFAULTERS);
 
@@ -27,6 +31,8 @@ export function DefaultersManager() {
     if (categoryFilter === "needs_followup") matchesCategory = m.reminderCount > 0;
     return matchesSearch && matchesCategory;
   });
+  const currentPage = Math.min(page, Math.max(1, Math.ceil(filteredMembers.length / PAGE_SIZE)));
+  const paginatedMembers = filteredMembers.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
   const handleRemind = (id: string, name: string) => {
     toast.success(`Gentle reminder sent to ${name}`);
@@ -43,7 +49,10 @@ export function DefaultersManager() {
             placeholder="Search by name or phone..." 
             className="pl-9 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 h-10"
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              setPage(1);
+            }}
           />
         </div>
         
@@ -51,28 +60,40 @@ export function DefaultersManager() {
         <div className="flex overflow-x-auto pb-2 gap-2 hide-scrollbar">
           <Button 
             variant={categoryFilter === "all" ? "default" : "outline"} 
-            onClick={() => setCategoryFilter("all")}
+            onClick={() => {
+              setCategoryFilter("all");
+              setPage(1);
+            }}
             className={cn("rounded-full h-9", categoryFilter === "all" ? "bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900" : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300")}
           >
             All Pending
           </Button>
           <Button 
             variant={categoryFilter === "current_due" ? "default" : "outline"} 
-            onClick={() => setCategoryFilter("current_due")}
+            onClick={() => {
+              setCategoryFilter("current_due");
+              setPage(1);
+            }}
             className={cn("rounded-full h-9", categoryFilter === "current_due" ? "bg-amber-500 text-white hover:bg-amber-600" : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300")}
           >
             Current Due
           </Button>
           <Button 
             variant={categoryFilter === "long_overdue" ? "default" : "outline"} 
-            onClick={() => setCategoryFilter("long_overdue")}
+            onClick={() => {
+              setCategoryFilter("long_overdue");
+              setPage(1);
+            }}
             className={cn("rounded-full h-9", categoryFilter === "long_overdue" ? "bg-red-500 text-white hover:bg-red-600" : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300")}
           >
             Long Overdue
           </Button>
           <Button 
             variant={categoryFilter === "needs_followup" ? "default" : "outline"} 
-            onClick={() => setCategoryFilter("needs_followup")}
+            onClick={() => {
+              setCategoryFilter("needs_followup");
+              setPage(1);
+            }}
             className={cn("rounded-full h-9", categoryFilter === "needs_followup" ? "bg-blue-600 text-white hover:bg-blue-700" : "bg-white dark:bg-slate-900 text-blue-600 border-blue-200 dark:border-blue-900 hover:bg-blue-50 dark:hover:bg-blue-900/20")}
           >
             Needs Follow-up
@@ -104,7 +125,7 @@ export function DefaultersManager() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-              {filteredMembers.map((member) => (
+              {paginatedMembers.map((member) => (
                 <tr 
                   key={member.id} 
                   onClick={() => router.push(`/admin/members/${member.id}`)}
@@ -168,7 +189,7 @@ export function DefaultersManager() {
 
       {/* Mobile Cards */}
       <div className="lg:hidden space-y-3">
-        {filteredMembers.map((member) => (
+        {paginatedMembers.map((member) => (
           <Card 
             key={member.id} 
             onClick={() => router.push(`/admin/members/${member.id}`)}
@@ -226,6 +247,13 @@ export function DefaultersManager() {
         )}
       </div>
 
+      <TablePagination
+        page={currentPage}
+        totalItems={filteredMembers.length}
+        pageSize={PAGE_SIZE}
+        itemLabel="pending payments"
+        onPageChange={setPage}
+      />
     </div>
   );
 }

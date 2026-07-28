@@ -45,6 +45,28 @@ export function createAuditService(deps: {
       } catch (err) {
         return fail(fromThrowable(err));
       }
-    }
+    },
+
+    async purgeOldAuditLogs(actor: ActorContext) {
+      try {
+        const accessCheck = await checkAccess(actor, "audit.delete");
+        if (!accessCheck.ok) return fail(accessCheck.error!);
+
+        const cutoff = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString();
+        const deletedCount = await auditRepository.purgeOlderThan(cutoff);
+        await auditRepository.record({
+          actor,
+          action: "audit.logs_purged",
+          entityType: "system",
+          entityId: "audit_logs",
+          summary: `Purged ${deletedCount} audit logs older than 90 days`,
+          severity: "warning",
+          after: { deletedCount, cutoff },
+        });
+        return ok({ deletedCount, cutoff });
+      } catch (err) {
+        return fail(fromThrowable(err));
+      }
+    },
   };
 }

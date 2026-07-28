@@ -19,6 +19,7 @@ import {
   updateAdminUserAccess,
 } from "@/lib/api/adminUserClient";
 import { MemberInvitationDialog } from "@/components/admin/members/MemberInvitationDialog";
+import { CardCollectionSkeleton } from "@/components/ui/loading-skeletons";
 
 export function AdminUsersManager() {
   const [admins, setAdmins] = useState<AdminUserDTO[]>([]);
@@ -30,7 +31,7 @@ export function AdminUsersManager() {
   const [search, setSearch] = useState("");
   const [candidates, setCandidates] = useState<AdminMemberCandidateDTO[]>([]);
   const [selected, setSelected] = useState<AdminMemberCandidateDTO | null>(null);
-  const [role, setRole] = useState<AdminRole>("viewer");
+  const [role, setRole] = useState<AdminRole>("admin");
   const [status, setStatus] = useState<AdminUserDTO["status"]>("active");
   const [issued, setIssued] = useState<IssuedAdminCodeDTO | null>(null);
 
@@ -56,7 +57,7 @@ export function AdminUsersManager() {
   }, [isAdding, search, selected]);
 
   const resetForm = () => {
-    setIsAdding(false); setEditingId(null); setSearch(""); setSelected(null); setCandidates([]); setRole("viewer"); setStatus("active");
+    setIsAdding(false); setEditingId(null); setSearch(""); setSelected(null); setCandidates([]); setRole("admin"); setStatus("active");
   };
 
   const saveNew = async (event: React.FormEvent) => {
@@ -85,10 +86,18 @@ export function AdminUsersManager() {
     finally { setIsSaving(false); }
   };
 
-  const deactivate = async (admin: AdminUserDTO) => {
-    if (!window.confirm(`Deactivate ${admin.name}'s admin access? Their member record will not be changed.`)) return;
-    try { await deactivateAdminUser(admin.id); toast.success("Admin access deactivated."); await load(); }
-    catch (deleteError) { toast.error(deleteError instanceof Error ? deleteError.message : "Unable to deactivate admin access."); }
+  const remove = async (admin: AdminUserDTO) => {
+    const permanent = admin.status === "inactive";
+    const message = permanent
+      ? `Permanently delete ${admin.name}'s inactive admin account? Their member record and audit history will remain.`
+      : `Deactivate ${admin.name}'s admin access? Their member record will not be changed.`;
+    if (!window.confirm(message)) return;
+    try {
+      await deactivateAdminUser(admin.id, permanent);
+      toast.success(permanent ? "Inactive admin account deleted." : "Admin access deactivated.");
+      await load();
+    }
+    catch (deleteError) { toast.error(deleteError instanceof Error ? deleteError.message : "Unable to remove admin access."); }
   };
 
   const resetCode = async (admin: AdminUserDTO) => {
@@ -100,7 +109,7 @@ export function AdminUsersManager() {
   const roleSelect = () => (
     <Select value={role} onValueChange={(value) => setRole(value as AdminRole)}>
       <SelectTrigger className="bg-white dark:bg-slate-950"><SelectValue /></SelectTrigger>
-      <SelectContent><SelectItem value="viewer">Viewer (Read Only)</SelectItem><SelectItem value="collector">Collector</SelectItem><SelectItem value="treasurer">Treasurer</SelectItem><SelectItem value="secretary">Secretary</SelectItem><SelectItem value="president">President</SelectItem><SelectItem value="super_admin">Super Admin (Max 2)</SelectItem></SelectContent>
+      <SelectContent><SelectItem value="admin">Admin</SelectItem><SelectItem value="super_admin">Super Admin (Max 2)</SelectItem></SelectContent>
     </Select>
   );
 
@@ -136,16 +145,16 @@ export function AdminUsersManager() {
         </form>
       )}
 
-      {isLoading && <p className="text-sm text-slate-500">Loading admin users...</p>}
+      {isLoading && <CardCollectionSkeleton count={3} />}
       {!isLoading && !error && admins.length === 0 && <Card className="p-6 text-center text-sm text-slate-500">No admin users are available.</Card>}
       <div className="grid grid-cols-1 gap-4">
         {admins.map((admin) => {
-          const adminRole = admin.roles[0] ?? "viewer";
+          const adminRole = admin.roles[0] ?? "admin";
           return <Card key={admin.id} className={`p-4 border-slate-200 dark:border-slate-800 shadow-sm ${adminRole === "super_admin" ? "border-purple-200 bg-purple-50/30 dark:bg-purple-900/10" : "bg-white dark:bg-slate-900"}`}>
             {editingId === admin.id ? editForm(admin) : <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
               <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold ${adminRole === "super_admin" ? "bg-purple-100 text-purple-700" : "bg-blue-100 text-blue-700"}`}>{admin.avatarInitials}</div>
               <div className="flex-1 min-w-0"><div className="flex flex-wrap items-center gap-2 mb-1"><h3 className="font-bold truncate">{admin.name}</h3>{adminRole === "super_admin" ? <Badge variant="outline" className="text-purple-700"><ShieldCheck className="w-3 h-3 mr-1" /> Super Admin</Badge> : <Badge variant="outline" className="capitalize">{adminRole}</Badge>}{admin.status === "inactive" && <Badge variant="secondary">Inactive</Badge>}</div><span className="text-sm text-slate-600 dark:text-slate-300">{admin.phone}</span></div>
-              <div className="flex items-center gap-2 w-full sm:w-auto border-t pt-2 sm:border-0 sm:pt-0"><Button variant="ghost" size="sm" disabled={admin.status !== "active"} onClick={() => void resetCode(admin)} title="Reset login code"><KeyRound className="size-4" /></Button><Button variant="ghost" size="sm" onClick={() => { setEditingId(admin.id); setRole(adminRole); setStatus(admin.status); setIsAdding(false); }}><Edit2 className="size-4" /><span className="sm:hidden ml-2">Edit</span></Button><Button variant="ghost" size="sm" disabled={admin.status === "inactive"} onClick={() => void deactivate(admin)} className="text-red-600"><Trash2 className="size-4" /><span className="sm:hidden ml-2">Remove</span></Button></div>
+              <div className="flex items-center gap-2 w-full sm:w-auto border-t pt-2 sm:border-0 sm:pt-0"><Button variant="ghost" size="sm" disabled={admin.status !== "active"} onClick={() => void resetCode(admin)} title="Reset login code"><KeyRound className="size-4" /></Button><Button variant="ghost" size="sm" onClick={() => { setEditingId(admin.id); setRole(adminRole); setStatus(admin.status); setIsAdding(false); }}><Edit2 className="size-4" /><span className="sm:hidden ml-2">Edit</span></Button><Button variant="ghost" size="sm" onClick={() => void remove(admin)} className="text-red-600" title={admin.status === "inactive" ? "Permanently delete inactive admin" : "Deactivate admin"}><Trash2 className="size-4" /><span className="sm:hidden ml-2">Remove</span></Button></div>
             </div>}
           </Card>;
         })}

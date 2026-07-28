@@ -8,6 +8,7 @@ import { X, LayoutDashboard, Users, Banknote, Wallet, AlertOctagon, BarChart3, D
 import { cn } from "@/lib/utils";
 import { AdminActionIcon } from "./AdminActionIcon";
 import { useAuth } from "@/lib/admin/AuthContext";
+import { canAccessAdminPath } from "@/lib/admin/accessControl";
 
 interface AdminMobileDrawerProps {
   isOpen: boolean;
@@ -30,6 +31,9 @@ export function AdminMobileDrawer({ isOpen, onClose }: AdminMobileDrawerProps) {
   const pathname = usePathname();
   const { resolvedTheme, setTheme } = useTheme();
   const { currentUser } = useAuth();
+  const visibleItems = navItems.filter((item) =>
+    canAccessAdminPath(currentUser?.permissions, item.href)
+  );
 
   const isDark = resolvedTheme === "dark";
 
@@ -68,7 +72,7 @@ export function AdminMobileDrawer({ isOpen, onClose }: AdminMobileDrawerProps) {
         </div>
 
         <div className="flex-1 overflow-y-auto p-4 grid grid-cols-2 gap-2">
-          {navItems.map((item) => {
+          {visibleItems.map((item) => {
             // Skip items that are already in the bottom nav to avoid redundancy, or show them all.
             // Let's show them all for a complete menu.
             const isActive = pathname.startsWith(item.href);

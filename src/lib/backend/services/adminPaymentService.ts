@@ -56,7 +56,7 @@ export function createAdminPaymentService(deps: {
       actor: ActorContext
     ): Promise<BackendResult<PaymentDTO>> {
       try {
-        const accessCheck = await checkAccess(actor, "payments.approve");
+        const accessCheck = await checkAccess(actor, "payments.verify");
         if (!accessCheck.ok) return fail(accessCheck.error!);
 
         const validation = validatePaymentStatusTransitionInput(input);
@@ -74,7 +74,7 @@ export function createAdminPaymentService(deps: {
       actor: ActorContext
     ): Promise<BackendResult<PaymentDTO>> {
       try {
-        const accessCheck = await checkAccess(actor, "payments.reject");
+        const accessCheck = await checkAccess(actor, "payments.verify");
         if (!accessCheck.ok) return fail(accessCheck.error!);
 
         const validation = validatePaymentStatusTransitionInput(input);

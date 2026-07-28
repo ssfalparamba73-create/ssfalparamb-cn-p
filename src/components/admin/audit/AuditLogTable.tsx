@@ -25,8 +25,14 @@ interface AuditLogEntry {
 
 import type { AuditLogDTO } from "@/lib/backend/dto/admin.dto";
 import { BackendApiError } from "@/lib/api/backendClient";
-import { getAllAuditLogs } from "@/lib/api/auditClient";
+import { getAllAuditLogs, purgeOldAuditLogs } from "@/lib/api/auditClient";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/lib/admin/AuthContext";
+import { toast } from "sonner";
+import { TablePagination } from "@/components/ui/table-pagination";
+import { CardCollectionSkeleton, TableRowsSkeleton } from "@/components/ui/loading-skeletons";
+
+const PAGE_SIZE = 10;
 
 function actionCategory(action: string): AuditLogEntry["action"] {
   if (action.includes("created") || action.includes("issued")) return "create";
@@ -65,12 +71,21 @@ function mapAuditLog(log: AuditLogDTO): AuditLogEntry {
 
 export function AuditLogTable() {
   const router = useRouter();
+  const { currentUser } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [actionFilter, setActionFilter] = useState("all");
+  const [page, setPage] = useState(1);
   const [selectedLog, setSelectedLog] = useState<AuditLogEntry | null>(null);
   const [logs, setLogs] = useState<AuditLogEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [isPurging, setIsPurging] = useState(false);
+  const canDeleteLogs = currentUser?.permissions.includes("audit.delete") ?? false;
+
+  const reloadLogs = async () => {
+    const result = await getAllAuditLogs();
+    setLogs(result.map(mapAuditLog));
+  };
 
   useEffect(() => {
     let active = true;
@@ -93,6 +108,20 @@ export function AuditLogTable() {
     };
   }, [router]);
 
+  const purge = async () => {
+    if (!window.confirm("Permanently delete audit logs older than 90 days? A purge record will be retained.")) return;
+    setIsPurging(true);
+    try {
+      const result = await purgeOldAuditLogs();
+      await reloadLogs();
+      toast.success(`${result.deletedCount} old audit logs deleted.`);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Unable to purge old audit logs.");
+    } finally {
+      setIsPurging(false);
+    }
+  };
+
   const filteredLogs = logs.filter(log => {
     const matchesSearch = log.actor.toLowerCase().includes(searchQuery.toLowerCase()) ||
                           log.target.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -100,6 +129,8 @@ export function AuditLogTable() {
     const matchesAction = actionFilter === "all" || log.action === actionFilter;
     return matchesSearch && matchesAction;
   });
+  const currentPage = Math.min(page, Math.max(1, Math.ceil(filteredLogs.length / PAGE_SIZE)));
+  const paginatedLogs = filteredLogs.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
   const getActionIcon = (action: string) => {
     switch (action) {
@@ -121,11 +152,17 @@ export function AuditLogTable() {
             placeholder="Search actor, target, or summary..."
             className="pl-9 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 h-10"
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              setPage(1);
+            }}
           />
         </div>
         <div className="relative min-w-[160px]">
-          <Select value={actionFilter} onValueChange={setActionFilter}>
+          <Select value={actionFilter} onValueChange={(value) => {
+            setActionFilter(value);
+            setPage(1);
+          }}>
             <SelectTrigger className="w-full bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
               <SelectValue placeholder="All Actions" />
             </SelectTrigger>
@@ -138,12 +175,13 @@ export function AuditLogTable() {
             </SelectContent>
           </Select>
         </div>
-        <Button disabled variant="outline" title="Audit purge is not enabled" className="flex shrink-0 text-red-600 border-red-200 dark:border-red-900/50 dark:text-red-400">
-          <Trash2 className="w-4 h-4 mr-2" /> Purge Old Logs
-        </Button>
+        {canDeleteLogs && (
+          <Button onClick={() => void purge()} disabled={isPurging} variant="outline" title="Delete audit logs older than 90 days" className="flex shrink-0 text-red-600 border-red-200 dark:border-red-900/50 dark:text-red-400">
+            <Trash2 className="w-4 h-4 mr-2" /> {isPurging ? "Purging..." : "Purge Old Logs"}
+          </Button>
+        )}
       </div>
 
-      {isLoading && <div className="p-4 text-sm text-slate-500">Loading audit logs...</div>}
       {loadError && <div className="p-4 text-sm text-red-600 dark:text-red-400">{loadError}</div>}
 
       {/* Desktop Table */}
@@ -161,7 +199,7 @@ export function AuditLogTable() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-              {filteredLogs.map((log) => (
+              {isLoading ? <TableRowsSkeleton rows={10} columns={6} /> : paginatedLogs.map((log) => (
                 <tr
                   key={log.id}
                   onClick={() => setSelectedLog(log)}
@@ -210,7 +248,7 @@ export function AuditLogTable() {
 
       {/* Mobile Cards */}
       <div className="md:hidden space-y-3">
-        {filteredLogs.map((log) => (
+        {isLoading ? <CardCollectionSkeleton count={4} /> : paginatedLogs.map((log) => (
           <Card
             key={log.id}
             onClick={() => setSelectedLog(log)}
@@ -242,10 +280,18 @@ export function AuditLogTable() {
             </div>
           </Card>
         ))}
-        {filteredLogs.length === 0 && (
+        {!isLoading && filteredLogs.length === 0 && (
           <div className="p-8 text-center text-slate-500 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800">No logs found.</div>
         )}
       </div>
+
+      <TablePagination
+        page={currentPage}
+        totalItems={filteredLogs.length}
+        pageSize={PAGE_SIZE}
+        itemLabel="logs"
+        onPageChange={setPage}
+      />
 
       {/* Drawer */}
       {selectedLog && (

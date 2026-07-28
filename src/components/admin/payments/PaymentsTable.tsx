@@ -1,20 +1,24 @@
 "use client";
 
 import React, { useState } from "react";
-import { Search, Filter, SlidersHorizontal, MoreHorizontal, ExternalLink, Receipt, Building, User } from "lucide-react";
+import { Search, ExternalLink, Receipt, Building, User } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
+import { TablePagination } from "@/components/ui/table-pagination";
 
 import { MOCK_PAYMENTS } from "@/lib/admin/mock-data";
+
+const PAGE_SIZE = 10;
 
 export function PaymentsTable() {
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [methodFilter, setMethodFilter] = useState("all");
+  const [page, setPage] = useState(1);
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -61,6 +65,8 @@ export function PaymentsTable() {
     const matchesMethod = methodFilter === "all" || payment.method === methodFilter;
     return matchesSearch && matchesCategory && matchesMethod;
   });
+  const currentPage = Math.min(page, Math.max(1, Math.ceil(filteredPayments.length / PAGE_SIZE)));
+  const paginatedPayments = filteredPayments.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
   return (
     <div className="space-y-4">
@@ -72,13 +78,19 @@ export function PaymentsTable() {
             placeholder="Search by receipt ID, member, or phone..." 
             className="pl-9 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800"
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(1);
+            }}
           />
         </div>
         
         <div className="flex items-center flex-wrap gap-2 pb-1 lg:pb-0">
           <div className="relative min-w-[140px]">
-            <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+            <Select value={categoryFilter} onValueChange={(value) => {
+              setCategoryFilter(value);
+              setPage(1);
+            }}>
               <SelectTrigger className={cn(
                 "w-full transition-colors",
                 categoryFilter !== "all" 
@@ -96,7 +108,10 @@ export function PaymentsTable() {
           </div>
 
           <div className="relative min-w-[140px]">
-            <Select value={methodFilter} onValueChange={setMethodFilter}>
+            <Select value={methodFilter} onValueChange={(value) => {
+              setMethodFilter(value);
+              setPage(1);
+            }}>
               <SelectTrigger className={cn(
                 "w-full transition-colors",
                 methodFilter !== "all" 
@@ -133,7 +148,7 @@ export function PaymentsTable() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
-              {filteredPayments.map((payment) => (
+              {paginatedPayments.map((payment) => (
                 <tr key={payment.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors">
                   <td className="px-4 py-3">
                     <div className="font-medium text-slate-900 dark:text-slate-100">{payment.receiptId}</div>
@@ -183,7 +198,7 @@ export function PaymentsTable() {
 
       {/* Mobile Card View */}
       <div className="md:hidden space-y-3">
-        {filteredPayments.map((payment) => (
+        {paginatedPayments.map((payment) => (
           <div key={payment.id} className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-3">
             <div className="flex justify-between items-start">
               <div>
@@ -219,7 +234,14 @@ export function PaymentsTable() {
           </div>
         ))}
       </div>
-      
+
+      <TablePagination
+        page={currentPage}
+        totalItems={filteredPayments.length}
+        pageSize={PAGE_SIZE}
+        itemLabel="payments"
+        onPageChange={setPage}
+      />
     </div>
   );
 }

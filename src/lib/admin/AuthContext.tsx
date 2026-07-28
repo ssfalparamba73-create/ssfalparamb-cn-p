@@ -8,6 +8,7 @@ interface CurrentAdminUser {
   name: string;
   avatarInitials: string;
   role?: string;
+  permissions: string[];
 }
 
 interface AuthContextType {
@@ -33,6 +34,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           name: session.actorName,
           avatarInitials: session.actorName.slice(0, 2).toUpperCase(),
           role: session.actorRole,
+          permissions: session.permissions ?? [],
         });
       })
       .catch(() => {
@@ -56,6 +58,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         name: session.actorName,
         avatarInitials: session.actorName.slice(0, 2).toUpperCase(),
         role: session.actorRole,
+        permissions: session.permissions ?? [],
       });
     } finally {
       setIsLoading(false);

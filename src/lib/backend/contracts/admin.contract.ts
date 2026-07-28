@@ -10,6 +10,7 @@ import type {
   AdminSessionDTO,
   AdminUserDTO,
   AuditLogDTO,
+  AuditLogPurgeDTO,
   IssuedAdminCodeDTO,
 } from "../dto/admin.dto";
 import type {
@@ -80,6 +81,7 @@ export interface AdminRepository {
     actor: ActorContext
   ): Promise<AdminCodeMutationResult>;
   softDeactivateAdmin(adminId: string, actor: ActorContext): Promise<void>;
+  hardDeleteAdmin(adminId: string, actor: ActorContext): Promise<void>;
 }
 
 export interface AdminUserService {
@@ -106,6 +108,10 @@ export interface AdminUserService {
     actor: ActorContext
   ): Promise<BackendResult<IssuedAdminCodeDTO>>;
   softDeactivateAdmin(
+    adminId: string,
+    actor: ActorContext
+  ): Promise<BackendResult<void>>;
+  hardDeleteAdmin(
     adminId: string,
     actor: ActorContext
   ): Promise<BackendResult<void>>;
@@ -137,6 +143,7 @@ export interface AdminDashboardService {
 
 export interface AuditRepository {
   list(filters: AuditLogFilters, pagination: PaginationInput): Promise<PaginatedResult<AuditLogDTO>>;
+  purgeOlderThan(cutoff: string): Promise<number>;
   record(event: {
     actor: ActorContext;
     action: string;
@@ -155,4 +162,5 @@ export interface AuditService {
     pagination: PaginationInput,
     actor: ActorContext
   ): Promise<BackendResult<PaginatedResult<AuditLogDTO>>>;
+  purgeOldAuditLogs(actor: ActorContext): Promise<BackendResult<AuditLogPurgeDTO>>;
 }

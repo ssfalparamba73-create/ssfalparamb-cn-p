@@ -61,6 +61,16 @@ export class SupabaseAuthRepository implements AuthRepository {
     return role?.name ?? "Admin";
   }
 
+  private async getAdminPermissions(adminId: string): Promise<string[]> {
+    const supabase = createSupabaseBackendClient();
+    const { data, error } = await supabase
+      .from("admin_permissions")
+      .select("permission_code")
+      .eq("admin_id", adminId);
+    if (error) throw error;
+    return (data ?? []).map(({ permission_code }) => permission_code);
+  }
+
   async verifyCredential(
     actorType: AuthActorType,
     phone: string,
@@ -101,13 +111,22 @@ export class SupabaseAuthRepository implements AuthRepository {
       .single();
 
     if (error || !data) throw error ?? new Error("Failed to create auth session.");
-    const actorRole = input.actorType === "admin"
-      ? await this.getAdminRole(input.actorId)
-      : undefined;
+    const [actorRole, permissions] = input.actorType === "admin"
+      ? await Promise.all([
+          this.getAdminRole(input.actorId),
+          this.getAdminPermissions(input.actorId),
+        ])
+      : [undefined, undefined];
     const profileComplete = input.actorType === "member"
       ? await this.getMemberProfileComplete(input.actorId)
       : undefined;
-    return mapAuthSessionRow(data as SessionRow, input.actorName, actorRole, profileComplete);
+    return mapAuthSessionRow(
+      data as SessionRow,
+      input.actorName,
+      actorRole,
+      profileComplete,
+      permissions
+    );
   }
 
   async resolveSession(tokenHash: string): Promise<AuthSessionDTO | null> {

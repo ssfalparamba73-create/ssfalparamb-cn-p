@@ -8,6 +8,7 @@ import { AdminBreadcrumbs } from "./AdminBreadcrumbs";
 import { AdminSearchModal } from "./AdminSearchModal";
 import { AdminNotificationMenu } from "./AdminNotificationMenu";
 import { AdminProfileMenu } from "./AdminProfileMenu";
+import { useAuth } from "@/lib/admin/AuthContext";
 
 interface AdminTopbarProps {
   onOpenMobileMenu: () => void;
@@ -17,6 +18,8 @@ interface AdminTopbarProps {
 export function AdminTopbar({ onOpenMobileMenu, title = "Admin Panel" }: AdminTopbarProps) {
   const { resolvedTheme, setTheme } = useTheme();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const { currentUser } = useAuth();
+  const canSearchMembers = currentUser?.permissions.includes("members.view") ?? false;
 
   const isDark = resolvedTheme === "dark";
 
@@ -36,11 +39,13 @@ export function AdminTopbar({ onOpenMobileMenu, title = "Admin Panel" }: AdminTo
 
         <div className="flex items-center gap-2 md:gap-3">
           {/* Search Icon */}
-          <div onClick={() => setIsSearchOpen(true)}>
-            <AdminActionIcon aria-label="Search" className="cursor-pointer">
-              <Search className="w-5 h-5" />
-            </AdminActionIcon>
-          </div>
+          {canSearchMembers && (
+            <div onClick={() => setIsSearchOpen(true)}>
+              <AdminActionIcon aria-label="Search" className="cursor-pointer">
+                <Search className="w-5 h-5" />
+              </AdminActionIcon>
+            </div>
+          )}
 
           {/* Notifications Menu */}
           <AdminNotificationMenu />
@@ -63,7 +68,9 @@ export function AdminTopbar({ onOpenMobileMenu, title = "Admin Panel" }: AdminTo
       </header>
 
       {/* Search Modal */}
-      <AdminSearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
+      {canSearchMembers && (
+        <AdminSearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
+      )}
     </>
   );
 }

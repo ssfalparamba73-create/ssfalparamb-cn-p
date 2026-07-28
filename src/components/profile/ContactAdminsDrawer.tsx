@@ -1,5 +1,6 @@
 import { X, MessageCircle } from "lucide-react";
 import type { SupportContactDTO } from "@/lib/backend/dto/support.dto";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface ContactAdminsDrawerProps {
   isOpen: boolean;
@@ -41,7 +42,15 @@ export function ContactAdminsDrawer({ isOpen, onClose, contacts, isLoading, erro
 
         {/* List of Admins */}
         <div className="space-y-3">
-          {isLoading && <p className="p-3 text-sm text-slate-500">Loading contacts...</p>}
+          {isLoading && Array.from({ length: 3 }, (_, index) => (
+            <div key={index} aria-hidden className="flex items-center justify-between rounded-2xl border border-slate-100 p-3 dark:border-slate-700">
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-28" />
+                <Skeleton className="h-5 w-20 rounded-full" />
+              </div>
+              <Skeleton className="size-10 rounded-full" />
+            </div>
+          ))}
           {error && <p className="p-3 text-sm text-red-600 dark:text-red-400">{error}</p>}
           {!isLoading && !error && contacts.length === 0 && (
             <p className="p-3 text-sm text-slate-500">No active support contacts are available.</p>

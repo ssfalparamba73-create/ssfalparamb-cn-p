@@ -4,7 +4,7 @@ export const MOCK_ADMIN_USERS: AdminUser[] = [
   {
     id: "admin_1",
     name: "Farhan",
-    role: "president",
+    role: "admin",
     phone: "9876543210",
     avatarInitials: "FA",
     canReceiveCash: true,
@@ -16,7 +16,7 @@ export const MOCK_ADMIN_USERS: AdminUser[] = [
   {
     id: "admin_2",
     name: "Shibili",
-    role: "secretary",
+    role: "admin",
     phone: "9876543211",
     avatarInitials: "SH",
     canReceiveCash: true,
