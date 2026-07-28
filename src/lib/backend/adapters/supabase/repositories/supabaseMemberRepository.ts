@@ -82,7 +82,12 @@ export class SupabaseMemberRepository implements MemberRepository {
 
   async findByPhone(phone: string): Promise<MemberDTO | null> {
     const supabase = createSupabaseBackendClient();
-    const { data, error } = await supabase.from("members").select("*").eq("phone", phone).single();
+    const { data, error } = await supabase
+      .from("members")
+      .select("*")
+      .eq("phone", phone)
+      .neq("status", "left")
+      .maybeSingle();
     if (error || !data) return null;
     return mapRowToMemberDTO(data);
   }

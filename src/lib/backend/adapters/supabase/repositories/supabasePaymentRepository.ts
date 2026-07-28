@@ -69,7 +69,12 @@ export class SupabasePaymentRepository implements PaymentRepository {
       if (data) return data.id;
     }
 
-    const { data: byPhone } = await supabase.from("members").select("id").eq("phone", memberQuery).single();
+    const { data: byPhone } = await supabase
+      .from("members")
+      .select("id")
+      .eq("phone", memberQuery)
+      .neq("status", "left")
+      .maybeSingle();
     if (byPhone) return byPhone.id;
 
     const { data: byCode } = await supabase.from("members").select("id").eq("member_code", memberQuery).single();
