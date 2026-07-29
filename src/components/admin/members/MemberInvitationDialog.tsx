@@ -1,5 +1,6 @@
 "use client";
 
+import { createPortal } from "react-dom";
 import { CheckCircle2, Copy, MessageCircle, X } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -25,10 +26,19 @@ export function MemberInvitationDialog({
 }: MemberInvitationDialogProps) {
   const whatsappNumber = phone.replace(/\D/g, "");
 
-  return (
-    <>
-      <div className="fixed inset-0 z-[60] bg-black/50 backdrop-blur-sm" onClick={onClose} />
-      <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 pointer-events-none">
+  if (typeof document === "undefined") return null;
+
+  return createPortal(
+    <div
+      className="fixed inset-0 z-[60] flex items-center justify-center p-4"
+      onClick={(event) => event.stopPropagation()}
+    >
+      <div
+        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+        onClick={onClose}
+        aria-hidden="true"
+      />
+      <div className="relative z-10 flex w-full items-center justify-center pointer-events-none">
         <div
           role="dialog"
           aria-modal="true"
@@ -87,6 +97,7 @@ export function MemberInvitationDialog({
           </div>
         </div>
       </div>
-    </>
+    </div>,
+    document.body
   );
 }

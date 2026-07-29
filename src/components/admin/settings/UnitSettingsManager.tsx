@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { Save, UploadCloud } from "lucide-react";
+import { ArrowDown, ArrowUp, Plus, Save, Trash2, UploadCloud } from "lucide-react";
 import type { UnitSettingsDTO } from "@/lib/backend/dto/unitSettings.dto";
 import { getUnitSettings, updateUnitSettings } from "@/lib/api/settingsClient";
 import { FormPageSkeleton } from "@/components/ui/loading-skeletons";
@@ -15,6 +15,7 @@ import { FormPageSkeleton } from "@/components/ui/loading-skeletons";
 const emptySettings: UnitSettingsDTO = {
   unitName: "",
   branchSector: "",
+  areas: [],
   officialEmail: "",
   address: "",
   cityDistrict: "",
@@ -57,6 +58,16 @@ export function UnitSettingsManager() {
   };
 
   const field = (key: keyof UnitSettingsDTO, value: string) => setSettings((current) => ({ ...current, [key]: value }));
+  const updateArea = (index: number, value: string) => setSettings((current) => ({ ...current, areas: current.areas.map((area, areaIndex) => areaIndex === index ? value : area) }));
+  const addArea = () => setSettings((current) => ({ ...current, areas: [...current.areas, ""] }));
+  const removeArea = (index: number) => setSettings((current) => ({ ...current, areas: current.areas.filter((_, areaIndex) => areaIndex !== index) }));
+  const moveArea = (index: number, direction: -1 | 1) => setSettings((current) => {
+    const target = index + direction;
+    if (target < 0 || target >= current.areas.length) return current;
+    const areas = [...current.areas];
+    [areas[index], areas[target]] = [areas[target], areas[index]];
+    return { ...current, areas };
+  });
 
   if (isLoading && settings === emptySettings) {
     return <FormPageSkeleton />;
@@ -85,6 +96,27 @@ export function UnitSettingsManager() {
             </div>
           </div>
           <div className="flex justify-end pt-2"><Button onClick={() => void save()} disabled={isLoading || isSaving} className="bg-blue-600 text-white"><Save className="w-4 h-4 mr-2" /> {isSaving ? "Saving..." : "Save Changes"}</Button></div>
+        </CardContent>
+      </Card>
+
+      <Card className="border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
+        <CardHeader><CardTitle>Areas / Branches</CardTitle><CardDescription>Manage the options shown when creating, editing, and filtering members.</CardDescription></CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-3">
+            {settings.areas.map((area, index) => (
+              <div key={index} className="flex items-center gap-2">
+                <Input value={area} maxLength={80} aria-label={"Area / Branch " + (index + 1)} placeholder="Enter area or branch name" onChange={(event) => updateArea(index, event.target.value)} disabled={isLoading || isSaving} className="bg-slate-50 dark:bg-slate-950" />
+                <Button type="button" variant="outline" size="icon" aria-label="Move area up" disabled={isLoading || isSaving || index === 0} onClick={() => moveArea(index, -1)}><ArrowUp className="h-4 w-4" /></Button>
+                <Button type="button" variant="outline" size="icon" aria-label="Move area down" disabled={isLoading || isSaving || index === settings.areas.length - 1} onClick={() => moveArea(index, 1)}><ArrowDown className="h-4 w-4" /></Button>
+                <Button type="button" variant="outline" size="icon" aria-label="Remove area" disabled={isLoading || isSaving || settings.areas.length === 1} onClick={() => removeArea(index)} className="text-red-600 hover:bg-red-50 hover:text-red-700 dark:hover:bg-red-950/30"><Trash2 className="h-4 w-4" /></Button>
+              </div>
+            ))}
+          </div>
+          <div className="flex flex-col gap-3 border-t border-slate-100 pt-4 sm:flex-row sm:items-center sm:justify-between dark:border-slate-800">
+            <Button type="button" variant="outline" onClick={addArea} disabled={isLoading || isSaving || settings.areas.length >= 50}><Plus className="mr-2 h-4 w-4" /> Add Area / Branch</Button>
+            <Button onClick={() => void save()} disabled={isLoading || isSaving || settings.areas.length === 0} className="bg-blue-600 text-white"><Save className="mr-2 h-4 w-4" /> {isSaving ? "Saving..." : "Save Areas"}</Button>
+          </div>
+          <p className="text-xs text-slate-500">Removing an option does not change the area already stored on existing member profiles.</p>
         </CardContent>
       </Card>
 

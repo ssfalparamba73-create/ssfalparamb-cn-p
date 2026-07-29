@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import type { Member, MemberStatus } from "@/lib/admin/admin-types";
 import type { CreateMemberInput, UpdateMemberInput } from "@/lib/backend/contracts/member.contract";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,7 @@ import { Trash2, PlusCircle, User } from "lucide-react";
 import { toast } from "sonner";
 import { BackendApiError } from "@/lib/api/backendClient";
 import { createAdminMember, issueAdminMemberPin, softDeleteAdminMember, updateAdminMember } from "@/lib/api/memberClient";
+import { getUnitSettings } from "@/lib/api/settingsClient";
 import { MemberInvitationDialog } from "./MemberInvitationDialog";
 import type { IssuedMemberPinDTO } from "@/lib/backend/dto/member.dto";
 
@@ -27,6 +28,7 @@ export function MemberForm({ initialData, isEdit }: MemberFormProps) {
   const [phone, setPhone] = useState(initialData?.phone || "");
   const [phoneError, setPhoneError] = useState("");
   const [area, setArea] = useState(initialData?.area || "");
+  const [areaOptions, setAreaOptions] = useState<string[]>(initialData?.area ? [initialData.area] : []);
   const [status, setStatus] = useState<MemberStatus>(initialData?.status || "active");
   const [monthlyTier, setMonthlyTier] = useState<Member["monthlyTier"]>(initialData?.monthlyTier || "flexible");
   const [bloodGroup, setBloodGroup] = useState<Member["bloodGroup"] | "">(initialData?.bloodGroup || "");
@@ -40,6 +42,20 @@ export function MemberForm({ initialData, isEdit }: MemberFormProps) {
       age: member.age?.toString() ?? "",
     })) ?? []
   );
+
+  useEffect(() => {
+    let active = true;
+    getUnitSettings().then((unitSettings) => {
+      if (!active) return;
+      const options = initialData?.area && !unitSettings.areas.includes(initialData.area)
+        ? [initialData.area, ...unitSettings.areas]
+        : unitSettings.areas;
+      setAreaOptions(options);
+    }).catch(() => {
+      if (active) setAreaOptions((current) => current.length ? current : ["Alparamba Center", "North Gate", "South Block"]);
+    });
+    return () => { active = false; };
+  }, [initialData?.area]);
 
   const validatePhone = (val: string) => {
     // Clean up spaces, dashes, parentheses
@@ -235,9 +251,7 @@ export function MemberForm({ initialData, isEdit }: MemberFormProps) {
                   <SelectValue placeholder="Select an area" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Alparamba Center">Alparamba Center</SelectItem>
-                  <SelectItem value="North Gate">North Gate</SelectItem>
-                  <SelectItem value="South Block">South Block</SelectItem>
+                  {areaOptions.map((option) => <SelectItem key={option} value={option}>{option}</SelectItem>)}
                 </SelectContent>
              </Select>
           </div>

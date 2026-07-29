@@ -46,6 +46,20 @@ export function validateUpdateUnitSettingsInput(
   if (!unitName.ok) return fail(unitName.error!);
   const branchSector = optionalLimitedString(input.branchSector, "branchSector", "Branch / Sector", 120);
   if (!branchSector.ok) return fail(branchSector.error!);
+
+  if (!Array.isArray(input.areas) || input.areas.length === 0) return fail(validationError("Add at least one Area / Branch.", "areas"));
+  if (input.areas.length > 50) return fail(validationError("A maximum of 50 Areas / Branches is allowed.", "areas"));
+  const areas: string[] = [];
+  const normalizedAreas = new Set<string>();
+  for (const value of input.areas) {
+    if (typeof value !== "string" || !value.trim()) return fail(validationError("Area / Branch names cannot be empty.", "areas"));
+    const area = value.trim();
+    if (area.length > 80) return fail(validationError("Area / Branch names must be 80 characters or fewer.", "areas"));
+    const normalized = area.toLocaleLowerCase("en-IN");
+    if (normalizedAreas.has(normalized)) return fail(validationError("Area / Branch names must be unique.", "areas"));
+    normalizedAreas.add(normalized);
+    areas.push(area);
+  }
   const address = optionalLimitedString(input.address, "address", "Address", 300);
   if (!address.ok) return fail(address.error!);
   const cityDistrict = optionalLimitedString(input.cityDistrict, "cityDistrict", "City / District", 120);
@@ -66,6 +80,7 @@ export function validateUpdateUnitSettingsInput(
   return ok({
     unitName: unitName.data!,
     branchSector: branchSector.data!,
+    areas,
     officialEmail: email.data!,
     address: address.data!,
     cityDistrict: cityDistrict.data!,

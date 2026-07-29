@@ -9,6 +9,7 @@ import { createSupabaseBackendClient } from "../client";
 const settingKeys = [
   "name",
   "branch_sector",
+  "areas",
   "official_email",
   "address",
   "city_district",
@@ -24,11 +25,19 @@ function stringValue(value: unknown): string {
   return typeof value === "string" ? value : "";
 }
 
+const DEFAULT_AREAS = ["Alparamba Center", "North Gate", "South Block"];
+
+function stringArrayValue(value: unknown): string[] {
+  const areas = Array.isArray(value) ? value.filter((item): item is string => typeof item === "string" && Boolean(item.trim())) : [];
+  return areas.length > 0 ? areas : DEFAULT_AREAS;
+}
+
 function mapSettings(rows: SettingRow[]): UnitSettingsDTO {
   const values = new Map(rows.map((row) => [row.key, stringValue(row.value)]));
   return {
     unitName: values.get("name") ?? "",
     branchSector: values.get("branch_sector") ?? "",
+    areas: stringArrayValue(rows.find((row) => row.key === "areas")?.value),
     officialEmail: values.get("official_email") ?? "",
     address: values.get("address") ?? "",
     cityDistrict: values.get("city_district") ?? "",
@@ -40,6 +49,7 @@ function toDatabaseInput(input: UpdateUnitSettingsInput) {
   return {
     name: input.unitName,
     branch_sector: input.branchSector,
+    areas: input.areas,
     official_email: input.officialEmail,
     address: input.address,
     city_district: input.cityDistrict,

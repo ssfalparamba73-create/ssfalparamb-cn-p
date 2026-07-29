@@ -11,6 +11,7 @@ import type { Member } from "@/lib/admin/admin-types";
 import { mapMemberDto } from "@/lib/admin/mapMemberDto";
 import { BackendApiError } from "@/lib/api/backendClient";
 import { getAdminMembers } from "@/lib/api/memberClient";
+import { getUnitSettings } from "@/lib/api/settingsClient";
 import type { BloodGroup, MemberStatus, MonthlyTier } from "@/lib/backend/dto/member.dto";
 import { Skeleton } from "@/components/ui/skeleton";
 import Link from "next/link";
@@ -66,9 +67,16 @@ export default function AdminMembersPage() {
 
   // New Filters
   const [areaFilter, setAreaFilter] = useState("all");
+  const [areaOptions, setAreaOptions] = useState<string[]>([]);
   const [tierFilter, setTierFilter] = useState("all");
   const [arrearsFilter, setArrearsFilter] = useState("all");
   const [sortOption, setSortOption] = useState("newest");
+
+  useEffect(() => {
+    let active = true;
+    getUnitSettings().then((settings) => { if (active) setAreaOptions(settings.areas); }).catch(() => { if (active) setAreaOptions([]); });
+    return () => { active = false; };
+  }, []);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -171,6 +179,7 @@ export default function AdminMembersPage() {
           bloodGroupFilter={bloodGroupFilter}
           setBloodGroupFilter={resetPageAnd(setBloodGroupFilter)}
           areaFilter={areaFilter}
+          areaOptions={areaOptions}
           setAreaFilter={resetPageAnd(setAreaFilter)}
           tierFilter={tierFilter}
           setTierFilter={resetPageAnd(setTierFilter)}

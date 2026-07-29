@@ -17,6 +17,7 @@ interface AdminMemberFiltersProps {
   bloodGroupFilter: string;
   setBloodGroupFilter: (val: string) => void;
   areaFilter: string;
+  areaOptions: string[];
   setAreaFilter: (val: string) => void;
   tierFilter: string;
   setTierFilter: (val: string) => void;
@@ -34,6 +35,7 @@ export function AdminMemberFilters({
   bloodGroupFilter,
   setBloodGroupFilter,
   areaFilter,
+  areaOptions,
   setAreaFilter,
   tierFilter,
   setTierFilter,
@@ -120,9 +122,7 @@ export function AdminMemberFilters({
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Areas</SelectItem>
-                    <SelectItem value="Alparamba Center">Alparamba Center</SelectItem>
-                    <SelectItem value="North Gate">North Gate</SelectItem>
-                    <SelectItem value="South Block">South Block</SelectItem>
+                    {areaOptions.map((option) => <SelectItem key={option} value={option}>{option}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
