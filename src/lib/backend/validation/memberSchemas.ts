@@ -20,6 +20,7 @@ const memberStatuses = ["active", "inactive", "blocked"] as const;
 const monthlyTiers = ["base", "premium", "custom", "flexible"] as const;
 const bloodGroups = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"] as const;
 const paymentStatuses = ["clear", "arrears", "long_overdue"] as const;
+const occupationStatuses = ["student", "employed", "self_employed", "not_employed", "other"] as const;
 const memberSortOptions = ["newest", "name-asc", "name-desc", "dues-desc"] as const;
 const MAX_FAMILY_MEMBERS = 25;
 
@@ -63,6 +64,10 @@ export function validateCreateMemberInput(input: Partial<CreateMemberInput>): Ba
   const familyMembers = validateFamilyMembers(input.familyMembers);
   if (!familyMembers.ok) return fail(familyMembers.error!);
 
+  if (!input.occupationStatus || !includesValue(occupationStatuses, input.occupationStatus)) {
+    return fail(validationError("Employment / study status is required.", "occupationStatus"));
+  }
+
   const isBloodDonor = Boolean(input.isBloodDonor);
   return ok({
     name: name.data!,
@@ -72,6 +77,7 @@ export function validateCreateMemberInput(input: Partial<CreateMemberInput>): Ba
     address: normalizeOptionalString(input.address),
     area: normalizeOptionalString(input.area),
     occupation: normalizeOptionalString(input.occupation),
+    occupationStatus: input.occupationStatus,
     monthlyTier: tier,
     monthlyAmount: amount.data!,
     status,
@@ -147,6 +153,12 @@ export function validateUpdateMemberInput(input: UpdateMemberInput): BackendResu
   if (hasOwn(input, "address")) output.address = normalizeOptionalString(input.address) ?? "";
   if (hasOwn(input, "area")) output.area = normalizeOptionalString(input.area) ?? "";
   if (hasOwn(input, "occupation")) output.occupation = normalizeOptionalString(input.occupation) ?? "";
+  if (hasOwn(input, "occupationStatus")) {
+    if (!input.occupationStatus || !includesValue(occupationStatuses, input.occupationStatus)) {
+      return fail(validationError("Invalid employment / study status.", "occupationStatus"));
+    }
+    output.occupationStatus = input.occupationStatus;
+  }
   if (hasOwn(input, "isBloodDonor")) {
     if (typeof input.isBloodDonor !== "boolean") {
       return fail(validationError("Invalid blood donor status.", "isBloodDonor"));
@@ -212,6 +224,13 @@ export function validateUpdateMemberProfileInput(
     output.occupation = occupation;
   }
 
+  if (hasOwn(input, "occupationStatus")) {
+    if (!input.occupationStatus || !includesValue(occupationStatuses, input.occupationStatus)) {
+      return fail(validationError("Invalid employment / study status.", "occupationStatus"));
+    }
+    output.occupationStatus = input.occupationStatus;
+  }
+
   if (hasOwn(input, "biometricEnabled")) {
     if (typeof input.biometricEnabled !== "boolean") {
       return fail(validationError("Invalid biometric preference.", "biometricEnabled"));
@@ -247,6 +266,10 @@ export function validateCompleteMemberProfileInput(
     return fail(validationError("Address is too long.", "address"));
   }
 
+  if (!input.occupationStatus || !includesValue(occupationStatuses, input.occupationStatus)) {
+    return fail(validationError("Employment / study status is required.", "occupationStatus"));
+  }
+
   const occupation = validateRequiredString(input.occupation, "occupation", "Occupation");
   if (!occupation.ok) return fail(occupation.error!);
   if (occupation.data!.length > 120) {
@@ -259,6 +282,7 @@ export function validateCompleteMemberProfileInput(
     bloodGroup: input.bloodGroup,
     address: address.data!,
     occupation: occupation.data!,
+    occupationStatus: input.occupationStatus,
   });
 }
 
@@ -274,6 +298,10 @@ export function validateMemberListFilters(input: MemberListFilters): BackendResu
 
   if (input.bloodGroup && !includesValue(bloodGroups, input.bloodGroup)) {
     return fail(validationError("Invalid blood group filter.", "bloodGroup"));
+  }
+
+  if (input.occupationStatus && input.occupationStatus !== "not_specified" && !includesValue(occupationStatuses, input.occupationStatus)) {
+    return fail(validationError("Invalid employment / study status filter.", "occupationStatus"));
   }
 
   if (input.paymentStatus && !includesValue(paymentStatuses, input.paymentStatus)) {

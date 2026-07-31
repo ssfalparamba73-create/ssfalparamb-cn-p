@@ -2,7 +2,8 @@
 
 import React, { useState } from "react";
 import type { Member } from "@/lib/admin/admin-types";
-import { Activity, CreditCard, Droplet, FileText, History, Users } from "lucide-react";
+import { Activity, CreditCard, Droplet, History, Users } from "lucide-react";
+import { formatOccupationStatus } from "@/lib/members/occupationStatus";
 
 interface MemberDetailTabsProps {
   member: Member;
@@ -13,7 +14,6 @@ const tabs = [
   { id: "payments", label: "Payments", icon: CreditCard },
   { id: "family", label: "Family", icon: Users },
   { id: "donor", label: "Blood Donor", icon: Droplet },
-  { id: "notes", label: "Notes", icon: FileText },
   { id: "audit", label: "Audit", icon: History },
 ] as const;
 
@@ -46,7 +46,9 @@ export function MemberDetailTabs({ member }: MemberDetailTabsProps) {
           <div className="space-y-6 animate-in fade-in">
             <h3 className="text-lg font-medium text-slate-900 dark:text-slate-100">Membership Summary</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
-              <SummaryCard label="Area / Branch" value={member.area || "Not specified"} />
+              <SummaryCard label="Block" value={member.area || "Not specified"} />
+              <SummaryCard label="Employment / Study Status" value={formatOccupationStatus(member.occupationStatus)} />
+              <SummaryCard label="Occupation / Course" value={member.occupation || "Not specified"} />
               <SummaryCard label="Joined Date" value={formatDate(member.createdAt)} />
               <SummaryCard label="Last Paid" value={member.lastPaidAt ? formatDate(member.lastPaidAt) : "Never"} />
             </div>
@@ -98,10 +100,6 @@ export function MemberDetailTabs({ member }: MemberDetailTabsProps) {
               </div>
             </div>
           </div>
-        )}
-
-        {activeTab === "notes" && (
-          <TabSection title="Admin Notes" message="Admin notes have not been connected yet." />
         )}
 
         {activeTab === "audit" && (

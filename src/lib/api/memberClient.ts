@@ -5,6 +5,7 @@ import type { CompleteMemberProfileInput, CreateMemberInput, UpdateMemberInput }
 import type { UpdateMemberProfileInput } from "@/lib/backend/contracts/member.contract";
 import type { MemberDirectoryItemDTO, MemberListFilters, MemberProfileDTO } from "@/lib/backend/dto/member.dto";
 import { requestBackend, requestBackendVoid } from "./backendClient";
+import { invalidateQueries, setQueryData } from "@/lib/client/queryCache";
 
 export interface AdminMemberQuery extends MemberListFilters {
   page?: number;
@@ -30,6 +31,7 @@ export function getAdminMembers(
   if (query.area?.trim()) params.set("area", query.area.trim());
   if (query.monthlyTier) params.set("monthlyTier", query.monthlyTier);
   if (query.paymentStatus) params.set("paymentStatus", query.paymentStatus);
+  if (query.occupationStatus) params.set("occupationStatus", query.occupationStatus);
   if (query.isBloodDonor !== undefined) params.set("isBloodDonor", String(query.isBloodDonor));
   if (query.donorAvailable !== undefined) params.set("donorAvailable", String(query.donorAvailable));
   if (query.sort) params.set("sort", query.sort);
@@ -40,24 +42,37 @@ export function getAdminMember(id: string): Promise<MemberDTO> {
   return requestBackend<MemberDTO>(`/api/v1/admin/members/${encodeURIComponent(id)}`);
 }
 
-export function createAdminMember(input: CreateMemberInput): Promise<MemberDTO> {
-  return requestBackend<MemberDTO>("/api/v1/admin/members", {
+export async function createAdminMember(input: CreateMemberInput): Promise<MemberDTO> {
+  const created = await requestBackend<MemberDTO>("/api/v1/admin/members", {
     method: "POST",
     body: JSON.stringify(input),
   });
+  invalidateQueries("admin:members:");
+  invalidateQueries("admin:dashboard");
+  invalidateQueries("admin:blood-donors:");
+  return created;
 }
 
-export function updateAdminMember(id: string, input: UpdateMemberInput): Promise<MemberDTO> {
-  return requestBackend<MemberDTO>(`/api/v1/admin/members/${encodeURIComponent(id)}`, {
+export async function updateAdminMember(id: string, input: UpdateMemberInput): Promise<MemberDTO> {
+  const updated = await requestBackend<MemberDTO>(`/api/v1/admin/members/${encodeURIComponent(id)}`, {
     method: "PATCH",
     body: JSON.stringify(input),
   });
+  setQueryData(`admin:member:${id}`, updated);
+  invalidateQueries("admin:members:");
+  invalidateQueries("admin:dashboard");
+  invalidateQueries("admin:blood-donors:");
+  return updated;
 }
 
-export function softDeleteAdminMember(id: string): Promise<void> {
-  return requestBackendVoid(`/api/v1/admin/members/${encodeURIComponent(id)}`, {
+export async function softDeleteAdminMember(id: string): Promise<void> {
+  await requestBackendVoid(`/api/v1/admin/members/${encodeURIComponent(id)}`, {
     method: "DELETE",
   });
+  invalidateQueries("admin:members:");
+  invalidateQueries(`admin:member:${id}`);
+  invalidateQueries("admin:dashboard");
+  invalidateQueries("admin:blood-donors:");
 }
 
 export function issueAdminMemberPin(id: string): Promise<IssuedMemberPinDTO> {

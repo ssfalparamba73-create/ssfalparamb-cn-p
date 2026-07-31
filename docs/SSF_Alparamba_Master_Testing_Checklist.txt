@@ -1,0 +1,67 @@
+📋 SSF Alparamba Contribution Portal — Master Testing Checklist📄 ഫോട്ടോ 1 (Page 1)🔴 Dash bord (ഡാഷ്‌ബോർഡ്)Skeleton Loading: സ്കെലിറ്റൺ ലോഡർ കൃത്യമായ രൂപത്തിൽ വരണം.  Monthly Dues: കലണ്ടർ ഓപ്ഷൻ ആഡ് ചെയ്യണം.  Special Events: ഇവന്റ് സെലക്ടർ (Event Selector) ചേർക്കണം.  Blood Donors: ബ്ലഡ് ഡോണേഴ്‌സ് നിലവിൽ സിസ്റ്റവുമായി കണക്ട് ചെയ്തിട്ടില്ല.  Add Member Button (Mobile Fix): "Add Member" ബട്ടൺ ഫോണിൽ മാത്രം പ്രവർത്തിക്കുന്നില്ല; ഇത് ഡാഷ്‌ബോർഡിൽ ശരിയായി ലഭ്യമാക്കുകയും വർക്ക് ചെയ്യുകയും വേണം.  Main Cards Verification: ഡാഷ്‌ബോർഡിലുള്ള 4 മെയിൻ കാർഡുകളും ശരിയായി പ്രവർത്തിക്കുന്നുണ്ടെന്ന് ഉറപ്പുവരുത്തുക.  🔴 Risk Summary (റിസ്ക് സമ്മറി)Remind Route: റിമൈൻഡർ റൂട്ട് ശരിയല്ല, ഇത് വാട്ട്‌സ്ആപ്പിലേക്ക് റീഡയറക്ട് ആകുന്നില്ല.  Profile Route: പ്രൊഫൈൽ ബട്ടണിന്റെ റൂട്ടും വർക്ക് ചെയ്യുന്നില്ല (നിലവിൽ മോക്ക് ഡാറ്റ ഉപയോഗിക്കുന്നതുകൊണ്ടാകാം).  Filter Horizontal Scroll: ഫിൽട്ടറിലെ ഹൊറിസോണ്ടൽ സ്ക്രോളിംഗ് പൂർണ്ണമായും നീക്കം ചെയ്യണം.  Export Button: "Export" ബട്ടൺ നീക്കം ചെയ്യുക.  Gentle Reminders: "Gentle Reminders" പൂർണ്ണമായും ഒഴിവാക്കുക.  📄 ഫോട്ടോ 2 (Page 2)🔴 Validations & Dashboard UpdatesField Validation: പേര് (Name), ഫോൺ നമ്പർ (Phone number) ഫീൽഡുകൾ കൃത്യമായി വാലിഡേറ്റ്/കൺഫേം ചെയ്യണം.  Pending Delay Time: പെൻഡിങ് സമയം കൃത്യമായി ട്രാക്ക് ചെയ്ത് കാണിക്കുക (ഉദാ: 4 Months pending / 2 weeks pending).  Reminder Dates: റിമൈൻഡർ അയച്ച തീയതി കാണിക്കുക (ഉദാ: Reminded 2 days ago).  Pagination: കോംപാക്റ്റ് പേജിനേഷൻ (Compact pagination) സെറ്റ് ചെയ്യുക.  Dashboard Card Text: ഡാഷ്‌ബോർഡിലെ "test Recent payment" എന്ന ടെക്സ്റ്റ് "Recent Cash Handovers" എന്ന് മാറ്റുക.  📄 ഫോട്ടോ 3 (Page 3)🔴 Members Component (Card View)Main Overview: 4 പ്രധാന കാർഡുകൾ വർക്കിംഗ് ആണോ എന്ന് ഉറപ്പുവരുത്തുക.  Badges & Status: Active badge, Status, Blood group badges എന്നിവ ഡാറ്റാബേസിൽ നിന്നുള്ള യഥാർത്ഥ വിവരങ്ങൾ കാണിക്കണം.  Text Verification: പേരിന് താഴെ കാണിക്കുന്ന ടെക്സ്റ്റ് എന്താണെന്ന് പരിശോധിക്കുക (അത് ID ആണോ എന്ന് ഉറപ്പുവരുത്തുക).  Terminology Change: "Area" എന്നത് "Block" എന്ന പേരിലേക്ക് മാറ്റുക.  Filter Scroll: ഫിൽട്ടറിലെ ഹൊറിസോണ്ടൽ സ്ക്രോൾ (പ്രത്യേകിച്ച് മൊബൈലിൽ) ഒഴിവാക്കുക.  Skeleton Loader Fix: കാർഡിനുള്ളിലെ നിലവിലെ സ്കെലിറ്റൺ ലോഡർ ശരിയാക്കുക.  Database Sync: എല്ലാവരുടെയും മുഴുവൻ പ്രൊഫൈൽ ഡാറ്റയും ഡാറ്റാബേസിൽ നിന്ന് നേരിട്ട് ഫെച്ച് ചെയ്യുക.  📄 ഫോട്ടോ 4 (Page 4)🏷️ Badgesബാഡ്ജുകൾ ഡൈനാമിക് ആയിരിക്കണം, ഹാർഡ് കോഡഡ് ആകരുത് (Badges are true, Not hard coded).  🔴 Edit Member (എഡിറ്റ് മെമ്പർ)Form Submission & Saving: ഫോമിലെ ഇൻപുട്ട് ഫീൽഡുകൾ പരിശോധിച്ചു ഉറപ്പുവരുത്തുക; നൽകുന്ന ഡാറ്റ കൃത്യമായി ഡാറ്റാബേസിലേക്ക് പോവുകയും സേവ് ആവുകയും വേണം.  Area/Branch Rename: "Area/Branch" എന്നത് "Block" ആക്കി മാറ്റുക.  Server Error Fix: എഡിറ്റ് ഫോം സബ്മിറ്റ് ചെയ്യുമ്പോൾ വരുന്ന Server Internal Error പരിഹരിക്കുക (ആദ്യം ഇത് ഹാർഡ് കോഡഡ് ആയിരുന്നു -> പിന്നീട് ഫോം ചേർത്തു -> ഇപ്പോൾ സബ്മിറ്റ് ചെയ്യുമ്പോൾ എറർ വരുന്നു).  📄 ഫോട്ടോ 5 (Page 5)🆔 Member ID VerificationMember ID: മെമ്പർ ഐഡി എന്താണ് എന്ന് പരിശോധിക്കുക.  Uniqueness: Member ID യൂണിക് (Unique) ആണെന്ന് ഉറപ്പുവരുത്തുക.  Database Generation: ഐഡി സുരക്ഷിതമായി ജനറേറ്റ് ചെയ്യപ്പെടുകയും ഡാറ്റാബേസിൽ സേവ് ആവുകയും ചെയ്യുന്നുണ്ടോ എന്ന് ഉറപ്പുവരുത്തുക.  🩸 Blood Donor Profileചെക്ക്‌ലിസ്റ്റ് നീക്കം ചെയ്യുക; നിർബന്ധമായും രജിസ്ട്രേഷൻ ചെയ്യിപ്പിച്ചിരിക്കണം.  👨‍👩‍👧‍👦 Family Members & Admin NoteFamily Members: ഫാമിലി മെമ്പേഴ്‌സിന്റെ വിവരങ്ങൾ സിസ്റ്റത്തിൽ കൃത്യമായി സേവ് ആകുന്നുണ്ടെന്ന് ഉറപ്പാക്കുക.  Admin Note: "Admin note" ഒഴിവാക്കുക.  📊 Membership Summaryമെമ്പർഷിപ്പ് സമ്മറി കാണിക്കുന്നത് ശരിയായ വിവരങ്ങളാണോ എന്നും അത് ഡാറ്റാബേസിൽ നിന്ന് തന്നെയാണ് വരുന്നതെന്നും ഉറപ്പാക്കുക.  💳 Post-Payment Integration Tasks (പേയ്‌മെന്റ് ഇന്റഗ്രേഷനു ശേഷം പിന്നീട് ചെയ്യേണ്ടവ)Monthly Tier & Monthly Amount: പേയ്‌മെന്റ് ഇന്റഗ്രേഷൻ പൂർത്തിയാക്കിയതിനു ശേഷം മാത്രം ക്രമീകരിച്ച് ടെസ്റ്റ് ചെയ്യേണ്ടവയാണ്.  Record Cash (Not Include): നിലവിൽ സിസ്റ്റത്തിൽ ഉൾപ്പെടുത്തേണ്ടതില്ല; പേയ്‌മെന്റ് ഇന്റഗ്രേഷനു ശേഷം മാത്രം ടെസ്റ്റ് ചെയ്യുക.  📄 ഫോട്ടോ 6 (Page 6)📑 Defaultersഡിഫോൾട്ടേഴ്‌സിന്റെ പെൻഡിങ് പേയ്‌മെന്റ് മാനേജ്‌മെന്റ് കൃത്യമായി ക്രമീകരിക്കുക.  🔴 Audit Details'Before and After' ഡാറ്റ നിലവിലുള്ള JSON ഫോർമാറ്റിൽ നിന്ന് സാധാരണ വായിക്കാൻ പാകത്തിലുള്ള ഡാറ്റയായി (Normal Data) കൺവേർട്ട് ചെയ്യുക.  🔴 Settings PageUnit Name: യുണിറ്റ് നെയിം (Unit Name) ചേഞ്ച് ചെയ്യാൻ സാധ്യമാണോ എന്ന് പരിശോധിക്കുക.  Unit Identity: Unit Identity ഹാർഡ് കോഡഡ് ആണോ അതോ ഡാറ്റാബേസിൽ നിന്നാണോ വരുന്നത് എന്ന് കൺഫേം ചെയ്യുക.  Area / Branches Backend: ഏരിയ / ബ്രാഞ്ചസ് സെക്ഷന്റെ UI പൂർത്തിയായിട്ടുണ്ട്, എന്നാൽ ഇതിന്റെ ബാക്കെൻഡ് സെറ്റ് ചെയ്യേണ്ടതുണ്ട്.  📄 ഫോട്ടോ 7 (Page 7)📍 General Settingsവിലാസവും കോൺടാക്റ്റ് വിവരങ്ങളും (Address & Contact Details) ഡാറ്റാബേസിൽ നിന്ന് ഉറപ്പുവരുത്തുക.  🔴 Receipt SettingsReceipt Edit Option: നിലവിൽ റസീപ്റ്റ് എഡിറ്റ് ചെയ്യാനുള്ള ഓപ്ഷൻ ലഭ്യമല്ല; എഡിറ്റിംഗ് സൗകര്യം നൽകുക.  Placeholders: കൂടുതൽ ഓപ്ഷൻ പ്ലേസ്‌ഹോൾഡറുകൾ ചേർക്കുക.  Buttons Fix: പ്രവർത്തിക്കാത്ത "Download", "Share" ബട്ടണുകൾ ഫിക്സ് ചെയ്യുക.  Payment Details: പേയ്‌മെന്റ് വിവരങ്ങൾ ഡാറ്റാബേസിൽ നിന്ന് നേരിട്ട് ഉറപ്പുവരുത്തുക.  🔴 Loading State & Data Loading Priority (ഡാറ്റ ലോഡിംഗ് ക്രമം)Loading State: ഡാഷ്‌ബോർഡിലും മറ്റു പേജുകളിലും useState ഉപയോഗിച്ച് ലോഡിംഗ് സ്റ്റേറ്റ് കൃത്യമായി മാനേജ് ചെയ്യുക.  ഡാറ്റ ലോഡ് ചെയ്യേണ്ട മുൻഗണനാ ക്രമം (Priority Order):🥇 First Priority: Members / Payment ഡാറ്റ. (മെമ്പർ പേജ് തുറക്കുമ്പോൾ ആദ്യത്തെ പേജിനേഷനിൽ ഉൾപ്പെടുന്ന ഡാറ്റ മാത്രം ആദ്യം ലോഡ് ചെയ്യുക; തുടർന്ന് പേജ് മാറുമ്പോൾ മാത്രം അടുത്ത പേജിനേഷനിലെ ഡാറ്റ ഡൈനാമിക് ആയി ബാക്കെൻഡിൽ നിന്ന് ലോഡ് ചെയ്യുക).  🥈 Second Priority: Blood Donors & Defaulters ഡാറ്റ.  🥉 At Last / Lowest Priority: Reports & Audit log ഡാറ്റ.
+📄 അധികമായി ചേർത്ത Production-Critical Testing Checklist
+
+🔐 Authentication & Session
+☐ Member/Admin ശരിയായ PIN അല്ലെങ്കിൽ code ഉപയോഗിച്ച് login ചെയ്യാനാകണം.
+☐ തെറ്റായ PIN/code ആവർത്തിക്കുമ്പോൾ rate limit/temporary lock പ്രവർത്തിക്കണം.
+☐ Logout ചെയ്ത session വീണ്ടും ഉപയോഗിക്കാനാകരുത്.
+☐ Session expire/revoke ആയാൽ protected page login-ലേക്ക് redirect ചെയ്യണം.
+☐ Inactive, blocked, soft-deleted member login ചെയ്യാനാകരുത്.
+☐ Browser refresh കഴിഞ്ഞാലും valid session സുരക്ഷിതമായി restore ചെയ്യണം.
+
+🛡️ Roles, Permissions & RLS
+☐ Collector, Treasurer, Viewer, President/Secretary, Super Admin permissions പ്രത്യേകം പരിശോധിക്കുക.
+☐ Permission ഇല്ലാത്ത admin direct URL/API വഴി mutation നടത്താൻ കഴിയരുത്.
+☐ Member-ന് സ്വന്തം profile/payment data മാത്രം കാണാനാകണം.
+☐ Public user-ന് members, payments, admins, audit logs raw data access ലഭിക്കരുത്.
+☐ Audit log normal admin/client വഴി insert, update, delete ചെയ്യാനാകരുത്.
+
+🗑️ Soft Delete & Phone Reuse
+☐ Member soft-delete ചെയ്താൽ list, directory, login, member search എന്നിവയിൽ നിന്ന് ഒഴിവാകണം.
+☐ Soft-deleted member-ന്റെ payments, receipts, family history, audit history എന്നിവ നഷ്ടപ്പെടരുത്.
+☐ Soft-delete ചെയ്ത member-ന്റെ phone number പുതിയ member-ക്ക് ഉപയോഗിക്കാനാകണം.
+☐ അതേ phone active/inactive/blocked member-ക്ക് duplicate ആയി നൽകാൻ കഴിയരുത്.
+☐ Reused phone login/search/payment lookup പുതിയ active member-നെ മാത്രം resolve ചെയ്യണം.
+☐ പുതിയ member പഴയ phone-ന്റെ failed-login lockout inherit ചെയ്യരുത്.
+
+🧾 Data Integrity & Concurrent Actions
+☐ ഒരേ phone/member ID ഒരേസമയം രണ്ട് requests create ചെയ്യുമ്പോൾ ഒരു record മാത്രം save ആകണം.
+☐ Double-click/double-submit duplicate member/payment ഉണ്ടാക്കരുത്.
+☐ Failed mutation partial data save ചെയ്യരുത്; family/member update atomic ആയിരിക്കണം.
+☐ Amount, counts, dashboard totals, reports എന്നിവ database records-നോട് match ചെയ്യണം.
+☐ Date/time Asia/Kolkata timezone-ൽ consistent ആയി കാണിക്കണം.
+
+⚠️ Error, Empty & Retry States
+☐ Network offline/timeout/server error സമയത്ത് clear safe messageയും retry optionഉം കാണിക്കണം.
+☐ Raw Supabase/database error, secret, stack trace എന്നിവ UI-ൽ കാണിക്കരുത്.
+☐ Empty members/payments/defaulters/reports states layout break ചെയ്യരുത്.
+☐ API 401, 403, 404, 409, 429, 500 responses ശരിയായ UI behavior കാണിക്കണം.
+☐ Save നടക്കുമ്പോൾ button disabled/loading ആയിരിക്കണം; success confirm ചെയ്തശേഷം മാത്രം success message കാണിക്കണം.
+
+📱 Responsive, Accessibility & Browser
+☐ 320px, 375px, 768px, 1024px, 1440px widths-ൽ horizontal page overflow ഇല്ലെന്ന് പരിശോധിക്കുക.
+☐ Mobile, tablet, desktop-ൽ cards, filters, modals, tables, sticky actions usable ആയിരിക്കണം.
+☐ Keyboard മാത്രം ഉപയോഗിച്ച് forms, dialogs, menus, pagination operate ചെയ്യാനാകണം.
+☐ Dialog focus trap, Escape close, visible focus indicator, labels/aria-labels പരിശോധിക്കുക.
+☐ Light/dark mode contrastയും Malayalam text renderingഉം പരിശോധിക്കുക.
+☐ Chrome/Edge mobile emulation ഉൾപ്പെടെ supported browsers-ൽ smoke test നടത്തുക.
+
+🗄️ Migration, Deployment & Recovery
+☐ എല്ലാ Supabase migrations fresh database-ൽ order അനുസരിച്ച് വിജയിക്കണം.
+☐ Existing production-like data ഉള്ള database-ലും migrations data loss ഇല്ലാതെ വിജയിക്കണം.
+☐ Required indexes, constraints, functions, triggers, grants, RLS policies verify ചെയ്യണം.
+☐ Staging smoke test കഴിഞ്ഞശേഷം മാത്രം production deploy ചെയ്യണം.
+☐ Backup/restore dry run നടത്തി sample member, payment, receipt, settings, audit data verify ചെയ്യണം.
+☐ Migration failure/rollback procedure document ചെയ്ത് പരീക്ഷിക്കുക.
+
+🔍 Audit & Privacy
+☐ Member create/edit/soft-delete, PIN reset, settings change, payment status change എന്നിവ audit log സൃഷ്ടിക്കണം.
+☐ Audit before/after view-ൽ PIN hash, token, secret, full sensitive payload കാണിക്കരുത്.
+☐ Phone numbers public/member directory scope അനുസരിച്ച് മാത്രം expose ചെയ്യണം.
+☐ Export/download actions permission-protected ആയിരിക്കണം; ആവശ്യമായിടത്ത് audit log ഉണ്ടാകണം.
+
+✅ Release Gate
+☐ Lint, TypeScript, production build, database migration checks pass ആയിരിക്കണം.
+☐ Critical admin/member/public journeys staging-ൽ end-to-end test ചെയ്തിരിക്കണം.
+☐ Known issues severity/owner/status സഹിതം രേഖപ്പെടുത്തിയിരിക്കണം.
+☐ Product owner approval ലഭിച്ചശേഷം മാത്രം production release നടത്തുക.

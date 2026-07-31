@@ -57,6 +57,8 @@ export function EditProfileDrawer({ isOpen, onClose, member, onSave, isSaving = 
       newErrors.age = "Valid age is required";
     }
 
+    if (!formData.occupationStatus) newErrors.occupationStatus = "Employment / study status is required";
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -175,9 +177,27 @@ export function EditProfileDrawer({ isOpen, onClose, member, onSave, isSaving = 
                 {errors.whatsapp && <p className="text-xs text-red-500 flex items-center gap-1"><AlertCircle className="size-3" /> {errors.whatsapp}</p>}
               </div>
 
+              {/* Employment / study status */}
+              <div className="space-y-2">
+                <label className="text-sm font-semibold text-slate-900 dark:text-slate-100">Employment / Study Status</label>
+                <Select value={formData.occupationStatus} onValueChange={(value) => handleSelectChange("occupationStatus", value)}>
+                  <SelectTrigger className={errors.occupationStatus ? "w-full border-red-300 bg-white dark:border-red-500/60 dark:bg-slate-900" : "w-full border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900"}>
+                    <SelectValue placeholder="Select status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="student">Student</SelectItem>
+                    <SelectItem value="employed">Employed</SelectItem>
+                    <SelectItem value="self_employed">Self-employed</SelectItem>
+                    <SelectItem value="not_employed">Not employed</SelectItem>
+                    <SelectItem value="other">Other</SelectItem>
+                  </SelectContent>
+                </Select>
+                {errors.occupationStatus && <p className="text-xs text-red-500 flex items-center gap-1"><AlertCircle className="size-3" /> {errors.occupationStatus}</p>}
+              </div>
+
               {/* Occupation */}
-              <div className="col-span-1 md:col-span-2 space-y-1.5">
-                <label className="text-sm font-semibold text-slate-900 dark:text-slate-100">Occupation</label>
+              <div className="space-y-1.5">
+                <label className="text-sm font-semibold text-slate-900 dark:text-slate-100">Occupation / Course</label>
                 <input
                   type="text"
                   name="occupation"
@@ -186,7 +206,6 @@ export function EditProfileDrawer({ isOpen, onClose, member, onSave, isSaving = 
                   className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-white focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-50 dark:focus:ring-blue-500/20"
                 />
               </div>
-
               {/* Address */}
               <div className="col-span-1 md:col-span-2 space-y-1.5">
                 <label className="text-sm font-semibold text-slate-900 dark:text-slate-100">Address / House Name</label>

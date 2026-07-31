@@ -1,15 +1,8 @@
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import {
-  Droplet,
   LockKeyhole,
-  Phone,
-  Send,
-  ShieldCheck,
-  SmartphoneNfc,
   Sparkles,
-  Users,
-  Zap,
   ArrowRight
 } from "lucide-react"
 import dynamic from "next/dynamic"
@@ -18,6 +11,7 @@ const InteractiveBenefits = dynamic(() => import("@/components/landing/Interacti
 import { Header } from "@/components/layout/Header"
 import { TransparentLogo } from "@/components/TransparentLogo"
 import { InlineLoginForm } from "@/components/auth/InlineLoginForm"
+import { ProfessionalPortalSections } from "@/components/landing/ProfessionalPortalSections"
 
 export default function LandingPage() {
   return (
@@ -45,10 +39,6 @@ export default function LandingPage() {
               className="relative z-10 w-full max-w-xl space-y-6 md:space-y-8 p-2 sm:p-8 mt-2 md:mt-0 flex flex-col items-center md:items-start animate-in fade-in slide-in-from-bottom-8 duration-700 ease-out fill-mode-both"
             >
               
-              <div className="inline-flex items-center gap-2 rounded-full border border-blue-200/80 bg-blue-50/70 px-3 md:px-4 py-1.5 md:py-2 text-[10px] md:text-xs font-extrabold uppercase tracking-[0.15em] text-blue-700 shadow-sm backdrop-blur-xl">
-                <ShieldCheck className="size-3 md:size-4" /> Official Platform
-              </div>
-
               <h1 className="text-[2.5rem] leading-[1.1] font-black tracking-[-0.04em] text-slate-950 sm:text-6xl lg:text-[4.25rem]">
                 <span className="hidden md:inline">Member <br /></span>
                 <span className="bg-gradient-to-r from-blue-500 via-cyan-500 to-emerald-500 bg-clip-text text-transparent drop-shadow-sm">Contribution</span> <br className="hidden md:block" />
@@ -58,7 +48,7 @@ export default function LandingPage() {
               <div className="h-1 w-16 md:w-20 rounded-full bg-gradient-to-r from-blue-500 via-cyan-400 to-emerald-400" />
 
               <p className="max-w-md text-base md:text-lg font-medium leading-relaxed text-slate-600">
-                Welcome to SSF Alparamba. Uniting our community digitally and empowering members with a seamless, transparent experience.
+                The official SSF Alparamba Unit portal for member access, contribution information, records, and committee support.
               </p>
 
               {/* Mobile CTA (Hidden on desktop) */}
@@ -81,16 +71,6 @@ export default function LandingPage() {
             >
               <div id="login-card" className="relative rounded-[2.5rem] border border-white/60 bg-white/40 p-6 shadow-[0_32px_80px_rgba(37,99,235,0.12)] backdrop-blur-3xl sm:p-8">
                 
-                {/* User Avatar Group */}
-                <div className="mb-8 flex justify-center">
-                  <div className="flex -space-x-4">
-                    <img className="inline-block size-12 rounded-full border-2 border-white object-cover shadow-sm" src="https://i.pravatar.cc/100?img=1" alt="" />
-                    <img className="inline-block size-12 rounded-full border-2 border-white object-cover shadow-sm" src="https://i.pravatar.cc/100?img=2" alt="" />
-                    <img className="inline-block size-12 rounded-full border-2 border-white object-cover shadow-sm" src="https://i.pravatar.cc/100?img=3" alt="" />
-                    <div className="flex size-12 items-center justify-center rounded-full border-2 border-white bg-slate-100 text-xs font-bold text-slate-600 shadow-sm">+99</div>
-                  </div>
-                </div>
-
                 <div className="space-y-3 text-center">
                   <h2 className="text-3xl font-black tracking-[-0.03em] text-slate-950">Join SSF <br/> Alparamba Unit</h2>
                   <p className="mx-auto max-w-xs text-sm font-medium leading-6 text-slate-500">Enter your 10-digit mobile number to sign up or log in to your account.</p>
@@ -102,7 +82,12 @@ export default function LandingPage() {
 
                 <p className="mt-6 flex items-start justify-center gap-2 text-center text-xs font-semibold leading-6 text-slate-500">
                   <LockKeyhole className="mt-1 size-4 shrink-0 text-slate-400" />
-                  <span>By continuing, you agree to the community guidelines and privacy policy.</span>
+                  <span>
+                    By continuing, you agree to the{" "}
+                    <Link href="/terms-and-conditions" className="text-blue-700 underline underline-offset-2 hover:text-blue-800">terms</Link>{" "}
+                    and{" "}
+                    <Link href="/privacy-policy" className="text-blue-700 underline underline-offset-2 hover:text-blue-800">privacy policy</Link>.
+                  </span>
                 </p>
               </div>
             </div>
@@ -110,9 +95,9 @@ export default function LandingPage() {
         </section>
 
         {/* Member Benefits Section */}
-        <section className="relative border-t border-white/60 bg-white/60 py-20 backdrop-blur-2xl md:py-28 overflow-hidden">
+        <section className="relative border-t border-white/60 bg-white/60 py-16 backdrop-blur-2xl md:py-20 overflow-hidden">
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_22%_18%,rgba(59,130,246,0.14),transparent_24rem),radial-gradient(circle_at_78%_36%,rgba(16,185,129,0.16),transparent_22rem)]" />
-          <div className="container relative space-y-16">
+          <div className="container relative space-y-10 md:space-y-12">
             <div 
               className="mx-auto max-w-2xl space-y-4 text-center animate-in fade-in slide-in-from-bottom-8 duration-700 delay-150 fill-mode-both"
             >
@@ -120,13 +105,14 @@ export default function LandingPage() {
                 <Sparkles className="size-4" />
                 Member Benefits
               </div>
-              <h2 className="text-4xl font-black tracking-[-0.04em] text-slate-950">Why use the portal?</h2>
-              <p className="text-lg font-medium text-slate-500">Designed exclusively for our members to stay connected and updated.</p>
+              <h2 className="text-3xl font-black tracking-[-0.04em] text-slate-950 md:text-4xl">Why use the portal?</h2>
+              <p className="text-base font-medium text-slate-500 md:text-lg">Designed exclusively for our members to stay connected and updated.</p>
             </div>
 
             <InteractiveBenefits />
           </div>
         </section>
+        <ProfessionalPortalSections />
       </main>
 
       {/* Footer */}
@@ -138,9 +124,19 @@ export default function LandingPage() {
               <span className="font-cooper font-normal text-slate-700">SSF</span> Alparamba Unit
             </span>
           </div>
-          <p className="text-sm font-semibold text-slate-400">
-            © {new Date().getFullYear()} SSF Alparamba. All rights reserved.
-          </p>
+          <div className="flex flex-col items-center gap-3 md:items-end">
+            <nav aria-label="Policies" className="flex max-w-2xl flex-wrap justify-center gap-x-4 gap-y-2 text-xs font-semibold text-slate-500 md:justify-end">
+              <Link href="/contribution-details" className="hover:text-blue-600">Contribution Details</Link>
+              <Link href="/shipping-policy" className="hover:text-blue-600">Shipping</Link>
+              <Link href="/cancellation-and-refund-policy" className="hover:text-blue-600">Cancellation & Refunds</Link>
+              <Link href="/privacy-policy" className="hover:text-blue-600">Privacy</Link>
+              <Link href="/terms-and-conditions" className="hover:text-blue-600">Terms</Link>
+              <Link href="/contact" className="hover:text-blue-600">Contact</Link>
+            </nav>
+            <p className="text-sm font-semibold text-slate-400">
+              © {new Date().getFullYear()} SSF Alparamba. All rights reserved.
+            </p>
+          </div>
         </div>
       </footer>
     </div>

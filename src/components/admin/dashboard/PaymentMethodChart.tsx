@@ -1,5 +1,6 @@
 import React from "react";
 import { PieChart } from "lucide-react";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 
 interface PaymentMethod {
   method: string;
@@ -24,20 +25,20 @@ export function PaymentMethodChart({ data }: PaymentMethodChartProps) {
   const totalPercent = data.reduce((sum, item) => sum + item.percentage, 0);
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm transition-colors duration-300 dark:border-slate-700 dark:bg-slate-800 dark:shadow-none h-full flex flex-col">
-      <div className="flex items-center justify-between mb-2">
+    <Card className="flex h-full min-h-[240px] flex-col border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+      <CardHeader className="flex flex-row items-center justify-between p-4 pb-2">
         <div>
           <h3 className="text-base font-semibold text-slate-900 dark:text-slate-50">Payment Split</h3>
           <p className="text-sm text-slate-500 dark:text-slate-400">By channel</p>
         </div>
         <div className="p-2 bg-emerald-50 text-emerald-600 rounded-lg dark:bg-emerald-900/20 dark:text-emerald-400">
-          <PieChart className="w-5 h-5" />
+          <PieChart className="h-4 w-4" />
         </div>
-      </div>
+      </CardHeader>
 
-      <div className="flex-1 flex flex-col sm:flex-row items-center justify-center gap-8 mt-4">
+      <CardContent className="flex flex-1 flex-col items-center justify-center gap-4 p-4 pt-2 sm:flex-row">
         {/* SVG Donut Chart */}
-        <div className="relative w-40 h-40 shrink-0">
+        <div className="relative h-28 w-28 shrink-0">
           <svg viewBox="0 0 42 42" className="w-full h-full -rotate-90 drop-shadow-sm">
             {/* Background Circle */}
             <circle
@@ -71,13 +72,13 @@ export function PaymentMethodChart({ data }: PaymentMethodChartProps) {
           </svg>
           {/* Center Text */}
           <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-            <span className="text-2xl font-bold text-slate-900 dark:text-slate-50">{totalPercent > 0 ? "100%" : "0%"}</span>
+            <span className="text-xl font-bold text-slate-900 dark:text-slate-50">{totalPercent > 0 ? "100%" : "0%"}</span>
             <span className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold">Total</span>
           </div>
         </div>
 
         {/* Legend */}
-        <div className="w-full sm:w-auto flex-1 space-y-3">
+        <div className="w-full flex-1 space-y-1.5 sm:w-auto">
           {data.map((item, index) => {
             const dotColor = colorMap[item.color] || "#3b82f6";
             return (
@@ -94,7 +95,7 @@ export function PaymentMethodChart({ data }: PaymentMethodChartProps) {
             );
           })}
         </div>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }

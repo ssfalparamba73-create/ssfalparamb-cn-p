@@ -9,6 +9,7 @@ import { AdminActionIcon } from "@/components/admin/layout/AdminActionIcon";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { MemberInvitationAction } from "./MemberInvitationAction";
+import { formatOccupationStatus } from "@/lib/members/occupationStatus";
 
 interface AdminMemberRowProps {
   member: Member;
@@ -40,7 +41,12 @@ export function AdminMemberRow({ member }: AdminMemberRowProps) {
         <div className="font-mono">{member.phone}</div>
         <div className="text-xs text-slate-500">{member.area}</div>
       </td>
-      <td className="px-3 py-4">
+      <td className="px-3 py-4 text-sm">
+        <span className="inline-flex rounded-md border border-slate-200 bg-slate-50 px-2 py-1 text-xs font-medium text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">
+          {formatOccupationStatus(member.occupationStatus)}
+        </span>
+        {member.occupation && <div className="mt-1 max-w-36 truncate text-xs text-slate-500">{member.occupation}</div>}
+      </td>      <td className="px-3 py-4">
         {member.bloodGroup && (
           <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border border-red-100 dark:border-red-900/30 text-red-600 dark:text-red-400 shadow-[0_2px_8px_rgba(220,38,38,0.08)] transition-all">
             <Droplet className="w-3.5 h-3.5 mr-1.5 fill-red-100 dark:fill-red-900/50 text-red-500" />

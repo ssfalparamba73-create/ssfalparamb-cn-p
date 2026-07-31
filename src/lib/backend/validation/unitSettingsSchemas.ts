@@ -47,16 +47,16 @@ export function validateUpdateUnitSettingsInput(
   const branchSector = optionalLimitedString(input.branchSector, "branchSector", "Branch / Sector", 120);
   if (!branchSector.ok) return fail(branchSector.error!);
 
-  if (!Array.isArray(input.areas) || input.areas.length === 0) return fail(validationError("Add at least one Area / Branch.", "areas"));
-  if (input.areas.length > 50) return fail(validationError("A maximum of 50 Areas / Branches is allowed.", "areas"));
+  if (!Array.isArray(input.areas) || input.areas.length === 0) return fail(validationError("Add at least one Block.", "areas"));
+  if (input.areas.length > 50) return fail(validationError("A maximum of 50 Blocks is allowed.", "areas"));
   const areas: string[] = [];
   const normalizedAreas = new Set<string>();
   for (const value of input.areas) {
-    if (typeof value !== "string" || !value.trim()) return fail(validationError("Area / Branch names cannot be empty.", "areas"));
+    if (typeof value !== "string" || !value.trim()) return fail(validationError("Block names cannot be empty.", "areas"));
     const area = value.trim();
-    if (area.length > 80) return fail(validationError("Area / Branch names must be 80 characters or fewer.", "areas"));
+    if (area.length > 80) return fail(validationError("Block names must be 80 characters or fewer.", "areas"));
     const normalized = area.toLocaleLowerCase("en-IN");
-    if (normalizedAreas.has(normalized)) return fail(validationError("Area / Branch names must be unique.", "areas"));
+    if (normalizedAreas.has(normalized)) return fail(validationError("Block names must be unique.", "areas"));
     normalizedAreas.add(normalized);
     areas.push(area);
   }

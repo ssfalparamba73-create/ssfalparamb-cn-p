@@ -1,4 +1,6 @@
-import { User, Phone, MapPin, Droplet, Briefcase, Calendar, ShieldCheck, CreditCard, MessageCircle } from "lucide-react";
+import { User, Phone, MapPin, Droplet, Briefcase, Calendar, ShieldCheck, CreditCard, MessageCircle, GraduationCap } from "lucide-react";
+import type { OccupationStatus } from "@/lib/backend/dto/member.dto";
+import { formatOccupationStatus } from "@/lib/members/occupationStatus";
 
 export interface MemberProfileData {
   id: string;
@@ -13,6 +15,7 @@ export interface MemberProfileData {
   sector: string;
   joinedYear: string;
   occupation: string;
+  occupationStatus: OccupationStatus | "";
 }
 
 interface MemberProfileDetailsProps {
@@ -54,7 +57,8 @@ export function MemberProfileDetails({ member }: MemberProfileDetailsProps) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-8 mb-8">
           <DetailItem colorScheme="red" icon={<Droplet className="size-5" />} label="Blood Group" value={member.bloodGroup} />
           <DetailItem colorScheme="purple" icon={<Calendar className="size-5" />} label="Age" value={`${member.age} Years`} />
-          <DetailItem colorScheme="amber" icon={<Briefcase className="size-5" />} label="Occupation" value={member.occupation} />
+          <DetailItem colorScheme="slate" icon={<GraduationCap className="size-5" />} label="Employment / Study Status" value={member.occupationStatus ? formatOccupationStatus(member.occupationStatus) : "Not specified"} />
+          <DetailItem colorScheme="amber" icon={<Briefcase className="size-5" />} label="Occupation / Course" value={member.occupation || "Not specified"} />
           <DetailItem colorScheme="emerald" icon={<MapPin className="size-5" />} label="Address" value={member.address} />
         </div>
 

@@ -12,8 +12,8 @@ export function RecentCashHandovers({
   handovers: DashboardRecentCashHandoverDTO[];
 }) {
   return (
-    <Card className="border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
-      <CardHeader className="flex flex-row items-center justify-between pb-2">
+    <Card className="h-full border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+      <CardHeader className="flex flex-row items-center justify-between p-4 pb-3">
         <CardTitle className="text-base font-semibold text-slate-900 dark:text-slate-100">
           Recent Cash Handovers
         </CardTitle>
@@ -21,9 +21,9 @@ export function RecentCashHandovers({
           View all <ArrowRight className="w-4 h-4" />
         </Link>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-4 pt-0">
         {handovers.length === 0 ? (
-          <div className="text-center py-6 text-slate-500 text-sm">
+          <div className="py-3 text-center text-sm text-slate-500">
             No recent cash handovers found.
           </div>
         ) : (

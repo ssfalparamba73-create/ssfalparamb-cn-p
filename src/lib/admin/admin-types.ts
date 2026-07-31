@@ -1,5 +1,6 @@
 export type MemberStatus = "active" | "inactive" | "blocked" | "left";
 export type BloodGroup = "A+" | "A-" | "B+" | "B-" | "AB+" | "AB-" | "O+" | "O-";
+export type OccupationStatus = "student" | "employed" | "self_employed" | "not_employed" | "other";
 
 export interface Member {
   id: string;
@@ -14,6 +15,7 @@ export interface Member {
   address?: string;
   area?: string;
   occupation?: string;
+  occupationStatus?: OccupationStatus;
   familyCount?: number;
   status: MemberStatus;
   monthlyTier: "base" | "premium" | "custom" | "flexible";

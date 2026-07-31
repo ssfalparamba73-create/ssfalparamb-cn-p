@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import type { Member, MemberStatus } from "@/lib/admin/admin-types";
+import type { Member, MemberStatus, OccupationStatus } from "@/lib/admin/admin-types";
 import type { CreateMemberInput, UpdateMemberInput } from "@/lib/backend/contracts/member.contract";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -32,6 +32,7 @@ export function MemberForm({ initialData, isEdit }: MemberFormProps) {
   const [status, setStatus] = useState<MemberStatus>(initialData?.status || "active");
   const [monthlyTier, setMonthlyTier] = useState<Member["monthlyTier"]>(initialData?.monthlyTier || "flexible");
   const [bloodGroup, setBloodGroup] = useState<Member["bloodGroup"] | "">(initialData?.bloodGroup || "");
+  const [occupationStatus, setOccupationStatus] = useState<OccupationStatus | "">(initialData?.occupationStatus || "");
   const [isBloodDonor, setIsBloodDonor] = useState(Boolean(initialData?.isBloodDonor));
   const [donorAvailable, setDonorAvailable] = useState(Boolean(initialData?.donorAvailable));
   const [invitation, setInvitation] = useState<IssuedMemberPinDTO | null>(null);
@@ -109,6 +110,10 @@ export function MemberForm({ initialData, isEdit }: MemberFormProps) {
       toast.error("Please fix the validation errors before submitting.");
       return;
     }
+    if (!occupationStatus) {
+      toast.error("Please select employment / study status.");
+      return;
+    }
     const formData = new FormData(e.currentTarget);
     const numberValue = (name: string) => {
       const value = String(formData.get(name) ?? "").trim();
@@ -140,6 +145,7 @@ export function MemberForm({ initialData, isEdit }: MemberFormProps) {
       address: textValue("address"),
       area: area || undefined,
       occupation: textValue("occupation"),
+      occupationStatus: occupationStatus || undefined,
       status: status as Exclude<MemberStatus, "left">,
       monthlyTier,
       monthlyAmount: numberValue("monthlyAmount") ?? 50,
@@ -245,10 +251,10 @@ export function MemberForm({ initialData, isEdit }: MemberFormProps) {
             <Textarea id="address" name="address" defaultValue={initialData?.address} placeholder="Full residential address" className="min-h-[80px]" />
           </div>
           <div className="space-y-2">
-             <Label htmlFor="area">Area / Branch <span className="text-red-500">*</span></Label>
+             <Label htmlFor="area">Block <span className="text-red-500">*</span></Label>
              <Select value={area} onValueChange={setArea}>
                 <SelectTrigger className="w-full h-10 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
-                  <SelectValue placeholder="Select an area" />
+                  <SelectValue placeholder="Select a block" />
                 </SelectTrigger>
                 <SelectContent>
                   {areaOptions.map((option) => <SelectItem key={option} value={option}>{option}</SelectItem>)}
@@ -256,8 +262,23 @@ export function MemberForm({ initialData, isEdit }: MemberFormProps) {
              </Select>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="occupation">Occupation</Label>
-            <Input id="occupation" name="occupation" defaultValue={initialData?.occupation} placeholder="e.g. Teacher, Business" />
+            <Label htmlFor="occupationStatus">Employment / Study Status <span className="text-red-500">*</span></Label>
+            <Select value={occupationStatus} onValueChange={(value) => setOccupationStatus(value as OccupationStatus)} required>
+              <SelectTrigger id="occupationStatus" className="h-10 w-full border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800">
+                <SelectValue placeholder="Select status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="student">Student</SelectItem>
+                <SelectItem value="employed">Employed</SelectItem>
+                <SelectItem value="self_employed">Self-employed</SelectItem>
+                <SelectItem value="not_employed">Not employed</SelectItem>
+                <SelectItem value="other">Other</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="occupation">Occupation / Course</Label>
+            <Input id="occupation" name="occupation" defaultValue={initialData?.occupation} placeholder="e.g. Teacher, Business, B.Com" />
           </div>
         </div>
       </div>
@@ -399,12 +420,6 @@ export function MemberForm({ initialData, isEdit }: MemberFormProps) {
             </p>
           </div>
         </div>
-      </div>
-
-      {/* 6. Admin Notes */}
-      <div className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
-        <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-4">6. Admin Notes</h3>
-        <Textarea disabled placeholder="Admin notes will be available in a later phase." className="min-h-[100px]" />
       </div>
 
       {/* Sticky Footer */}

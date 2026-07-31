@@ -38,6 +38,7 @@ function mapProfile(profile: MemberProfileDTO): MemberProfileData {
     sector: profile.sector ?? "",
     joinedYear: profile.joinedYear ?? "",
     occupation: profile.occupation ?? "",
+    occupationStatus: profile.occupationStatus ?? "",
   };
 }
 
@@ -102,6 +103,7 @@ export default function ProfilePage() {
         bloodGroup: toDatabaseBloodGroup(updatedMember.bloodGroup),
         address: updatedMember.address,
         occupation: updatedMember.occupation,
+        occupationStatus: updatedMember.occupationStatus || undefined,
       });
       setMember(mapProfile(profile));
       setIsBiometricEnabled(profile.biometricEnabled);

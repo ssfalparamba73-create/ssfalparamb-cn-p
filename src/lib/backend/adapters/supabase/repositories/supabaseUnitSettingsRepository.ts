@@ -81,11 +81,40 @@ export class SupabaseUnitSettingsRepository implements UnitSettingsRepository {
 
   async updateUnitSettings(input: UpdateUnitSettingsInput, actor: ActorContext): Promise<UnitSettingsDTO> {
     const supabase = createSupabaseBackendClient();
-    const { error } = await supabase.rpc("admin_update_unit_settings", {
-      p_input: toDatabaseInput(input),
+    const databaseInput = toDatabaseInput(input);
+    const params = {
+      p_input: databaseInput,
       ...actorParams(actor),
-    });
-    if (error) throw error;
+    };
+    const { error } = await supabase.rpc("admin_update_unit_settings", params);
+    if (error) {
+      const isPreBlocksFunction =
+        error.code === "22023" &&
+        error.message.toLowerCase().includes("unknown unit setting key");
+      if (!isPreBlocksFunction) throw error;
+
+      const legacyInput = Object.fromEntries(
+        Object.entries(databaseInput).filter(([key]) => key !== "areas")
+      );
+      const { error: legacyError } = await supabase.rpc("admin_update_unit_settings", {
+        ...params,
+        p_input: legacyInput,
+      });
+      if (legacyError) throw legacyError;
+
+      const { error: blocksError } = await supabase
+        .from("app_settings")
+        .upsert({
+          namespace: "unit",
+          key: "areas",
+          value: input.areas,
+          description: "Ordered Block options used by member forms and filters",
+          is_public: true,
+          updated_by_admin_id: actor.adminId,
+          updated_at: new Date().toISOString(),
+        }, { onConflict: "namespace,key" });
+      if (blocksError) throw blocksError;
+    }
     return this.getUnitSettings();
   }
 }

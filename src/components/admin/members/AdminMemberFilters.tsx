@@ -16,6 +16,8 @@ interface AdminMemberFiltersProps {
   setStatusFilter: (val: string) => void;
   bloodGroupFilter: string;
   setBloodGroupFilter: (val: string) => void;
+  occupationStatusFilter: string;
+  setOccupationStatusFilter: (val: string) => void;
   areaFilter: string;
   areaOptions: string[];
   setAreaFilter: (val: string) => void;
@@ -34,6 +36,8 @@ export function AdminMemberFilters({
   setStatusFilter,
   bloodGroupFilter,
   setBloodGroupFilter,
+  occupationStatusFilter,
+  setOccupationStatusFilter,
   areaFilter,
   areaOptions,
   setAreaFilter,
@@ -56,8 +60,8 @@ export function AdminMemberFilters({
         />
       </div>
       
-      <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0">
-        <div className="relative min-w-[140px]">
+      <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:flex-wrap sm:items-center">
+        <div className="relative min-w-0 sm:min-w-[140px]">
           <Select value={sortOption} onValueChange={setSortOption}>
             <SelectTrigger className="w-full bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
               <SelectValue placeholder="Sort By" />
@@ -71,7 +75,7 @@ export function AdminMemberFilters({
           </Select>
         </div>
 
-        <div className="relative min-w-[140px]">
+        <div className="relative min-w-0 sm:min-w-[140px]">
           <Select value={statusFilter} onValueChange={setStatusFilter}>
             <SelectTrigger className="w-full bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
               <SelectValue placeholder="All Status" />
@@ -84,7 +88,7 @@ export function AdminMemberFilters({
           </Select>
         </div>
 
-        <div className="relative min-w-[140px]">
+        <div className="relative min-w-0 sm:min-w-[140px]">
           <Select value={bloodGroupFilter} onValueChange={setBloodGroupFilter}>
             <SelectTrigger className="w-full bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
               <SelectValue placeholder="Blood Group" />
@@ -105,24 +109,42 @@ export function AdminMemberFilters({
 
         <Popover>
           <PopoverTrigger asChild>
-            <Button variant="outline" className="shrink-0 h-10 px-3 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300">
+            <Button variant="outline" className="h-10 w-full border-slate-200 px-3 text-slate-600 dark:border-slate-700 dark:text-slate-300 sm:w-auto">
               <SlidersHorizontal className="w-4 h-4 mr-2" />
               More Filters
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-80 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 shadow-xl" align="end">
+          <PopoverContent className="w-[calc(100vw-2rem)] max-w-80 border-slate-200 bg-white shadow-xl dark:border-slate-800 dark:bg-slate-900" align="end">
             <div className="space-y-4">
               <h4 className="font-medium text-slate-900 dark:text-slate-100 text-sm">Advanced Filters</h4>
               
               <div className="space-y-2">
-                <Label className="text-xs text-slate-500">Area / Branch</Label>
+                <Label className="text-xs text-slate-500">Block</Label>
                 <Select value={areaFilter} onValueChange={setAreaFilter}>
                   <SelectTrigger className="w-full">
-                    <SelectValue placeholder="All Areas" />
+                    <SelectValue placeholder="All Blocks" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All Areas</SelectItem>
+                    <SelectItem value="all">All Blocks</SelectItem>
                     {areaOptions.map((option) => <SelectItem key={option} value={option}>{option}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-xs text-slate-500">Employment / Study Status</Label>
+                <Select value={occupationStatusFilter} onValueChange={setOccupationStatusFilter}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="All statuses" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All statuses</SelectItem>
+                    <SelectItem value="student">Student</SelectItem>
+                    <SelectItem value="employed">Employed</SelectItem>
+                    <SelectItem value="self_employed">Self-employed</SelectItem>
+                    <SelectItem value="not_employed">Not employed</SelectItem>
+                    <SelectItem value="other">Other</SelectItem>
+                    <SelectItem value="not_specified">Not specified</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -166,6 +188,7 @@ export function AdminMemberFilters({
                     setArrearsFilter("all");
                     setStatusFilter("all");
                     setBloodGroupFilter("all");
+                    setOccupationStatusFilter("all");
                   }}
                 >
                   Clear All Filters

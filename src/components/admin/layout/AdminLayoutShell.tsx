@@ -10,6 +10,7 @@ import { useAuth } from "@/lib/admin/AuthContext";
 import { canAccessAdminPath } from "@/lib/admin/accessControl";
 import { cn } from "@/lib/utils";
 import { PageContentSkeleton } from "@/components/ui/loading-skeletons";
+import { scheduleAdminPriorityPrefetch } from "@/lib/client/adminPrefetch";
 
 export function AdminLayoutShell({ children }: { children: React.ReactNode }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -29,6 +30,11 @@ export function AdminLayoutShell({ children }: { children: React.ReactNode }) {
     }
     if (!canAccess) router.replace("/admin/dashboard");
   }, [canAccess, currentUser, isLoading, pathname, router]);
+
+  useEffect(() => {
+    if (!currentUser) return;
+    return scheduleAdminPriorityPrefetch(currentUser.permissions);
+  }, [currentUser]);
 
   return (
     <div className="min-h-screen bg-[#F6F8FC] font-sans text-slate-900 transition-colors duration-300 dark:bg-slate-900 dark:text-slate-50">

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
   Users,
@@ -24,37 +24,38 @@ import { BackendApiError } from "@/lib/api/backendClient";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { PageContentSkeleton } from "@/components/ui/loading-skeletons";
+import { useCachedQuery } from "@/lib/client/useCachedQuery";
 
 export default function AdminDashboardPage() {
   const router = useRouter();
-  const [dashboard, setDashboard] = useState<AdminDashboardDTO | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const loadDashboard = useCallback(() => getAdminDashboard(), []);
+  const {
+    data: dashboard,
+    error,
+    isInitialLoading,
+    isRefreshing,
+    refetch,
+  } = useCachedQuery<AdminDashboardDTO>({
+    key: "admin:dashboard",
+    queryFn: loadDashboard,
+    staleTime: 30_000,
+  });
 
   useEffect(() => {
-    let active = true;
-    getAdminDashboard()
-      .then((data) => {
-        if (active) setDashboard(data);
-      })
-      .catch((requestError: unknown) => {
-        if (requestError instanceof BackendApiError && requestError.status === 401) {
-          router.replace("/admin/login");
-          return;
-        }
-        if (active) {
-          setError(requestError instanceof Error ? requestError.message : "Unable to load dashboard.");
-        }
-      });
-
-    return () => {
-      active = false;
-    };
-  }, [router]);
+    if (error instanceof BackendApiError && error.status === 401) {
+      router.replace("/admin/login");
+    }
+  }, [error, router]);
 
   if (!dashboard) {
     return (
-      <div className="space-y-8 animate-in fade-in duration-300 pb-10">
-        {error ? <p className="text-sm text-red-600 dark:text-red-400">{error}</p> : <PageContentSkeleton />}
+      <div className="animate-in space-y-4 pb-6 fade-in duration-300">
+        {error && !isInitialLoading ? (
+          <div className="flex items-center gap-3 text-sm text-red-600 dark:text-red-400">
+            <span>{error instanceof Error ? error.message : "Unable to load dashboard."}</span>
+            <Button variant="outline" size="sm" onClick={() => void refetch()}>Retry</Button>
+          </div>
+        ) : <PageContentSkeleton />}
       </div>
     );
   }
@@ -62,16 +63,19 @@ export default function AdminDashboardPage() {
   const stats = dashboard.stats;
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-300 pb-10">
+    <div className="animate-in space-y-4 pb-6 fade-in duration-300">
+      {isRefreshing && (
+        <p role="status" className="text-xs text-slate-500 dark:text-slate-400">Updating dashboard...</p>
+      )}
 
       {/* Header & Quick Actions */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div>
           <h2 className="text-2xl font-bold text-slate-900 tracking-tight dark:text-slate-50">Dashboard</h2>
           <p className="text-slate-500 mt-1 dark:text-slate-400">Overview of collections and community health.</p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2">
           <Button variant="outline" className="h-10 border-slate-200 text-slate-700 font-medium hidden sm:flex">
             <FileText className="w-4 h-4 mr-2" />
             Export Report
@@ -80,12 +84,14 @@ export default function AdminDashboardPage() {
             <Banknote className="w-4 h-4 mr-2" />
             Record Cash
           </Button>
-          <AdminActionIcon aria-label="Add Member" className="h-10 w-10 sm:hidden">
+          <AdminActionIcon aria-label="Add Member" className="h-10 w-10 sm:hidden" onClick={() => router.push("/admin/members/new")}>
             <UserPlus className="w-4 h-4" />
           </AdminActionIcon>
-          <Button variant="outline" className="h-10 border-slate-200 text-slate-700 font-medium hidden sm:flex">
-            <UserPlus className="w-4 h-4 mr-2" />
-            Add Member
+          <Button asChild variant="outline" className="hidden h-10 border-slate-200 font-medium text-slate-700 sm:flex">
+            <Link href="/admin/members/new">
+              <UserPlus className="mr-2 h-4 w-4" />
+              Add Member
+            </Link>
           </Button>
         </div>
       </div>
@@ -138,7 +144,7 @@ export default function AdminDashboardPage() {
       </div>
 
       {/* Main Stats Grid (Desktop Only) */}
-      <div className="hidden sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+      <div className="hidden gap-3 sm:grid sm:grid-cols-2 lg:grid-cols-4">
         <StatsCard
           label="Total Collected"
           metric={`₹${stats.totalCollected.toLocaleString("en-IN")}`}
@@ -173,22 +179,22 @@ export default function AdminDashboardPage() {
       </div>
 
       {/* Secondary Stats & Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 gap-3 lg:grid-cols-3">
 
         {/* Left Column (Wider on Desktop) */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="space-y-3 lg:col-span-2">
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
             <CollectionTrendChart data={stats.collectionTrend.map((item) => ({ month: item.label, amount: item.amount }))} />
             <PaymentMethodChart data={stats.paymentMethodSplit.map((item) => ({ ...item, color: item.color ?? "bg-blue-500" }))} />
           </div>
 
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 gap-3 xl:grid-cols-2">
             <RecentPayments payments={dashboard.recentPayments} />
             <RecentCashHandovers handovers={dashboard.recentCashHandovers} />
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
              <StatsCard
               label="Monthly Dues"
               metric={`₹${stats.monthlyDues.toLocaleString("en-IN")}`}
@@ -203,10 +209,10 @@ export default function AdminDashboardPage() {
         </div>
 
         {/* Right Column (Sidebar-like on Desktop) */}
-        <div className="space-y-6">
-          <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm transition-colors duration-300 dark:border-slate-700 dark:bg-slate-800 dark:shadow-none">
-             <h3 className="text-base font-semibold text-slate-900 mb-4 dark:text-slate-50">Risk Summary</h3>
-             <div className="space-y-4">
+        <div className="space-y-3">
+          <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition-colors duration-300 dark:border-slate-800 dark:bg-slate-900">
+             <h3 className="mb-3 text-base font-semibold text-slate-900 dark:text-slate-50">Risk Summary</h3>
+             <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium text-slate-600 dark:text-slate-400">Severe Defaulters</span>
                   <span className="text-sm font-bold text-red-600 font-mono bg-red-50 px-2 py-0.5 rounded-md dark:bg-red-500/10 dark:text-red-300">

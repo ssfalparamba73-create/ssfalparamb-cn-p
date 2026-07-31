@@ -4,6 +4,7 @@ export type MemberStatus = "active" | "inactive" | "blocked" | "left";
 export type BloodGroup = "A+" | "A-" | "B+" | "B-" | "AB+" | "AB-" | "O+" | "O-";
 export type MonthlyTier = "base" | "premium" | "custom" | "flexible";
 export type PinStatus = "not_issued" | "issued" | "reset_required";
+export type OccupationStatus = "student" | "employed" | "self_employed" | "not_employed" | "other";
 
 export interface FamilyMemberDTO {
   id: ID;
@@ -31,6 +32,7 @@ export interface MemberDTO {
   unit?: string;
   sector?: string;
   occupation?: string;
+  occupationStatus?: OccupationStatus;
   familyCount?: number;
   status: MemberStatus;
   monthlyTier: MonthlyTier;
@@ -70,6 +72,7 @@ export interface MemberProfileDTO {
   sector?: string;
   joinedYear?: string;
   occupation?: string;
+  occupationStatus?: OccupationStatus;
   biometricEnabled: boolean;
   profileComplete: boolean;
   familyMembers: FamilyMemberDTO[];
@@ -120,5 +123,6 @@ export interface MemberListFilters {
   bloodGroup?: BloodGroup;
   isBloodDonor?: boolean;
   donorAvailable?: boolean;
+  occupationStatus?: OccupationStatus | "not_specified";
   sort?: "newest" | "name-asc" | "name-desc" | "dues-desc";
 }

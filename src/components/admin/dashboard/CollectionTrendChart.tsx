@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { TrendingUp } from "lucide-react";
+import { Card } from "@/components/ui/card";
 
 interface CollectionData {
   month: string;
@@ -49,22 +50,22 @@ export function CollectionTrendChart({ data }: CollectionTrendChartProps) {
   const areaPath = path ? `${path} L ${width} ${height} L 0 ${height} Z` : "";
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 shadow-sm transition-colors duration-300 dark:border-slate-700 dark:bg-slate-800 dark:shadow-none h-full flex flex-col overflow-hidden">
+    <Card className="flex h-full min-h-[240px] flex-col overflow-hidden border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
 
       {/* Header (with padding) */}
-      <div className="flex items-center justify-between p-4 sm:p-6 pb-0 sm:pb-0 z-10">
+      <div className="z-10 flex items-center justify-between p-4 pb-0">
         <div>
           <h3 className="text-base font-semibold text-slate-900 dark:text-slate-50">Collection Trend</h3>
           <p className="text-sm text-slate-500 dark:text-slate-400">Past 6 months</p>
         </div>
         <div className="p-2 bg-blue-50 text-blue-600 rounded-lg dark:bg-blue-900/20 dark:text-blue-400">
-          <TrendingUp className="w-5 h-5" />
+          <TrendingUp className="h-4 w-4" />
         </div>
       </div>
 
       {/* SVG Smooth Area Chart (Edge to Edge) */}
-      <div className="flex-1 relative w-full mt-4 flex flex-col">
-        <div className="relative w-full flex-1 min-h-[150px]">
+      <div className="relative mt-3 flex w-full flex-1 flex-col">
+        <div className="relative min-h-[100px] w-full flex-1">
           <svg viewBox={`0 -10 ${width} 320`} className="absolute inset-0 w-full h-full overflow-visible" preserveAspectRatio="none">
             <defs>
               <linearGradient id="colorGradient" x1="0" y1="0" x2="0" y2="1">
@@ -142,7 +143,7 @@ export function CollectionTrendChart({ data }: CollectionTrendChartProps) {
         </div>
 
         {/* X-Axis Labels (with padding so they don't stick to walls) */}
-        <div className="relative w-full h-8 mt-2 border-t border-slate-100 dark:border-slate-700/50 pt-2 px-4 sm:px-6 bg-white dark:bg-slate-800 z-10">
+        <div className="relative z-10 mt-2 h-8 w-full border-t border-slate-100 bg-white px-4 pt-2 dark:border-slate-800 dark:bg-slate-900">
           <div className="relative w-full h-full">
             {data.map((item, index) => {
               const leftPercent = data.length > 1 ? (index / (data.length - 1)) * 100 : 50;
@@ -163,6 +164,6 @@ export function CollectionTrendChart({ data }: CollectionTrendChartProps) {
           </div>
         </div>
       </div>
-    </div>
+    </Card>
   );
 }

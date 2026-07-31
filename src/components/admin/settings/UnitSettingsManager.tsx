@@ -11,6 +11,8 @@ import { ArrowDown, ArrowUp, Plus, Save, Trash2, UploadCloud } from "lucide-reac
 import type { UnitSettingsDTO } from "@/lib/backend/dto/unitSettings.dto";
 import { getUnitSettings, updateUnitSettings } from "@/lib/api/settingsClient";
 import { FormPageSkeleton } from "@/components/ui/loading-skeletons";
+import { fetchQuery, getQuerySnapshot, setQueryData } from "@/lib/client/queryCache";
+import { writeCachedBlockOptions } from "@/lib/client/safePersistentCache";
 
 const emptySettings: UnitSettingsDTO = {
   unitName: "",
@@ -23,16 +25,20 @@ const emptySettings: UnitSettingsDTO = {
 };
 
 export function UnitSettingsManager() {
-  const [settings, setSettings] = useState<UnitSettingsDTO>(emptySettings);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isSaving, setIsSaving] = useState(false);
+  const cachedSettings = getQuerySnapshot<UnitSettingsDTO>("admin:unit-settings").data;
+  const [settings, setSettings] = useState<UnitSettingsDTO>(() => cachedSettings ?? emptySettings);
+  const [isLoading, setIsLoading] = useState(!cachedSettings);
+  const [savingSection, setSavingSection] = useState<"identity" | "blocks" | "address" | null>(null);
+  const isSaving = savingSection !== null;
   const [error, setError] = useState<string | null>(null);
 
   const load = async () => {
     setIsLoading(true);
     setError(null);
     try {
-      setSettings(await getUnitSettings());
+      const loaded = await fetchQuery("admin:unit-settings", getUnitSettings, { staleTime: 15 * 60_000 });
+      setSettings(loaded);
+      writeCachedBlockOptions(loaded.areas);
     } catch (loadError) {
       setError(loadError instanceof Error ? loadError.message : "Unable to load unit settings.");
     } finally {
@@ -42,18 +48,21 @@ export function UnitSettingsManager() {
 
   useEffect(() => { queueMicrotask(() => void load()); }, []);
 
-  const save = async () => {
-    setIsSaving(true);
+  const save = async (section: "identity" | "blocks" | "address") => {
+    setSavingSection(section);
     setError(null);
     try {
-      setSettings(await updateUnitSettings(settings));
+      const saved = await updateUnitSettings(settings);
+      setSettings(saved);
+      setQueryData("admin:unit-settings", saved);
+      writeCachedBlockOptions(saved.areas);
       toast.success("Unit settings saved successfully.");
     } catch (saveError) {
       const message = saveError instanceof Error ? saveError.message : "Unable to save unit settings.";
       setError(message);
       toast.error(message);
     } finally {
-      setIsSaving(false);
+      setSavingSection(null);
     }
   };
 
@@ -95,28 +104,28 @@ export function UnitSettingsManager() {
               </div>
             </div>
           </div>
-          <div className="flex justify-end pt-2"><Button onClick={() => void save()} disabled={isLoading || isSaving} className="bg-blue-600 text-white"><Save className="w-4 h-4 mr-2" /> {isSaving ? "Saving..." : "Save Changes"}</Button></div>
+          <div className="flex justify-end pt-2"><Button onClick={() => void save("identity")} disabled={isLoading || isSaving} className="bg-blue-600 text-white"><Save className="w-4 h-4 mr-2" /> {savingSection === "identity" ? "Saving..." : "Save Changes"}</Button></div>
         </CardContent>
       </Card>
 
       <Card className="border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
-        <CardHeader><CardTitle>Areas / Branches</CardTitle><CardDescription>Manage the options shown when creating, editing, and filtering members.</CardDescription></CardHeader>
+        <CardHeader><CardTitle>Blocks</CardTitle><CardDescription>Manage the Block options shown when creating, editing, and filtering members.</CardDescription></CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-3">
             {settings.areas.map((area, index) => (
               <div key={index} className="flex items-center gap-2">
-                <Input value={area} maxLength={80} aria-label={"Area / Branch " + (index + 1)} placeholder="Enter area or branch name" onChange={(event) => updateArea(index, event.target.value)} disabled={isLoading || isSaving} className="bg-slate-50 dark:bg-slate-950" />
-                <Button type="button" variant="outline" size="icon" aria-label="Move area up" disabled={isLoading || isSaving || index === 0} onClick={() => moveArea(index, -1)}><ArrowUp className="h-4 w-4" /></Button>
-                <Button type="button" variant="outline" size="icon" aria-label="Move area down" disabled={isLoading || isSaving || index === settings.areas.length - 1} onClick={() => moveArea(index, 1)}><ArrowDown className="h-4 w-4" /></Button>
-                <Button type="button" variant="outline" size="icon" aria-label="Remove area" disabled={isLoading || isSaving || settings.areas.length === 1} onClick={() => removeArea(index)} className="text-red-600 hover:bg-red-50 hover:text-red-700 dark:hover:bg-red-950/30"><Trash2 className="h-4 w-4" /></Button>
+                <Input value={area} maxLength={80} aria-label={"Block " + (index + 1)} placeholder="Enter Block name" onChange={(event) => updateArea(index, event.target.value)} disabled={isLoading || isSaving} className="bg-slate-50 dark:bg-slate-950" />
+                <Button type="button" variant="outline" size="icon" aria-label="Move Block up" disabled={isLoading || isSaving || index === 0} onClick={() => moveArea(index, -1)}><ArrowUp className="h-4 w-4" /></Button>
+                <Button type="button" variant="outline" size="icon" aria-label="Move Block down" disabled={isLoading || isSaving || index === settings.areas.length - 1} onClick={() => moveArea(index, 1)}><ArrowDown className="h-4 w-4" /></Button>
+                <Button type="button" variant="outline" size="icon" aria-label="Remove Block" disabled={isLoading || isSaving || settings.areas.length === 1} onClick={() => removeArea(index)} className="text-red-600 hover:bg-red-50 hover:text-red-700 dark:hover:bg-red-950/30"><Trash2 className="h-4 w-4" /></Button>
               </div>
             ))}
           </div>
           <div className="flex flex-col gap-3 border-t border-slate-100 pt-4 sm:flex-row sm:items-center sm:justify-between dark:border-slate-800">
-            <Button type="button" variant="outline" onClick={addArea} disabled={isLoading || isSaving || settings.areas.length >= 50}><Plus className="mr-2 h-4 w-4" /> Add Area / Branch</Button>
-            <Button onClick={() => void save()} disabled={isLoading || isSaving || settings.areas.length === 0} className="bg-blue-600 text-white"><Save className="mr-2 h-4 w-4" /> {isSaving ? "Saving..." : "Save Areas"}</Button>
+            <Button type="button" variant="outline" onClick={addArea} disabled={isLoading || isSaving || settings.areas.length >= 50}><Plus className="mr-2 h-4 w-4" /> Add Block</Button>
+            <Button onClick={() => void save("blocks")} disabled={isLoading || isSaving || settings.areas.length === 0} className="bg-blue-600 text-white"><Save className="mr-2 h-4 w-4" /> {savingSection === "blocks" ? "Saving..." : "Save Blocks"}</Button>
           </div>
-          <p className="text-xs text-slate-500">Removing an option does not change the area already stored on existing member profiles.</p>
+          <p className="text-xs text-slate-500">Removing an option does not change the Block already stored on existing member profiles.</p>
         </CardContent>
       </Card>
 
@@ -128,7 +137,7 @@ export function UnitSettingsManager() {
             <div className="space-y-2"><Label>City / District</Label><Input value={settings.cityDistrict} onChange={(e) => field("cityDistrict", e.target.value)} disabled={isLoading || isSaving} className="bg-slate-50 dark:bg-slate-950" /></div>
             <div className="space-y-2"><Label>PIN Code</Label><Input value={settings.pinCode} onChange={(e) => field("pinCode", e.target.value.replace(/\D/g, "").slice(0, 6))} disabled={isLoading || isSaving} className="bg-slate-50 dark:bg-slate-950" /></div>
           </div>
-          <div className="flex justify-end pt-2"><Button onClick={() => void save()} disabled={isLoading || isSaving} className="bg-blue-600 text-white"><Save className="w-4 h-4 mr-2" /> {isSaving ? "Saving..." : "Save Address"}</Button></div>
+          <div className="flex justify-end pt-2"><Button onClick={() => void save("address")} disabled={isLoading || isSaving} className="bg-blue-600 text-white"><Save className="w-4 h-4 mr-2" /> {savingSection === "address" ? "Saving..." : "Save Address"}</Button></div>
         </CardContent>
       </Card>
     </div>

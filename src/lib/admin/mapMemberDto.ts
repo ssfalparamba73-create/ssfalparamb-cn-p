@@ -15,6 +15,7 @@ export function mapMemberDto(member: MemberDTO): Member {
     address: member.address,
     area: member.area,
     occupation: member.occupation,
+    occupationStatus: member.occupationStatus,
     familyCount: member.familyCount,
     status: member.status,
     monthlyTier: member.monthlyTier,

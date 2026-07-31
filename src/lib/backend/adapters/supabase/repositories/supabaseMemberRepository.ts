@@ -22,6 +22,7 @@ const MEMBER_LIST_COLUMNS = [
   "unit",
   "sector",
   "occupation",
+  "occupation_status",
   "family_count",
   "status",
   "monthly_tier",
@@ -108,6 +109,8 @@ export class SupabaseMemberRepository implements MemberRepository {
     if (filters.bloodGroup) query = query.eq("blood_group", filters.bloodGroup);
     if (filters.area) query = query.eq("area", filters.area);
     if (filters.monthlyTier) query = query.eq("monthly_tier", filters.monthlyTier);
+    if (filters.occupationStatus === "not_specified") query = query.is("occupation_status", null);
+    else if (filters.occupationStatus) query = query.eq("occupation_status", filters.occupationStatus);
     if (filters.isBloodDonor !== undefined) query = query.eq("is_blood_donor", filters.isBloodDonor);
     if (filters.donorAvailable !== undefined) query = query.eq("donor_available", filters.donorAvailable);
     if (filters.paymentStatus === "clear") query = query.lte("dues_pending", 0);

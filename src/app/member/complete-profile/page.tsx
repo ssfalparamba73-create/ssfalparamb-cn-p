@@ -20,12 +20,13 @@ interface CompletionFormState {
   bloodGroup: string;
   address: string;
   occupation: string;
+  occupationStatus: string;
 }
 
 export default function CompleteProfilePage() {
   const router = useRouter();
   const [profile, setProfile] = useState<MemberProfileDTO | null>(null);
-  const [form, setForm] = useState<CompletionFormState>({ whatsapp: "", age: "", bloodGroup: "", address: "", occupation: "" });
+  const [form, setForm] = useState<CompletionFormState>({ whatsapp: "", age: "", bloodGroup: "", address: "", occupation: "", occupationStatus: "" });
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -42,6 +43,7 @@ export default function CompleteProfilePage() {
           bloodGroup: result.bloodGroup || "",
           address: result.address || "",
           occupation: result.occupation || "",
+          occupationStatus: result.occupationStatus || "",
         });
       })
       .catch((requestError) => {
@@ -63,7 +65,7 @@ export default function CompleteProfilePage() {
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     const age = Number(form.age);
-    if (!form.whatsapp.trim() || !Number.isInteger(age) || age < 0 || age > 130 || !form.bloodGroup || !form.address.trim() || !form.occupation.trim()) {
+    if (!form.whatsapp.trim() || !Number.isInteger(age) || age < 0 || age > 130 || !form.bloodGroup || !form.address.trim() || !form.occupation.trim() || !form.occupationStatus) {
       setError("Please complete every required field with valid information.");
       return;
     }
@@ -76,6 +78,7 @@ export default function CompleteProfilePage() {
         bloodGroup: form.bloodGroup,
         address: form.address,
         occupation: form.occupation,
+        occupationStatus: form.occupationStatus as "student" | "employed" | "self_employed" | "not_employed" | "other",
       });
       toast.success("Profile completed successfully.");
       window.location.replace("/member/dashboard");
@@ -127,10 +130,21 @@ export default function CompleteProfilePage() {
           <FormField label="WhatsApp Number" required>
             <input type="tel" inputMode="tel" value={form.whatsapp} onChange={(event) => updateField("whatsapp", event.target.value)} className={INPUT_CLASS} required />
           </FormField>
-          <FormField label="Occupation" required>
-            <input type="text" maxLength={120} value={form.occupation} onChange={(event) => updateField("occupation", event.target.value)} className={INPUT_CLASS} required />
+          <FormField label="Employment / Study Status" required>
+            <Select value={form.occupationStatus} onValueChange={(value) => updateField("occupationStatus", value)}>
+              <SelectTrigger className="h-11 w-full rounded-xl border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900"><SelectValue placeholder="Select status" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="student">Student</SelectItem>
+                <SelectItem value="employed">Employed</SelectItem>
+                <SelectItem value="self_employed">Self-employed</SelectItem>
+                <SelectItem value="not_employed">Not employed</SelectItem>
+                <SelectItem value="other">Other</SelectItem>
+              </SelectContent>
+            </Select>
           </FormField>
-          <div className="md:col-span-2">
+          <FormField label="Occupation / Course" required>
+            <input type="text" maxLength={120} value={form.occupation} onChange={(event) => updateField("occupation", event.target.value)} className={INPUT_CLASS} required />
+          </FormField>          <div className="md:col-span-2">
             <FormField label="Address / House Name" required>
               <textarea rows={4} maxLength={500} value={form.address} onChange={(event) => updateField("address", event.target.value)} className={`${INPUT_CLASS} resize-none`} required />
             </FormField>

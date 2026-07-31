@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/lib/admin/AuthContext";
 import { canAccessAdminPath } from "@/lib/admin/accessControl";
+import { prefetchAdminRouteData } from "@/lib/client/adminPrefetch";
 
 const navItems = [
   { name: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
@@ -113,6 +114,8 @@ export function AdminSidebar({ isCollapsed, onToggle }: AdminSidebarProps) {
               href={item.href}
               title={item.name}
               aria-label={item.name}
+              onMouseEnter={() => prefetchAdminRouteData(item.href, currentUser?.permissions ?? [])}
+              onFocus={() => prefetchAdminRouteData(item.href, currentUser?.permissions ?? [])}
               className={cn(
                 "group flex items-center text-sm transition-colors",
                 isCollapsed

@@ -1,5 +1,6 @@
 import type { BackendError } from "@/lib/backend/errors/BackendError";
 import type { BackendResult } from "@/lib/backend/contracts/common.contract";
+import { clearProtectedQueryCache } from "@/lib/client/queryCache";
 
 export class BackendApiError extends Error {
   readonly code: string;
@@ -31,6 +32,9 @@ export async function requestBackend<T>(
 
   const result = (await response.json()) as BackendResult<T>;
   if (!response.ok || !result.ok || result.data === null) {
+    if (response.status === 401 || response.status === 403) {
+      clearProtectedQueryCache();
+    }
     if (result.error) throw new BackendApiError(result.error, response.status);
     throw new Error("The server returned an invalid response.");
   }
@@ -50,6 +54,9 @@ export async function requestBackendVoid(
 
   const result = (await response.json()) as BackendResult<unknown>;
   if (!response.ok || !result.ok) {
+    if (response.status === 401 || response.status === 403) {
+      clearProtectedQueryCache();
+    }
     if (result.error) throw new BackendApiError(result.error, response.status);
     throw new Error("The server returned an invalid response.");
   }

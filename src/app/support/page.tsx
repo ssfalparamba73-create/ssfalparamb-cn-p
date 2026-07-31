@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Phone, MessageSquare, ArrowLeft, Mail, Clock } from "lucide-react"
+import { Phone, MessageSquare, ArrowLeft, Mail } from "lucide-react"
 import Link from "next/link"
 import type { SupportContactDTO } from "@/lib/backend/dto/support.dto"
 import { getSupportContacts } from "@/lib/api/supportClient"
@@ -68,7 +68,7 @@ export default function SupportPage() {
                 </div>
                 <div className="flex-1">
                   <h3 className="font-semibold text-sm">WhatsApp Support</h3>
-                  <p className="text-xs text-muted-foreground">Fastest response time (24/7)</p>
+                  <p className="text-xs text-muted-foreground">Message an active committee contact</p>
                 </div>
               </div>
             </a>}
@@ -97,9 +97,7 @@ export default function SupportPage() {
               </div>
             </a>}
 
-            <div className="pt-4 border-t flex items-center justify-center text-xs text-muted-foreground gap-1.5">
-              <Clock className="size-4" /> Standard response time: 2-4 hours
-            </div>
+
 
           </CardContent>
         </Card>

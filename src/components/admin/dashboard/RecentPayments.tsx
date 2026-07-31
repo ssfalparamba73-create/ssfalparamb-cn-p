@@ -19,15 +19,15 @@ export function RecentPayments({ payments }: RecentPaymentsProps) {
   };
 
   return (
-    <Card className="shadow-sm border-slate-200 dark:border-slate-700">
-      <CardHeader>
-        <CardTitle className="text-lg font-semibold text-slate-900 dark:text-slate-50">Recent Payments</CardTitle>
+    <Card className="h-full border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+      <CardHeader className="p-4 pb-3">
+        <CardTitle className="text-base font-semibold text-slate-900 dark:text-slate-50">Recent Payments</CardTitle>
       </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
+      <CardContent className="p-4 pt-0">
+        <div className="space-y-3">
           {payments.slice(0, 5).map((payment) => (
-            <div key={payment.id} className="flex items-center justify-between p-4 rounded-xl border border-slate-100 bg-slate-50/50 hover:bg-slate-50 transition-colors dark:border-slate-700 dark:bg-slate-800/40 dark:hover:bg-slate-700/40">
-              <div className="flex items-center gap-4">
+            <div key={payment.id} className="flex items-center justify-between rounded-lg border border-slate-100 bg-slate-50/50 p-3 transition-colors hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-800/40 dark:hover:bg-slate-800">
+              <div className="flex items-center gap-3">
                 <div className="hidden sm:flex h-10 w-10 items-center justify-center rounded-full bg-white border border-slate-200 shadow-sm text-slate-600 font-medium dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:shadow-none">
                   {payment.payerName?.charAt(0) || "?"}
                 </div>

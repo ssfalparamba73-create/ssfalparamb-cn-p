@@ -4,6 +4,7 @@ import { createPortal } from "react-dom";
 import { CheckCircle2, Copy, MessageCircle, X } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { toWhatsAppNumber } from "@/lib/whatsapp";
 
 interface MemberInvitationDialogProps {
   memberName: string;
@@ -24,7 +25,7 @@ export function MemberInvitationDialog({
   description,
   onClose,
 }: MemberInvitationDialogProps) {
-  const whatsappNumber = phone.replace(/\D/g, "");
+  const whatsappNumber = toWhatsAppNumber(phone);
 
   if (typeof document === "undefined") return null;
 

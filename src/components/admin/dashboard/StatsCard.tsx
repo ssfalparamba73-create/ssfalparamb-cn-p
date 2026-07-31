@@ -42,25 +42,25 @@ export function StatsCard({
 
   const cardContent = (
     <Card className={cn(
-      "shadow-sm border-slate-200 overflow-hidden dark:border-slate-700 h-full",
-      isClickable && "hover:shadow-md hover:-translate-y-1 hover:border-slate-300 dark:hover:border-slate-600 transition-all duration-200 cursor-pointer"
+      "h-full overflow-hidden border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900",
+      isClickable && "cursor-pointer transition-all duration-200 hover:-translate-y-px hover:border-slate-300 hover:shadow-md dark:hover:border-slate-700"
     )}>
-      <CardContent className="p-6">
+      <CardContent className="p-4">
         <div className="flex items-start justify-between">
-          <div className="space-y-2">
+          <div className="min-w-0 space-y-1.5">
             <p className="text-sm font-medium text-slate-500 dark:text-slate-400">{label}</p>
             <div className="flex items-baseline gap-2">
-              <h3 className={cn("text-3xl font-bold font-mono tracking-tight", variantStyles[variant])}>
+              <h3 className={cn("font-mono text-2xl font-bold tabular-nums tracking-tight", variantStyles[variant])}>
                 {metric}
               </h3>
             </div>
             {helper && (
-              <p className="text-sm text-slate-500 mt-1 dark:text-slate-400">{helper}</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400">{helper}</p>
             )}
           </div>
           {Icon && (
-            <div className={cn("p-3 rounded-2xl", iconStyles[variant])}>
-              <Icon className="w-5 h-5" />
+            <div className={cn("ml-3 rounded-lg p-2", iconStyles[variant])}>
+              <Icon className="h-4 w-4" />
             </div>
           )}
         </div>

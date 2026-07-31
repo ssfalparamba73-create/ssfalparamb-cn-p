@@ -12,10 +12,12 @@ import { mapMemberDto } from "@/lib/admin/mapMemberDto";
 import { BackendApiError } from "@/lib/api/backendClient";
 import { getAdminMembers } from "@/lib/api/memberClient";
 import { getUnitSettings } from "@/lib/api/settingsClient";
-import type { BloodGroup, MemberStatus, MonthlyTier } from "@/lib/backend/dto/member.dto";
+import type { BloodGroup, MemberStatus, MonthlyTier, OccupationStatus } from "@/lib/backend/dto/member.dto";
 import { Skeleton } from "@/components/ui/skeleton";
 import Link from "next/link";
 import { TablePagination } from "@/components/ui/table-pagination";
+import { fetchQuery, getQuerySnapshot } from "@/lib/client/queryCache";
+import { readCachedBlockOptions, writeCachedBlockOptions } from "@/lib/client/safePersistentCache";
 
 const PAGE_SIZE = 10;
 
@@ -64,17 +66,24 @@ export default function AdminMembersPage() {
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [bloodGroupFilter, setBloodGroupFilter] = useState("all");
+  const [occupationStatusFilter, setOccupationStatusFilter] = useState("all");
 
   // New Filters
   const [areaFilter, setAreaFilter] = useState("all");
-  const [areaOptions, setAreaOptions] = useState<string[]>([]);
+  const [areaOptions, setAreaOptions] = useState<string[]>(() => readCachedBlockOptions());
   const [tierFilter, setTierFilter] = useState("all");
   const [arrearsFilter, setArrearsFilter] = useState("all");
   const [sortOption, setSortOption] = useState("newest");
 
   useEffect(() => {
     let active = true;
-    getUnitSettings().then((settings) => { if (active) setAreaOptions(settings.areas); }).catch(() => { if (active) setAreaOptions([]); });
+    void fetchQuery("admin:unit-settings", getUnitSettings, { staleTime: 15 * 60_000 })
+      .then((settings) => {
+        if (!active) return;
+        setAreaOptions(settings.areas);
+        writeCachedBlockOptions(settings.areas);
+      })
+      .catch(() => undefined);
     return () => { active = false; };
   }, []);
 
@@ -92,9 +101,8 @@ export default function AdminMembersPage() {
   }, [searchQuery]);
 
   useEffect(() => {
-    const controller = new AbortController();
-
-    getAdminMembers({
+    let active = true;
+    const query = {
       page,
       pageSize: PAGE_SIZE,
       search: debouncedSearch || undefined,
@@ -103,15 +111,32 @@ export default function AdminMembersPage() {
       area: areaFilter === "all" ? undefined : areaFilter,
       monthlyTier: tierFilter === "all" ? undefined : tierFilter as MonthlyTier,
       paymentStatus: arrearsFilter === "all" ? undefined : arrearsFilter as "clear" | "arrears",
+      occupationStatus: occupationStatusFilter === "all" ? undefined : occupationStatusFilter as OccupationStatus | "not_specified",
       sort: sortOption as "newest" | "name-asc" | "name-desc" | "dues-desc",
-    }, 100, undefined, controller.signal)
+    };
+    const queryKey = `admin:members:${JSON.stringify(query)}`;
+    const cached = getQuerySnapshot<Awaited<ReturnType<typeof getAdminMembers>>>(queryKey).data;
+
+    if (cached) {
+      queueMicrotask(() => {
+        if (!active) return;
+        setMembers(cached.items.map(mapMemberDto));
+        setTotal(cached.total ?? 0);
+        setIsLoading(false);
+        setIsRefreshing(true);
+        hasLoadedMembers.current = true;
+      });
+    }
+
+    fetchQuery(queryKey, () => getAdminMembers(query), { staleTime: 30_000 })
       .then((result) => {
+        if (!active) return;
         setMembers(result.items.map(mapMemberDto));
         setTotal(result.total ?? 0);
         hasLoadedMembers.current = true;
       })
       .catch((requestError: unknown) => {
-        if (requestError instanceof DOMException && requestError.name === "AbortError") return;
+        if (!active) return;
         if (requestError instanceof BackendApiError && requestError.status === 401) {
           router.replace("/admin/login");
           return;
@@ -119,16 +144,16 @@ export default function AdminMembersPage() {
         setLoadError(requestError instanceof Error ? requestError.message : "Unable to load members.");
       })
       .finally(() => {
-        if (!controller.signal.aborted) {
+        if (active) {
           setIsLoading(false);
           setIsRefreshing(false);
         }
       });
 
     return () => {
-      controller.abort();
+      active = false;
     };
-  }, [areaFilter, arrearsFilter, bloodGroupFilter, debouncedSearch, page, retryKey, router, sortOption, statusFilter, tierFilter]);
+  }, [areaFilter, arrearsFilter, bloodGroupFilter, debouncedSearch, occupationStatusFilter, page, retryKey, router, sortOption, statusFilter, tierFilter]);
 
   function resetPageAnd(setter: (value: string) => void) {
     return (value: string) => {
@@ -178,6 +203,8 @@ export default function AdminMembersPage() {
           setStatusFilter={resetPageAnd(setStatusFilter)}
           bloodGroupFilter={bloodGroupFilter}
           setBloodGroupFilter={resetPageAnd(setBloodGroupFilter)}
+          occupationStatusFilter={occupationStatusFilter}
+          setOccupationStatusFilter={resetPageAnd(setOccupationStatusFilter)}
           areaFilter={areaFilter}
           areaOptions={areaOptions}
           setAreaFilter={resetPageAnd(setAreaFilter)}
@@ -204,6 +231,7 @@ export default function AdminMembersPage() {
               <tr>
                 <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider sm:pl-6">Member</th>
                 <th scope="col" className="px-3 py-3.5 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Contact</th>
+                <th scope="col" className="px-3 py-3.5 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Work / Study</th>
                 <th scope="col" className="px-3 py-3.5 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Blood</th>
                 <th scope="col" className="px-3 py-3.5 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Dues</th>
                 <th scope="col" className="px-3 py-3.5 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Status</th>
