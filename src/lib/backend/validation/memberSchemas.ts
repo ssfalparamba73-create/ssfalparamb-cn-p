@@ -21,6 +21,7 @@ const monthlyTiers = ["base", "premium", "custom", "flexible"] as const;
 const bloodGroups = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"] as const;
 const paymentStatuses = ["clear", "arrears", "long_overdue"] as const;
 const occupationStatuses = ["student", "employed", "self_employed", "not_employed", "other"] as const;
+const workLocations = ["india", "abroad"] as const;
 const memberSortOptions = ["newest", "name-asc", "name-desc", "dues-desc"] as const;
 const MAX_FAMILY_MEMBERS = 25;
 
@@ -64,9 +65,16 @@ export function validateCreateMemberInput(input: Partial<CreateMemberInput>): Ba
   const familyMembers = validateFamilyMembers(input.familyMembers);
   if (!familyMembers.ok) return fail(familyMembers.error!);
 
-  if (!input.occupationStatus || !includesValue(occupationStatuses, input.occupationStatus)) {
-    return fail(validationError("Employment / study status is required.", "occupationStatus"));
-  }
+  const area = validateRequiredString(input.area, "area", "Block");
+  if (!area.ok) return fail(area.error!);
+  if (area.data!.length > 80) return fail(validationError("Block is too long.", "area"));
+
+  const occupation = validateRequiredString(input.occupation, "occupation", "Occupation");
+  if (!occupation.ok) return fail(occupation.error!);
+  if (occupation.data!.length > 120) return fail(validationError("Occupation is too long.", "occupation"));
+
+  const structuredProfile = validateStructuredProfile(input);
+  if (!structuredProfile.ok) return fail(structuredProfile.error!);
 
   const isBloodDonor = Boolean(input.isBloodDonor);
   return ok({
@@ -76,8 +84,8 @@ export function validateCreateMemberInput(input: Partial<CreateMemberInput>): Ba
     age: age.data ?? undefined,
     address: normalizeOptionalString(input.address),
     area: normalizeOptionalString(input.area),
-    occupation: normalizeOptionalString(input.occupation),
-    occupationStatus: input.occupationStatus,
+    occupation: occupation.data!,
+    ...structuredProfile.data!,
     monthlyTier: tier,
     monthlyAmount: amount.data!,
     status,
@@ -153,11 +161,10 @@ export function validateUpdateMemberInput(input: UpdateMemberInput): BackendResu
   if (hasOwn(input, "address")) output.address = normalizeOptionalString(input.address) ?? "";
   if (hasOwn(input, "area")) output.area = normalizeOptionalString(input.area) ?? "";
   if (hasOwn(input, "occupation")) output.occupation = normalizeOptionalString(input.occupation) ?? "";
-  if (hasOwn(input, "occupationStatus")) {
-    if (!input.occupationStatus || !includesValue(occupationStatuses, input.occupationStatus)) {
-      return fail(validationError("Invalid employment / study status.", "occupationStatus"));
-    }
-    output.occupationStatus = input.occupationStatus;
+  if (hasStructuredProfileFields(input)) {
+    const structuredProfile = validateStructuredProfile(input);
+    if (!structuredProfile.ok) return fail(structuredProfile.error!);
+    Object.assign(output, structuredProfile.data);
   }
   if (hasOwn(input, "isBloodDonor")) {
     if (typeof input.isBloodDonor !== "boolean") {
@@ -218,17 +225,23 @@ export function validateUpdateMemberProfileInput(
     output.address = address;
   }
 
+  if (hasOwn(input, "area")) {
+    const area = normalizeOptionalString(input.area) ?? "";
+    if (!area) return fail(validationError("Block is required.", "area"));
+    if (area.length > 80) return fail(validationError("Block is too long.", "area"));
+    output.area = area;
+  }
+
   if (hasOwn(input, "occupation")) {
     const occupation = normalizeOptionalString(input.occupation) ?? "";
     if (occupation.length > 120) return fail(validationError("Occupation is too long.", "occupation"));
     output.occupation = occupation;
   }
 
-  if (hasOwn(input, "occupationStatus")) {
-    if (!input.occupationStatus || !includesValue(occupationStatuses, input.occupationStatus)) {
-      return fail(validationError("Invalid employment / study status.", "occupationStatus"));
-    }
-    output.occupationStatus = input.occupationStatus;
+  if (hasStructuredProfileFields(input)) {
+    const structuredProfile = validateStructuredProfile(input);
+    if (!structuredProfile.ok) return fail(structuredProfile.error!);
+    Object.assign(output, structuredProfile.data);
   }
 
   if (hasOwn(input, "biometricEnabled")) {
@@ -266,9 +279,12 @@ export function validateCompleteMemberProfileInput(
     return fail(validationError("Address is too long.", "address"));
   }
 
-  if (!input.occupationStatus || !includesValue(occupationStatuses, input.occupationStatus)) {
-    return fail(validationError("Employment / study status is required.", "occupationStatus"));
-  }
+  const area = validateRequiredString(input.area, "area", "Block");
+  if (!area.ok) return fail(area.error!);
+  if (area.data!.length > 80) return fail(validationError("Block is too long.", "area"));
+
+  const structuredProfile = validateStructuredProfile(input);
+  if (!structuredProfile.ok) return fail(structuredProfile.error!);
 
   const occupation = validateRequiredString(input.occupation, "occupation", "Occupation");
   if (!occupation.ok) return fail(occupation.error!);
@@ -281,8 +297,9 @@ export function validateCompleteMemberProfileInput(
     age: age.data,
     bloodGroup: input.bloodGroup,
     address: address.data!,
+    area: area.data!,
     occupation: occupation.data!,
-    occupationStatus: input.occupationStatus,
+    ...structuredProfile.data!,
   });
 }
 
@@ -304,6 +321,10 @@ export function validateMemberListFilters(input: MemberListFilters): BackendResu
     return fail(validationError("Invalid employment / study status filter.", "occupationStatus"));
   }
 
+  if (input.workLocation && input.workLocation !== "not_specified" && !includesValue(workLocations, input.workLocation)) {
+    return fail(validationError("Invalid work location filter.", "workLocation"));
+  }
+
   if (input.paymentStatus && !includesValue(paymentStatuses, input.paymentStatus)) {
     return fail(validationError("Invalid payment status filter.", "paymentStatus"));
   }
@@ -323,6 +344,75 @@ export function validateMemberListFilters(input: MemberListFilters): BackendResu
   return ok(input);
 }
 
+interface StructuredProfileInput {
+  isStudent?: boolean;
+  studentClass?: string;
+  studentCourse?: string;
+  studentInstitution?: string;
+  isMuthaallim?: boolean;
+  muthaallimInstitution?: string;
+  workLocation?: string;
+}
+
+interface StructuredProfileData {
+  isStudent: boolean;
+  studentClass?: string;
+  studentCourse?: string;
+  studentInstitution?: string;
+  isMuthaallim: boolean;
+  muthaallimInstitution?: string;
+  workLocation: "india" | "abroad";
+}
+
+function hasStructuredProfileFields(input: StructuredProfileInput): boolean {
+  return [
+    "isStudent",
+    "studentClass",
+    "studentCourse",
+    "studentInstitution",
+    "isMuthaallim",
+    "muthaallimInstitution",
+    "workLocation",
+  ].some((key) => hasOwn(input, key));
+}
+
+function validateStructuredProfile(input: StructuredProfileInput): BackendResult<StructuredProfileData> {
+  if (typeof input.isStudent !== "boolean") {
+    return fail(validationError("Please select whether you are a student.", "isStudent"));
+  }
+  if (typeof input.isMuthaallim !== "boolean") {
+    return fail(validationError("Please select whether you are a Mutha'allim.", "isMuthaallim"));
+  }
+  if (!input.workLocation || !includesValue(workLocations, input.workLocation)) {
+    return fail(validationError("Please select India or Abroad.", "workLocation"));
+  }
+
+  const studentClass = normalizeOptionalString(input.studentClass);
+  const studentCourse = normalizeOptionalString(input.studentCourse);
+  const studentInstitution = normalizeOptionalString(input.studentInstitution);
+  const muthaallimInstitution = normalizeOptionalString(input.muthaallimInstitution);
+  const textFields = [studentClass, studentCourse, studentInstitution, muthaallimInstitution];
+  if (textFields.some((value) => (value?.length ?? 0) > 160)) {
+    return fail(validationError("Study information is too long.", "studentInstitution"));
+  }
+
+  if (input.isStudent && !studentClass) return fail(validationError("Class is required for students.", "studentClass"));
+  if (input.isStudent && !studentCourse) return fail(validationError("Course is required for students.", "studentCourse"));
+  if (input.isStudent && !studentInstitution) return fail(validationError("Institution is required for students.", "studentInstitution"));
+  if (input.isMuthaallim && !muthaallimInstitution) {
+    return fail(validationError("Institution is required for Mutha'allim members.", "muthaallimInstitution"));
+  }
+
+  return ok({
+    isStudent: input.isStudent,
+    studentClass: input.isStudent ? studentClass : undefined,
+    studentCourse: input.isStudent ? studentCourse : undefined,
+    studentInstitution: input.isStudent ? studentInstitution : undefined,
+    isMuthaallim: input.isMuthaallim,
+    muthaallimInstitution: input.isMuthaallim ? muthaallimInstitution : undefined,
+    workLocation: input.workLocation,
+  });
+}
 function validateFamilyMembers(input: FamilyMemberInput[] | undefined): BackendResult<FamilyMemberInput[] | undefined> {
   if (input === undefined) return ok(undefined);
   if (!Array.isArray(input)) return fail(validationError("Family members must be a list.", "familyMembers"));

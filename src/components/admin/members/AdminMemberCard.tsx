@@ -9,7 +9,6 @@ import { AdminActionIcon } from "@/components/admin/layout/AdminActionIcon";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { MemberInvitationAction } from "./MemberInvitationAction";
-import { formatOccupationStatus } from "@/lib/members/occupationStatus";
 
 interface AdminMemberCardProps {
   member: Member;
@@ -52,7 +51,7 @@ export function AdminMemberCard({ member }: AdminMemberCardProps) {
         </div>
         <div>
           <div className="text-xs text-slate-500 mb-0.5">Work / Study</div>
-          <div className="truncate text-slate-700 dark:text-slate-300">{formatOccupationStatus(member.occupationStatus)}</div>
+          <div className="truncate text-slate-700 dark:text-slate-300">{member.occupation || "Not specified"}</div>
         </div>        <div>
           <div className="text-xs text-slate-500 mb-0.5">Monthly Due</div>
           <div className="text-slate-700 dark:text-slate-300">₹{member.monthlyAmount} <span className="text-xs text-slate-500 capitalize">({member.monthlyTier})</span></div>

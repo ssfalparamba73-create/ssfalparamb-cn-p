@@ -13,6 +13,7 @@ import { BackendApiError } from "@/lib/api/backendClient";
 import { logoutSession } from "@/lib/api/authClient";
 import { getCurrentMemberProfile, updateCurrentMemberProfile } from "@/lib/api/memberClient";
 import { getSupportContacts } from "@/lib/api/supportClient";
+import { getPublicBlockOptions } from "@/lib/api/settingsClient";
 import { CardCollectionSkeleton } from "@/components/ui/loading-skeletons";
 
 function toUiBloodGroup(value?: string): string {
@@ -34,11 +35,18 @@ function mapProfile(profile: MemberProfileDTO): MemberProfileData {
     phone: profile.phone,
     whatsapp: profile.whatsapp ?? "",
     address: profile.address ?? "",
+    block: profile.area ?? "",
     unit: profile.unit ?? "",
     sector: profile.sector ?? "",
     joinedYear: profile.joinedYear ?? "",
     occupation: profile.occupation ?? "",
-    occupationStatus: profile.occupationStatus ?? "",
+    isStudent: profile.isStudent,
+    studentClass: profile.studentClass ?? "",
+    studentCourse: profile.studentCourse ?? "",
+    studentInstitution: profile.studentInstitution ?? "",
+    isMuthaallim: profile.isMuthaallim,
+    muthaallimInstitution: profile.muthaallimInstitution ?? "",
+    workLocation: profile.workLocation ?? "",
   };
 }
 
@@ -50,6 +58,7 @@ export default function ProfilePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [contacts, setContacts] = useState<SupportContactDTO[]>([]);
+  const [blockOptions, setBlockOptions] = useState<string[]>([]);
   const [contactsLoading, setContactsLoading] = useState(true);
   const [contactsError, setContactsError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -77,6 +86,14 @@ export default function ProfilePage() {
         if (active) setIsLoading(false);
       });
 
+    getPublicBlockOptions()
+      .then((result) => {
+        if (active) setBlockOptions(result.blocks);
+      })
+      .catch(() => {
+        if (active) setBlockOptions([]);
+      });
+
     getSupportContacts()
       .then((result) => {
         if (active) setContacts(result);
@@ -102,8 +119,15 @@ export default function ProfilePage() {
         age: updatedMember.age,
         bloodGroup: toDatabaseBloodGroup(updatedMember.bloodGroup),
         address: updatedMember.address,
+        area: updatedMember.block,
         occupation: updatedMember.occupation,
-        occupationStatus: updatedMember.occupationStatus || undefined,
+        isStudent: updatedMember.isStudent,
+        studentClass: updatedMember.isStudent ? updatedMember.studentClass : undefined,
+        studentCourse: updatedMember.isStudent ? updatedMember.studentCourse : undefined,
+        studentInstitution: updatedMember.isStudent ? updatedMember.studentInstitution : undefined,
+        isMuthaallim: updatedMember.isMuthaallim,
+        muthaallimInstitution: updatedMember.isMuthaallim ? updatedMember.muthaallimInstitution : undefined,
+        workLocation: updatedMember.workLocation || undefined,
       });
       setMember(mapProfile(profile));
       setIsBiometricEnabled(profile.biometricEnabled);
@@ -240,6 +264,7 @@ export default function ProfilePage() {
           isOpen
           onClose={() => setIsEditDrawerOpen(false)}
           member={member}
+          blockOptions={blockOptions}
           onSave={handleSaveProfile}
           isSaving={isSaving}
         />

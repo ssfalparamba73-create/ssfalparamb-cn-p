@@ -3,56 +3,93 @@ import {
   validateCompleteMemberProfileInput,
   validateCreateMemberInput,
   validateMemberListFilters,
-  validateUpdateMemberInput,
+  validateUpdateMemberProfileInput,
 } from "@/lib/backend/validation/memberSchemas";
 
 const validMember = {
   name: "Test Member",
   phone: "9876543210",
+  area: "ALPARAMBA",
+  occupation: "Teacher",
+  isStudent: false,
+  isMuthaallim: false,
+  workLocation: "india" as const,
   monthlyTier: "flexible" as const,
   monthlyAmount: 50,
 };
 
-describe("member occupation status validation", () => {
-  it("requires occupation status when a member is created", () => {
+const validCompletion = {
+  whatsapp: "9876543210",
+  age: 24,
+  bloodGroup: "O+",
+  address: "Alparamba",
+  area: "ALPARAMBA",
+  occupation: "Teacher",
+  isStudent: false,
+  isMuthaallim: false,
+  workLocation: "india" as const,
+};
+
+describe("member study and employment validation", () => {
+  it("accepts a non-student member with occupation and work location", () => {
     const result = validateCreateMemberInput(validMember);
 
-    expect(result.ok).toBe(false);
-    expect(result.error?.field).toBe("occupationStatus");
+    expect(result.ok).toBe(true);
+    expect(result.data?.isStudent).toBe(false);
+    expect(result.data?.workLocation).toBe("india");
   });
 
-  it("accepts a supported occupation status", () => {
+  it("requires class, course, and institution when student is true", () => {
+    const result = validateCreateMemberInput({ ...validMember, isStudent: true });
+
+    expect(result.ok).toBe(false);
+    expect(result.error?.field).toBe("studentClass");
+  });
+
+  it("accepts complete student details", () => {
     const result = validateCreateMemberInput({
       ...validMember,
-      occupationStatus: "student",
+      isStudent: true,
+      studentClass: "Degree",
+      studentCourse: "B.Com",
+      studentInstitution: "Example College",
     });
 
     expect(result.ok).toBe(true);
-    expect(result.data?.occupationStatus).toBe("student");
+    expect(result.data?.studentCourse).toBe("B.Com");
   });
 
-  it("rejects invalid update and filter values", () => {
-    const update = validateUpdateMemberInput({
-      occupationStatus: "retired",
-    } as never);
-    const filter = validateMemberListFilters({
-      occupationStatus: "retired",
-    } as never);
+  it("requires institution when Mutha'allim is true", () => {
+    const result = validateCreateMemberInput({ ...validMember, isMuthaallim: true });
 
-    expect(update.ok).toBe(false);
-    expect(filter.ok).toBe(false);
+    expect(result.ok).toBe(false);
+    expect(result.error?.field).toBe("muthaallimInstitution");
   });
 
-  it("requires occupation status during first-login profile completion", () => {
+  it("requires India or Abroad during profile completion", () => {
     const result = validateCompleteMemberProfileInput({
-      whatsapp: "9876543210",
-      age: 24,
-      bloodGroup: "O+",
-      address: "Alparamba",
-      occupation: "Student",
+      ...validCompletion,
+      workLocation: undefined,
     } as never);
 
     expect(result.ok).toBe(false);
-    expect(result.error?.field).toBe("occupationStatus");
+    expect(result.error?.field).toBe("workLocation");
+  });
+
+  it("rejects invalid work location filters", () => {
+    const result = validateMemberListFilters({ workLocation: "remote" } as never);
+
+    expect(result.ok).toBe(false);
+    expect(result.error?.field).toBe("workLocation");
+  });
+
+  it("validates Block updates from member profile", () => {
+    const missing = validateUpdateMemberProfileInput({ area: "" });
+    const valid = validateUpdateMemberProfileInput({ area: "ALPARAMBA" });
+
+    expect(missing.ok).toBe(false);
+    expect(missing.error?.field).toBe("area");
+    expect(valid.ok).toBe(true);
+    expect(valid.data?.area).toBe("ALPARAMBA");
   });
 });

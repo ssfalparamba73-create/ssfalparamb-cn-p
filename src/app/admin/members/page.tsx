@@ -12,7 +12,7 @@ import { mapMemberDto } from "@/lib/admin/mapMemberDto";
 import { BackendApiError } from "@/lib/api/backendClient";
 import { getAdminMembers } from "@/lib/api/memberClient";
 import { getUnitSettings } from "@/lib/api/settingsClient";
-import type { BloodGroup, MemberStatus, MonthlyTier, OccupationStatus } from "@/lib/backend/dto/member.dto";
+import type { BloodGroup, MemberStatus, MonthlyTier } from "@/lib/backend/dto/member.dto";
 import { Skeleton } from "@/components/ui/skeleton";
 import Link from "next/link";
 import { TablePagination } from "@/components/ui/table-pagination";
@@ -66,7 +66,7 @@ export default function AdminMembersPage() {
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [bloodGroupFilter, setBloodGroupFilter] = useState("all");
-  const [occupationStatusFilter, setOccupationStatusFilter] = useState("all");
+  const [workLocationFilter, setWorkLocationFilter] = useState("all");
 
   // New Filters
   const [areaFilter, setAreaFilter] = useState("all");
@@ -111,7 +111,7 @@ export default function AdminMembersPage() {
       area: areaFilter === "all" ? undefined : areaFilter,
       monthlyTier: tierFilter === "all" ? undefined : tierFilter as MonthlyTier,
       paymentStatus: arrearsFilter === "all" ? undefined : arrearsFilter as "clear" | "arrears",
-      occupationStatus: occupationStatusFilter === "all" ? undefined : occupationStatusFilter as OccupationStatus | "not_specified",
+      workLocation: workLocationFilter === "all" ? undefined : workLocationFilter as "india" | "abroad" | "not_specified",
       sort: sortOption as "newest" | "name-asc" | "name-desc" | "dues-desc",
     };
     const queryKey = `admin:members:${JSON.stringify(query)}`;
@@ -153,7 +153,7 @@ export default function AdminMembersPage() {
     return () => {
       active = false;
     };
-  }, [areaFilter, arrearsFilter, bloodGroupFilter, debouncedSearch, occupationStatusFilter, page, retryKey, router, sortOption, statusFilter, tierFilter]);
+  }, [areaFilter, arrearsFilter, bloodGroupFilter, debouncedSearch, workLocationFilter, page, retryKey, router, sortOption, statusFilter, tierFilter]);
 
   function resetPageAnd(setter: (value: string) => void) {
     return (value: string) => {
@@ -203,8 +203,8 @@ export default function AdminMembersPage() {
           setStatusFilter={resetPageAnd(setStatusFilter)}
           bloodGroupFilter={bloodGroupFilter}
           setBloodGroupFilter={resetPageAnd(setBloodGroupFilter)}
-          occupationStatusFilter={occupationStatusFilter}
-          setOccupationStatusFilter={resetPageAnd(setOccupationStatusFilter)}
+          workLocationFilter={workLocationFilter}
+          setWorkLocationFilter={resetPageAnd(setWorkLocationFilter)}
           areaFilter={areaFilter}
           areaOptions={areaOptions}
           setAreaFilter={resetPageAnd(setAreaFilter)}

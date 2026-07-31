@@ -1,3 +1,7 @@
+export interface BlockOptionsDTO {
+  blocks: string[];
+}
+
 export interface UnitSettingsDTO {
   unitName: string;
   branchSector: string;

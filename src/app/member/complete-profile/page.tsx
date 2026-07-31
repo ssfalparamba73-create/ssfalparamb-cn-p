@@ -10,40 +10,54 @@ import { logoutSession } from "@/lib/api/authClient";
 import { completeCurrentMemberProfile, getCurrentMemberProfile } from "@/lib/api/memberClient";
 import type { MemberProfileDTO } from "@/lib/backend/dto/member.dto";
 import { FormPageSkeleton } from "@/components/ui/loading-skeletons";
+import { getPublicBlockOptions } from "@/lib/api/settingsClient";
+import { StudyEmploymentFields, type StudyEmploymentValue } from "@/components/profile/StudyEmploymentFields";
 
 const BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"] as const;
 const INPUT_CLASS = "min-h-11 w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 outline-none transition-colors focus:border-blue-500 focus:ring-2 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-50 dark:focus:ring-blue-500/20";
 
-interface CompletionFormState {
+interface CompletionFormState extends StudyEmploymentValue {
   whatsapp: string;
   age: string;
   bloodGroup: string;
   address: string;
-  occupation: string;
-  occupationStatus: string;
+  block: string;
 }
 
 export default function CompleteProfilePage() {
   const router = useRouter();
   const [profile, setProfile] = useState<MemberProfileDTO | null>(null);
-  const [form, setForm] = useState<CompletionFormState>({ whatsapp: "", age: "", bloodGroup: "", address: "", occupation: "", occupationStatus: "" });
+  const [form, setForm] = useState<CompletionFormState>({
+    whatsapp: "", age: "", bloodGroup: "", address: "", block: "",
+    isStudent: null, studentClass: "", studentCourse: "", studentInstitution: "",
+    isMuthaallim: null, muthaallimInstitution: "", occupation: "", workLocation: "",
+  });
+  const [blockOptions, setBlockOptions] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
-    getCurrentMemberProfile()
-      .then((result) => {
+    Promise.all([getCurrentMemberProfile(), getPublicBlockOptions()])
+      .then(([result, blockResult]) => {
         if (!active) return;
         setProfile(result);
+        setBlockOptions(result.area && !blockResult.blocks.includes(result.area) ? [result.area, ...blockResult.blocks] : blockResult.blocks);
         setForm({
           whatsapp: result.whatsapp || result.phone,
           age: result.age == null ? "" : String(result.age),
           bloodGroup: result.bloodGroup || "",
           address: result.address || "",
+          block: result.area || "",
+          isStudent: result.isStudent,
+          studentClass: result.studentClass || "",
+          studentCourse: result.studentCourse || "",
+          studentInstitution: result.studentInstitution || "",
+          isMuthaallim: result.isMuthaallim,
+          muthaallimInstitution: result.muthaallimInstitution || "",
           occupation: result.occupation || "",
-          occupationStatus: result.occupationStatus || "",
+          workLocation: result.workLocation || "",
         });
       })
       .catch((requestError) => {
@@ -57,7 +71,12 @@ export default function CompleteProfilePage() {
     };
   }, []);
 
-  const updateField = (field: keyof CompletionFormState, value: string) => {
+  const updateField = <K extends keyof CompletionFormState>(field: K, value: CompletionFormState[K]) => {
+    setForm((current) => ({ ...current, [field]: value }));
+    setError(null);
+  };
+
+  const updateStudyEmploymentField = <K extends keyof StudyEmploymentValue>(field: K, value: StudyEmploymentValue[K]) => {
     setForm((current) => ({ ...current, [field]: value }));
     setError(null);
   };
@@ -65,7 +84,9 @@ export default function CompleteProfilePage() {
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     const age = Number(form.age);
-    if (!form.whatsapp.trim() || !Number.isInteger(age) || age < 0 || age > 130 || !form.bloodGroup || !form.address.trim() || !form.occupation.trim() || !form.occupationStatus) {
+    if (!form.whatsapp.trim() || !Number.isInteger(age) || age < 0 || age > 130 || !form.bloodGroup || !form.address.trim() || !form.block || !form.occupation.trim() || form.isStudent === null || form.isMuthaallim === null || !form.workLocation ||
+      (form.isStudent && (!form.studentClass.trim() || !form.studentCourse.trim() || !form.studentInstitution.trim())) ||
+      (form.isMuthaallim && !form.muthaallimInstitution.trim())) {
       setError("Please complete every required field with valid information.");
       return;
     }
@@ -77,8 +98,15 @@ export default function CompleteProfilePage() {
         age,
         bloodGroup: form.bloodGroup,
         address: form.address,
+        area: form.block,
         occupation: form.occupation,
-        occupationStatus: form.occupationStatus as "student" | "employed" | "self_employed" | "not_employed" | "other",
+        isStudent: form.isStudent,
+        studentClass: form.isStudent ? form.studentClass : undefined,
+        studentCourse: form.isStudent ? form.studentCourse : undefined,
+        studentInstitution: form.isStudent ? form.studentInstitution : undefined,
+        isMuthaallim: form.isMuthaallim,
+        muthaallimInstitution: form.isMuthaallim ? form.muthaallimInstitution : undefined,
+        workLocation: form.workLocation,
       });
       toast.success("Profile completed successfully.");
       window.location.replace("/member/dashboard");
@@ -130,21 +158,14 @@ export default function CompleteProfilePage() {
           <FormField label="WhatsApp Number" required>
             <input type="tel" inputMode="tel" value={form.whatsapp} onChange={(event) => updateField("whatsapp", event.target.value)} className={INPUT_CLASS} required />
           </FormField>
-          <FormField label="Employment / Study Status" required>
-            <Select value={form.occupationStatus} onValueChange={(value) => updateField("occupationStatus", value)}>
-              <SelectTrigger className="h-11 w-full rounded-xl border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900"><SelectValue placeholder="Select status" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="student">Student</SelectItem>
-                <SelectItem value="employed">Employed</SelectItem>
-                <SelectItem value="self_employed">Self-employed</SelectItem>
-                <SelectItem value="not_employed">Not employed</SelectItem>
-                <SelectItem value="other">Other</SelectItem>
-              </SelectContent>
+          <FormField label="Block" required>
+            <Select value={form.block} onValueChange={(value) => updateField("block", value)}>
+              <SelectTrigger className="h-11 w-full rounded-xl border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900"><SelectValue placeholder="Select Block" /></SelectTrigger>
+              <SelectContent>{blockOptions.map((block) => <SelectItem key={block} value={block}>{block}</SelectItem>)}</SelectContent>
             </Select>
           </FormField>
-          <FormField label="Occupation / Course" required>
-            <input type="text" maxLength={120} value={form.occupation} onChange={(event) => updateField("occupation", event.target.value)} className={INPUT_CLASS} required />
-          </FormField>          <div className="md:col-span-2">
+          <StudyEmploymentFields value={form} onChange={updateStudyEmploymentField} />
+          <div className="md:col-span-2">
             <FormField label="Address / House Name" required>
               <textarea rows={4} maxLength={500} value={form.address} onChange={(event) => updateField("address", event.target.value)} className={`${INPUT_CLASS} resize-none`} required />
             </FormField>

@@ -5,6 +5,7 @@ export type BloodGroup = "A+" | "A-" | "B+" | "B-" | "AB+" | "AB-" | "O+" | "O-"
 export type MonthlyTier = "base" | "premium" | "custom" | "flexible";
 export type PinStatus = "not_issued" | "issued" | "reset_required";
 export type OccupationStatus = "student" | "employed" | "self_employed" | "not_employed" | "other";
+export type WorkLocation = "india" | "abroad";
 
 export interface FamilyMemberDTO {
   id: ID;
@@ -32,6 +33,14 @@ export interface MemberDTO {
   unit?: string;
   sector?: string;
   occupation?: string;
+  isStudent: boolean;
+  studentClass?: string;
+  studentCourse?: string;
+  studentInstitution?: string;
+  isMuthaallim: boolean;
+  muthaallimInstitution?: string;
+  workLocation?: WorkLocation;
+  /** @deprecated Retained temporarily for backward-compatible database reads. */
   occupationStatus?: OccupationStatus;
   familyCount?: number;
   status: MemberStatus;
@@ -68,10 +77,19 @@ export interface MemberProfileDTO {
   age?: number;
   bloodGroup?: string;
   address?: string;
+  area?: string;
   unit?: string;
   sector?: string;
   joinedYear?: string;
   occupation?: string;
+  isStudent: boolean;
+  studentClass?: string;
+  studentCourse?: string;
+  studentInstitution?: string;
+  isMuthaallim: boolean;
+  muthaallimInstitution?: string;
+  workLocation?: WorkLocation;
+  /** @deprecated Retained temporarily for backward-compatible database reads. */
   occupationStatus?: OccupationStatus;
   biometricEnabled: boolean;
   profileComplete: boolean;
@@ -124,5 +142,6 @@ export interface MemberListFilters {
   isBloodDonor?: boolean;
   donorAvailable?: boolean;
   occupationStatus?: OccupationStatus | "not_specified";
+  workLocation?: WorkLocation | "not_specified";
   sort?: "newest" | "name-asc" | "name-desc" | "dues-desc";
 }

@@ -4,7 +4,7 @@ import type {
   UnitSettingsService,
   UpdateUnitSettingsInput,
 } from "../contracts/unitSettings.contract";
-import type { UnitSettingsDTO } from "../dto/unitSettings.dto";
+import type { BlockOptionsDTO, UnitSettingsDTO } from "../dto/unitSettings.dto";
 import { authError } from "../errors/createBackendError";
 import { fail, fromThrowable, ok } from "../errors/resultHelpers";
 import { validateUpdateUnitSettingsInput } from "../validation/unitSettingsSchemas";
@@ -21,6 +21,14 @@ export function createUnitSettingsService(deps: {
   }
 
   return {
+    async getPublicBlockOptions(): Promise<BackendResult<BlockOptionsDTO>> {
+      try {
+        return ok(await deps.repository.getBlockOptions());
+      } catch (error) {
+        return fail(fromThrowable(error));
+      }
+    },
+
     async getUnitSettings(actor: ActorContext): Promise<BackendResult<UnitSettingsDTO>> {
       try {
         const access = await checkAccess(actor, "settings.view");

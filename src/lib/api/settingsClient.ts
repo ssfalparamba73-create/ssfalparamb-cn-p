@@ -3,7 +3,7 @@ import type {
   UpdateMemberInvitationTemplateInput,
 } from "@/lib/backend/dto/settings.dto";
 import type { UpdateUnitSettingsInput } from "@/lib/backend/contracts/unitSettings.contract";
-import type { UnitSettingsDTO } from "@/lib/backend/dto/unitSettings.dto";
+import type { BlockOptionsDTO, UnitSettingsDTO } from "@/lib/backend/dto/unitSettings.dto";
 import { requestBackend } from "./backendClient";
 
 const MEMBER_INVITATION_SETTINGS_PATH =
@@ -13,6 +13,10 @@ export function getMemberInvitationTemplate(): Promise<MemberInvitationTemplateD
   return requestBackend<MemberInvitationTemplateDTO>(
     MEMBER_INVITATION_SETTINGS_PATH
   );
+}
+
+export function getPublicBlockOptions(): Promise<BlockOptionsDTO> {
+  return requestBackend<BlockOptionsDTO>("/api/v1/settings/blocks");
 }
 
 export function getUnitSettings(): Promise<UnitSettingsDTO> {

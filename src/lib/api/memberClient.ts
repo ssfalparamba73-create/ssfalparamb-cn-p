@@ -32,6 +32,7 @@ export function getAdminMembers(
   if (query.monthlyTier) params.set("monthlyTier", query.monthlyTier);
   if (query.paymentStatus) params.set("paymentStatus", query.paymentStatus);
   if (query.occupationStatus) params.set("occupationStatus", query.occupationStatus);
+  if (query.workLocation) params.set("workLocation", query.workLocation);
   if (query.isBloodDonor !== undefined) params.set("isBloodDonor", String(query.isBloodDonor));
   if (query.donorAvailable !== undefined) params.set("donorAvailable", String(query.donorAvailable));
   if (query.sort) params.set("sort", query.sort);

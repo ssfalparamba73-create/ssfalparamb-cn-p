@@ -3,7 +3,7 @@ import type {
   UnitSettingsRepository,
   UpdateUnitSettingsInput,
 } from "../../../contracts/unitSettings.contract";
-import type { UnitSettingsDTO } from "../../../dto/unitSettings.dto";
+import type { BlockOptionsDTO, UnitSettingsDTO } from "../../../dto/unitSettings.dto";
 import { createSupabaseBackendClient } from "../client";
 
 const settingKeys = [
@@ -68,6 +68,11 @@ function actorParams(actor: ActorContext) {
 }
 
 export class SupabaseUnitSettingsRepository implements UnitSettingsRepository {
+  async getBlockOptions(): Promise<BlockOptionsDTO> {
+    const settings = await this.getUnitSettings();
+    return { blocks: settings.areas };
+  }
+
   async getUnitSettings(): Promise<UnitSettingsDTO> {
     const supabase = createSupabaseBackendClient();
     const { data, error } = await supabase

@@ -1,6 +1,4 @@
 import { User, Phone, MapPin, Droplet, Briefcase, Calendar, ShieldCheck, CreditCard, MessageCircle, GraduationCap } from "lucide-react";
-import type { OccupationStatus } from "@/lib/backend/dto/member.dto";
-import { formatOccupationStatus } from "@/lib/members/occupationStatus";
 
 export interface MemberProfileData {
   id: string;
@@ -11,11 +9,18 @@ export interface MemberProfileData {
   phone: string;
   whatsapp: string;
   address: string;
+  block: string;
   unit: string;
   sector: string;
   joinedYear: string;
   occupation: string;
-  occupationStatus: OccupationStatus | "";
+  isStudent: boolean;
+  studentClass: string;
+  studentCourse: string;
+  studentInstitution: string;
+  isMuthaallim: boolean;
+  muthaallimInstitution: string;
+  workLocation: "" | "india" | "abroad";
 }
 
 interface MemberProfileDetailsProps {
@@ -57,8 +62,12 @@ export function MemberProfileDetails({ member }: MemberProfileDetailsProps) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-8 mb-8">
           <DetailItem colorScheme="red" icon={<Droplet className="size-5" />} label="Blood Group" value={member.bloodGroup} />
           <DetailItem colorScheme="purple" icon={<Calendar className="size-5" />} label="Age" value={`${member.age} Years`} />
-          <DetailItem colorScheme="slate" icon={<GraduationCap className="size-5" />} label="Employment / Study Status" value={member.occupationStatus ? formatOccupationStatus(member.occupationStatus) : "Not specified"} />
-          <DetailItem colorScheme="amber" icon={<Briefcase className="size-5" />} label="Occupation / Course" value={member.occupation || "Not specified"} />
+          <DetailItem colorScheme="slate" icon={<GraduationCap className="size-5" />} label="Student" value={member.isStudent ? "Yes" : "No"} />
+          {member.isStudent && <DetailItem colorScheme="slate" icon={<GraduationCap className="size-5" />} label="Student Details" value={[member.studentClass, member.studentCourse, member.studentInstitution].filter(Boolean).join(" · ") || "Not specified"} />}
+          <DetailItem colorScheme="purple" icon={<GraduationCap className="size-5" />} label="Mutha'allim" value={member.isMuthaallim ? "Yes" : "No"} />
+          {member.isMuthaallim && <DetailItem colorScheme="purple" icon={<GraduationCap className="size-5" />} label="Mutha'allim Institution" value={member.muthaallimInstitution || "Not specified"} />}
+          <DetailItem colorScheme="amber" icon={<Briefcase className="size-5" />} label="Occupation" value={member.occupation || "Not specified"} />
+          <DetailItem colorScheme="emerald" icon={<MapPin className="size-5" />} label="Work Location" value={member.workLocation === "abroad" ? "Abroad" : member.workLocation === "india" ? "India" : "Not specified"} />
           <DetailItem colorScheme="emerald" icon={<MapPin className="size-5" />} label="Address" value={member.address} />
         </div>
 
@@ -81,6 +90,7 @@ export function MemberProfileDetails({ member }: MemberProfileDetailsProps) {
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-8">
           <DetailItem colorScheme="indigo" icon={<CreditCard className="size-5" />} label="Membership ID" value={member.id} />
+          <DetailItem colorScheme="teal" icon={<MapPin className="size-5" />} label="Block" value={member.block || "Not specified"} />
           <DetailItem colorScheme="teal" icon={<MapPin className="size-5" />} label="Unit & Sector" value={`${member.unit}, ${member.sector}`} />
           <DetailItem colorScheme="orange" icon={<Calendar className="size-5" />} label="Joined Year" value={member.joinedYear} />
         </div>

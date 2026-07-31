@@ -22,6 +22,13 @@ const MEMBER_LIST_COLUMNS = [
   "unit",
   "sector",
   "occupation",
+  "is_student",
+  "student_class",
+  "student_course",
+  "student_institution",
+  "is_muthaallim",
+  "muthaallim_institution",
+  "work_location",
   "occupation_status",
   "family_count",
   "status",
@@ -111,6 +118,8 @@ export class SupabaseMemberRepository implements MemberRepository {
     if (filters.monthlyTier) query = query.eq("monthly_tier", filters.monthlyTier);
     if (filters.occupationStatus === "not_specified") query = query.is("occupation_status", null);
     else if (filters.occupationStatus) query = query.eq("occupation_status", filters.occupationStatus);
+    if (filters.workLocation === "not_specified") query = query.is("work_location", null);
+    else if (filters.workLocation) query = query.eq("work_location", filters.workLocation);
     if (filters.isBloodDonor !== undefined) query = query.eq("is_blood_donor", filters.isBloodDonor);
     if (filters.donorAvailable !== undefined) query = query.eq("donor_available", filters.donorAvailable);
     if (filters.paymentStatus === "clear") query = query.lte("dues_pending", 0);

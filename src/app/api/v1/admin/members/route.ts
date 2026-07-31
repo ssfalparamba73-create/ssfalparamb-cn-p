@@ -40,6 +40,7 @@ export async function GET(request: NextRequest) {
       monthlyTier: (params.get("monthlyTier") || undefined) as MemberListFilters["monthlyTier"],
       paymentStatus: (params.get("paymentStatus") || undefined) as MemberListFilters["paymentStatus"],
       occupationStatus: (params.get("occupationStatus") || undefined) as MemberListFilters["occupationStatus"],
+      workLocation: (params.get("workLocation") || undefined) as MemberListFilters["workLocation"],
       isBloodDonor: isBloodDonor === null ? undefined : isBloodDonor === "true",
       donorAvailable: donorAvailable === null ? undefined : donorAvailable === "true",
       sort: (params.get("sort") || undefined) as MemberListFilters["sort"],

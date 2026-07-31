@@ -3,7 +3,6 @@
 import React, { useState } from "react";
 import type { Member } from "@/lib/admin/admin-types";
 import { Activity, CreditCard, Droplet, History, Users } from "lucide-react";
-import { formatOccupationStatus } from "@/lib/members/occupationStatus";
 
 interface MemberDetailTabsProps {
   member: Member;
@@ -47,8 +46,12 @@ export function MemberDetailTabs({ member }: MemberDetailTabsProps) {
             <h3 className="text-lg font-medium text-slate-900 dark:text-slate-100">Membership Summary</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
               <SummaryCard label="Block" value={member.area || "Not specified"} />
-              <SummaryCard label="Employment / Study Status" value={formatOccupationStatus(member.occupationStatus)} />
-              <SummaryCard label="Occupation / Course" value={member.occupation || "Not specified"} />
+              <SummaryCard label="Student" value={member.isStudent ? "Yes" : "No"} />
+              {member.isStudent && <SummaryCard label="Student Details" value={[member.studentClass, member.studentCourse, member.studentInstitution].filter(Boolean).join(" · ") || "Not specified"} />}
+              <SummaryCard label="Mutha'allim" value={member.isMuthaallim ? "Yes" : "No"} />
+              {member.isMuthaallim && <SummaryCard label="Mutha'allim Institution" value={member.muthaallimInstitution || "Not specified"} />}
+              <SummaryCard label="Occupation" value={member.occupation || "Not specified"} />
+              <SummaryCard label="Work Location" value={member.workLocation === "abroad" ? "Abroad" : member.workLocation === "india" ? "India" : "Not specified"} />
               <SummaryCard label="Joined Date" value={formatDate(member.createdAt)} />
               <SummaryCard label="Last Paid" value={member.lastPaidAt ? formatDate(member.lastPaidAt) : "Never"} />
             </div>

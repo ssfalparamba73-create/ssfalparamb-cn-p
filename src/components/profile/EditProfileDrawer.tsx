@@ -2,19 +2,24 @@ import { useState } from "react";
 import { X, Save, AlertCircle } from "lucide-react";
 import { MemberProfileData } from "./MemberProfileDetails";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { StudyEmploymentFields, type StudyEmploymentValue } from "./StudyEmploymentFields";
 
 interface EditProfileDrawerProps {
   isOpen: boolean;
   onClose: () => void;
   member: MemberProfileData;
+  blockOptions: string[];
   onSave: (updatedMember: MemberProfileData) => Promise<void>;
   isSaving?: boolean;
 }
 
-export function EditProfileDrawer({ isOpen, onClose, member, onSave, isSaving = false }: EditProfileDrawerProps) {
+export function EditProfileDrawer({ isOpen, onClose, member, blockOptions, onSave, isSaving = false }: EditProfileDrawerProps) {
   const [formData, setFormData] = useState<MemberProfileData>(member);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const availableBlocks = formData.block && !blockOptions.includes(formData.block)
+    ? [formData.block, ...blockOptions]
+    : blockOptions;
 
   if (!isOpen) return null;
 
@@ -43,6 +48,16 @@ export function EditProfileDrawer({ isOpen, onClose, member, onSave, isSaving = 
     }
   };
 
+  const handleStudyEmploymentChange = <K extends keyof StudyEmploymentValue>(name: K, value: StudyEmploymentValue[K]) => {
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    if (errors[name]) {
+      setErrors((prev) => {
+        const next = { ...prev };
+        delete next[name];
+        return next;
+      });
+    }
+  };
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
@@ -57,7 +72,13 @@ export function EditProfileDrawer({ isOpen, onClose, member, onSave, isSaving = 
       newErrors.age = "Valid age is required";
     }
 
-    if (!formData.occupationStatus) newErrors.occupationStatus = "Employment / study status is required";
+    if (!formData.block) newErrors.block = "Block is required";
+    if (!formData.occupation.trim()) newErrors.occupation = "Occupation is required";
+    if (!formData.workLocation) newErrors.workLocation = "Select India or Abroad";
+    if (formData.isStudent && !formData.studentClass.trim()) newErrors.studentClass = "Class is required";
+    if (formData.isStudent && !formData.studentCourse.trim()) newErrors.studentCourse = "Course is required";
+    if (formData.isStudent && !formData.studentInstitution.trim()) newErrors.studentInstitution = "Institution is required";
+    if (formData.isMuthaallim && !formData.muthaallimInstitution.trim()) newErrors.muthaallimInstitution = "Institution is required";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -177,35 +198,22 @@ export function EditProfileDrawer({ isOpen, onClose, member, onSave, isSaving = 
                 {errors.whatsapp && <p className="text-xs text-red-500 flex items-center gap-1"><AlertCircle className="size-3" /> {errors.whatsapp}</p>}
               </div>
 
-              {/* Employment / study status */}
+              {/* Block */}
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-slate-900 dark:text-slate-100">Employment / Study Status</label>
-                <Select value={formData.occupationStatus} onValueChange={(value) => handleSelectChange("occupationStatus", value)}>
-                  <SelectTrigger className={errors.occupationStatus ? "w-full border-red-300 bg-white dark:border-red-500/60 dark:bg-slate-900" : "w-full border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900"}>
-                    <SelectValue placeholder="Select status" />
+                <label className="text-sm font-semibold text-slate-900 dark:text-slate-100">Block</label>
+                <Select value={formData.block} onValueChange={(value) => handleSelectChange("block", value)}>
+                  <SelectTrigger className={errors.block ? "w-full border-red-300 bg-white dark:border-red-500/60 dark:bg-slate-900" : "w-full border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900"}>
+                    <SelectValue placeholder="Select Block" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="student">Student</SelectItem>
-                    <SelectItem value="employed">Employed</SelectItem>
-                    <SelectItem value="self_employed">Self-employed</SelectItem>
-                    <SelectItem value="not_employed">Not employed</SelectItem>
-                    <SelectItem value="other">Other</SelectItem>
+                    {availableBlocks.map((block) => <SelectItem key={block} value={block}>{block}</SelectItem>)}
                   </SelectContent>
                 </Select>
-                {errors.occupationStatus && <p className="text-xs text-red-500 flex items-center gap-1"><AlertCircle className="size-3" /> {errors.occupationStatus}</p>}
+                {errors.block && <p className="text-xs text-red-500 flex items-center gap-1"><AlertCircle className="size-3" /> {errors.block}</p>}
               </div>
 
-              {/* Occupation */}
-              <div className="space-y-1.5">
-                <label className="text-sm font-semibold text-slate-900 dark:text-slate-100">Occupation / Course</label>
-                <input
-                  type="text"
-                  name="occupation"
-                  value={formData.occupation}
-                  onChange={handleChange}
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-white focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-50 dark:focus:ring-blue-500/20"
-                />
-              </div>
+              <StudyEmploymentFields value={formData} onChange={handleStudyEmploymentChange} errors={errors} />
+
               {/* Address */}
               <div className="col-span-1 md:col-span-2 space-y-1.5">
                 <label className="text-sm font-semibold text-slate-900 dark:text-slate-100">Address / House Name</label>

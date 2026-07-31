@@ -16,8 +16,8 @@ interface AdminMemberFiltersProps {
   setStatusFilter: (val: string) => void;
   bloodGroupFilter: string;
   setBloodGroupFilter: (val: string) => void;
-  occupationStatusFilter: string;
-  setOccupationStatusFilter: (val: string) => void;
+  workLocationFilter: string;
+  setWorkLocationFilter: (val: string) => void;
   areaFilter: string;
   areaOptions: string[];
   setAreaFilter: (val: string) => void;
@@ -36,8 +36,8 @@ export function AdminMemberFilters({
   setStatusFilter,
   bloodGroupFilter,
   setBloodGroupFilter,
-  occupationStatusFilter,
-  setOccupationStatusFilter,
+  workLocationFilter,
+  setWorkLocationFilter,
   areaFilter,
   areaOptions,
   setAreaFilter,
@@ -132,18 +132,15 @@ export function AdminMemberFilters({
               </div>
 
               <div className="space-y-2">
-                <Label className="text-xs text-slate-500">Employment / Study Status</Label>
-                <Select value={occupationStatusFilter} onValueChange={setOccupationStatusFilter}>
+                <Label className="text-xs text-slate-500">Work Location</Label>
+                <Select value={workLocationFilter} onValueChange={setWorkLocationFilter}>
                   <SelectTrigger className="w-full">
-                    <SelectValue placeholder="All statuses" />
+                    <SelectValue placeholder="All locations" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All statuses</SelectItem>
-                    <SelectItem value="student">Student</SelectItem>
-                    <SelectItem value="employed">Employed</SelectItem>
-                    <SelectItem value="self_employed">Self-employed</SelectItem>
-                    <SelectItem value="not_employed">Not employed</SelectItem>
-                    <SelectItem value="other">Other</SelectItem>
+                    <SelectItem value="all">All locations</SelectItem>
+                    <SelectItem value="india">India</SelectItem>
+                    <SelectItem value="abroad">Abroad</SelectItem>
                     <SelectItem value="not_specified">Not specified</SelectItem>
                   </SelectContent>
                 </Select>
@@ -188,7 +185,7 @@ export function AdminMemberFilters({
                     setArrearsFilter("all");
                     setStatusFilter("all");
                     setBloodGroupFilter("all");
-                    setOccupationStatusFilter("all");
+                    setWorkLocationFilter("all");
                   }}
                 >
                   Clear All Filters

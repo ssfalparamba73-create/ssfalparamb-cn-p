@@ -31,7 +31,13 @@ export interface CreateMemberInput {
   address?: string;
   area?: string;
   occupation?: string;
-  occupationStatus: NonNullable<MemberDTO["occupationStatus"]>;
+  isStudent: boolean;
+  studentClass?: string;
+  studentCourse?: string;
+  studentInstitution?: string;
+  isMuthaallim: boolean;
+  muthaallimInstitution?: string;
+  workLocation: NonNullable<MemberDTO["workLocation"]>;
   monthlyTier: MemberDTO["monthlyTier"];
   monthlyAmount: number;
   status?: Exclude<MemberDTO["status"], "left">;
@@ -52,8 +58,15 @@ export interface UpdateMemberProfileInput {
   age?: number;
   bloodGroup?: string;
   address?: string;
+  area?: string;
   occupation?: string;
-  occupationStatus?: MemberDTO["occupationStatus"];
+  isStudent?: boolean;
+  studentClass?: string;
+  studentCourse?: string;
+  studentInstitution?: string;
+  isMuthaallim?: boolean;
+  muthaallimInstitution?: string;
+  workLocation?: MemberDTO["workLocation"];
   biometricEnabled?: boolean;
 }
 
@@ -62,8 +75,15 @@ export interface CompleteMemberProfileInput {
   age: number;
   bloodGroup: string;
   address: string;
+  area: string;
   occupation: string;
-  occupationStatus: NonNullable<MemberDTO["occupationStatus"]>;
+  isStudent: boolean;
+  studentClass?: string;
+  studentCourse?: string;
+  studentInstitution?: string;
+  isMuthaallim: boolean;
+  muthaallimInstitution?: string;
+  workLocation: NonNullable<MemberDTO["workLocation"]>;
 }
 
 export interface MemberRepository {

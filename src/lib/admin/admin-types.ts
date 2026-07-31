@@ -15,6 +15,14 @@ export interface Member {
   address?: string;
   area?: string;
   occupation?: string;
+  isStudent?: boolean;
+  studentClass?: string;
+  studentCourse?: string;
+  studentInstitution?: string;
+  isMuthaallim?: boolean;
+  muthaallimInstitution?: string;
+  workLocation?: "india" | "abroad";
+  /** @deprecated Legacy value retained during the database transition. */
   occupationStatus?: OccupationStatus;
   familyCount?: number;
   status: MemberStatus;

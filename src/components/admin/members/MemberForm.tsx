@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import type { Member, MemberStatus, OccupationStatus } from "@/lib/admin/admin-types";
+import type { Member, MemberStatus } from "@/lib/admin/admin-types";
 import type { CreateMemberInput, UpdateMemberInput } from "@/lib/backend/contracts/member.contract";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,6 +16,7 @@ import { createAdminMember, issueAdminMemberPin, softDeleteAdminMember, updateAd
 import { getUnitSettings } from "@/lib/api/settingsClient";
 import { MemberInvitationDialog } from "./MemberInvitationDialog";
 import type { IssuedMemberPinDTO } from "@/lib/backend/dto/member.dto";
+import { StudyEmploymentFields, type StudyEmploymentValue } from "@/components/profile/StudyEmploymentFields";
 
 interface MemberFormProps {
   initialData?: Member;
@@ -32,7 +33,16 @@ export function MemberForm({ initialData, isEdit }: MemberFormProps) {
   const [status, setStatus] = useState<MemberStatus>(initialData?.status || "active");
   const [monthlyTier, setMonthlyTier] = useState<Member["monthlyTier"]>(initialData?.monthlyTier || "flexible");
   const [bloodGroup, setBloodGroup] = useState<Member["bloodGroup"] | "">(initialData?.bloodGroup || "");
-  const [occupationStatus, setOccupationStatus] = useState<OccupationStatus | "">(initialData?.occupationStatus || "");
+  const [studyEmployment, setStudyEmployment] = useState<StudyEmploymentValue>({
+    isStudent: initialData?.isStudent ?? false,
+    studentClass: initialData?.studentClass || "",
+    studentCourse: initialData?.studentCourse || "",
+    studentInstitution: initialData?.studentInstitution || "",
+    isMuthaallim: initialData?.isMuthaallim ?? false,
+    muthaallimInstitution: initialData?.muthaallimInstitution || "",
+    occupation: initialData?.occupation || "",
+    workLocation: initialData?.workLocation || "",
+  });
   const [isBloodDonor, setIsBloodDonor] = useState(Boolean(initialData?.isBloodDonor));
   const [donorAvailable, setDonorAvailable] = useState(Boolean(initialData?.donorAvailable));
   const [invitation, setInvitation] = useState<IssuedMemberPinDTO | null>(null);
@@ -110,8 +120,16 @@ export function MemberForm({ initialData, isEdit }: MemberFormProps) {
       toast.error("Please fix the validation errors before submitting.");
       return;
     }
-    if (!occupationStatus) {
-      toast.error("Please select employment / study status.");
+    if (!studyEmployment.occupation.trim() || !studyEmployment.workLocation) {
+      toast.error("Occupation and work location are required.");
+      return;
+    }
+    if (studyEmployment.isStudent && (!studyEmployment.studentClass.trim() || !studyEmployment.studentCourse.trim() || !studyEmployment.studentInstitution.trim())) {
+      toast.error("Class, course, and institution are required for students.");
+      return;
+    }
+    if (studyEmployment.isMuthaallim && !studyEmployment.muthaallimInstitution.trim()) {
+      toast.error("Institution is required for Mutha'allim members.");
       return;
     }
     const formData = new FormData(e.currentTarget);
@@ -144,8 +162,14 @@ export function MemberForm({ initialData, isEdit }: MemberFormProps) {
       age: numberValue("age"),
       address: textValue("address"),
       area: area || undefined,
-      occupation: textValue("occupation"),
-      occupationStatus: occupationStatus || undefined,
+      occupation: studyEmployment.occupation,
+      isStudent: Boolean(studyEmployment.isStudent),
+      studentClass: studyEmployment.isStudent ? studyEmployment.studentClass : undefined,
+      studentCourse: studyEmployment.isStudent ? studyEmployment.studentCourse : undefined,
+      studentInstitution: studyEmployment.isStudent ? studyEmployment.studentInstitution : undefined,
+      isMuthaallim: Boolean(studyEmployment.isMuthaallim),
+      muthaallimInstitution: studyEmployment.isMuthaallim ? studyEmployment.muthaallimInstitution : undefined,
+      workLocation: studyEmployment.workLocation as "india" | "abroad",
       status: status as Exclude<MemberStatus, "left">,
       monthlyTier,
       monthlyAmount: numberValue("monthlyAmount") ?? 50,
@@ -261,25 +285,7 @@ export function MemberForm({ initialData, isEdit }: MemberFormProps) {
                 </SelectContent>
              </Select>
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="occupationStatus">Employment / Study Status <span className="text-red-500">*</span></Label>
-            <Select value={occupationStatus} onValueChange={(value) => setOccupationStatus(value as OccupationStatus)} required>
-              <SelectTrigger id="occupationStatus" className="h-10 w-full border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800">
-                <SelectValue placeholder="Select status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="student">Student</SelectItem>
-                <SelectItem value="employed">Employed</SelectItem>
-                <SelectItem value="self_employed">Self-employed</SelectItem>
-                <SelectItem value="not_employed">Not employed</SelectItem>
-                <SelectItem value="other">Other</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="occupation">Occupation / Course</Label>
-            <Input id="occupation" name="occupation" defaultValue={initialData?.occupation} placeholder="e.g. Teacher, Business, B.Com" />
-          </div>
+          <StudyEmploymentFields value={studyEmployment} onChange={(field, value) => setStudyEmployment((current) => ({ ...current, [field]: value }))} />
         </div>
       </div>
 
