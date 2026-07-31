@@ -62,9 +62,9 @@ export function StudyEmploymentFields({ value, onChange, errors = {} }: StudyEmp
 
       {value.isStudent === false && value.isMuthaallim === false && (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-          <TextField label="Occupation" value={value.occupation} onChange={(next) => onChange("occupation", next)} error={errors.occupation} required />
+          <TextField label="Occupation" value={value.occupation} onChange={(next) => onChange("occupation", next)} error={errors.occupation} />
           <label className="block space-y-1.5">
-            <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">Work Location <span className="text-red-500">*</span></span>
+            <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">Work Location</span>
             <Select value={value.workLocation} onValueChange={(next) => onChange("workLocation", next as StudyEmploymentValue["workLocation"])}>
               <SelectTrigger className={errors.workLocation ? "h-11 w-full rounded-xl border-red-300 bg-white dark:border-red-500/60 dark:bg-slate-900" : "h-11 w-full rounded-xl border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900"}>
                 <SelectValue placeholder="Select India or Abroad" />
@@ -81,7 +81,7 @@ export function StudyEmploymentFields({ value, onChange, errors = {} }: StudyEmp
 
       <p className="flex items-start gap-2 text-xs leading-5 text-slate-500 dark:text-slate-400">
         <Info className="mt-0.5 size-3.5 shrink-0" />
-        Occupation and work location are required only when both answers are No.
+        Occupation and work location are optional.
       </p>
     </section>
   );

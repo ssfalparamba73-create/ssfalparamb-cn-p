@@ -119,11 +119,6 @@ export function MemberForm({ initialData, isEdit }: MemberFormProps) {
       toast.error("Please fix the validation errors before submitting.");
       return;
     }
-    const needsOccupation = !studyEmployment.isStudent && !studyEmployment.isMuthaallim;
-    if (needsOccupation && (!studyEmployment.occupation.trim() || !studyEmployment.workLocation)) {
-      toast.error("Occupation and work location are required.");
-      return;
-    }
     if (studyEmployment.isStudent && (!studyEmployment.studentClass.trim() || !studyEmployment.studentCourse.trim() || !studyEmployment.studentInstitution.trim())) {
       toast.error("Class, course, and institution are required for students.");
       return;
@@ -162,14 +157,18 @@ export function MemberForm({ initialData, isEdit }: MemberFormProps) {
       age: numberValue("age"),
       address: textValue("address"),
       area: area || undefined,
-      occupation: needsOccupation ? studyEmployment.occupation : undefined,
+      occupation: !studyEmployment.isStudent && !studyEmployment.isMuthaallim
+        ? studyEmployment.occupation.trim() || undefined
+        : undefined,
       isStudent: Boolean(studyEmployment.isStudent),
       studentClass: studyEmployment.isStudent ? studyEmployment.studentClass : undefined,
       studentCourse: studyEmployment.isStudent ? studyEmployment.studentCourse : undefined,
       studentInstitution: studyEmployment.isStudent ? studyEmployment.studentInstitution : undefined,
       isMuthaallim: Boolean(studyEmployment.isMuthaallim),
       muthaallimInstitution: studyEmployment.isMuthaallim ? studyEmployment.muthaallimInstitution : undefined,
-      workLocation: needsOccupation ? studyEmployment.workLocation as "india" | "abroad" : undefined,
+      workLocation: !studyEmployment.isStudent && !studyEmployment.isMuthaallim
+        ? studyEmployment.workLocation || undefined
+        : undefined,
       status: status as Exclude<MemberStatus, "left">,
       monthlyTier,
       monthlyAmount: numberValue("monthlyAmount") ?? 50,

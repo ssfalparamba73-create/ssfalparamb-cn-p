@@ -73,9 +73,6 @@ export function EditProfileDrawer({ isOpen, onClose, member, blockOptions, onSav
     }
 
     if (!formData.block) newErrors.block = "Block is required";
-    const needsOccupation = !formData.isStudent && !formData.isMuthaallim;
-    if (needsOccupation && !formData.occupation.trim()) newErrors.occupation = "Occupation is required";
-    if (needsOccupation && !formData.workLocation) newErrors.workLocation = "Select India or Abroad";
     if (formData.isStudent && !formData.studentClass.trim()) newErrors.studentClass = "Class is required";
     if (formData.isStudent && !formData.studentCourse.trim()) newErrors.studentCourse = "Course is required";
     if (formData.isStudent && !formData.studentInstitution.trim()) newErrors.studentInstitution = "Institution is required";

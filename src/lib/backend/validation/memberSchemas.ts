@@ -380,14 +380,12 @@ function validateStructuredProfile(input: StructuredProfileInput): BackendResult
   const studentInstitution = normalizeOptionalString(input.studentInstitution);
   const muthaallimInstitution = normalizeOptionalString(input.muthaallimInstitution);
   const occupation = normalizeOptionalString(input.occupation);
-  const needsOccupation = !input.isStudent && !input.isMuthaallim;
   const textFields = [studentClass, studentCourse, studentInstitution, muthaallimInstitution];
   if (textFields.some((value) => (value?.length ?? 0) > 160)) {
     return fail(validationError("Study information is too long.", "studentInstitution"));
   }
   if ((occupation?.length ?? 0) > 120) return fail(validationError("Occupation is too long.", "occupation"));
-  if (needsOccupation && !occupation) return fail(validationError("Occupation is required.", "occupation"));
-  if (needsOccupation && (!input.workLocation || !includesValue(workLocations, input.workLocation))) {
+  if (input.workLocation && !includesValue(workLocations, input.workLocation)) {
     return fail(validationError("Please select India or Abroad.", "workLocation"));
   }
 
@@ -405,8 +403,8 @@ function validateStructuredProfile(input: StructuredProfileInput): BackendResult
     studentInstitution: input.isStudent ? studentInstitution : undefined,
     isMuthaallim: input.isMuthaallim,
     muthaallimInstitution: input.isMuthaallim ? muthaallimInstitution : undefined,
-    occupation: needsOccupation ? occupation : undefined,
-    workLocation: needsOccupation ? input.workLocation as "india" | "abroad" : undefined,
+    occupation: !input.isStudent && !input.isMuthaallim ? occupation : undefined,
+    workLocation: !input.isStudent && !input.isMuthaallim ? input.workLocation as "india" | "abroad" | undefined : undefined,
   });
 }
 function validateFamilyMembers(input: FamilyMemberInput[] | undefined): BackendResult<FamilyMemberInput[] | undefined> {

@@ -84,24 +84,26 @@ describe("member study and employment validation", () => {
     expect(result.data?.workLocation).toBeUndefined();
   });
 
-  it("requires occupation when neither student nor Mutha'allim", () => {
+  it("accepts a member without occupation or work location", () => {
     const result = validateCreateMemberInput({
       ...validMember,
       occupation: undefined,
+      workLocation: undefined,
     });
 
-    expect(result.ok).toBe(false);
-    expect(result.error?.field).toBe("occupation");
+    expect(result.ok).toBe(true);
+    expect(result.data?.occupation).toBeUndefined();
+    expect(result.data?.workLocation).toBeUndefined();
   });
 
-  it("requires India or Abroad during profile completion", () => {
+  it("accepts profile completion without occupation or work location", () => {
     const result = validateCompleteMemberProfileInput({
       ...validCompletion,
+      occupation: undefined,
       workLocation: undefined,
     } as never);
 
-    expect(result.ok).toBe(false);
-    expect(result.error?.field).toBe("workLocation");
+    expect(result.ok).toBe(true);
   });
 
   it("rejects invalid work location filters", () => {
