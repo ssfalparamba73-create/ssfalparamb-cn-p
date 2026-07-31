@@ -44,7 +44,6 @@ export function MemberForm({ initialData, isEdit }: MemberFormProps) {
     workLocation: initialData?.workLocation || "",
   });
   const [isBloodDonor, setIsBloodDonor] = useState(Boolean(initialData?.isBloodDonor));
-  const [donorAvailable, setDonorAvailable] = useState(Boolean(initialData?.donorAvailable));
   const [invitation, setInvitation] = useState<IssuedMemberPinDTO | null>(null);
   const [familyMembers, setFamilyMembers] = useState<{name: string, relation: string, age: string}[]>(
     initialData?.familyMembers?.map((member) => ({
@@ -177,7 +176,7 @@ export function MemberForm({ initialData, isEdit }: MemberFormProps) {
       joinedAt: textValue("joinedAt"),
       bloodGroup: bloodGroup || undefined,
       isBloodDonor,
-      donorAvailable: isBloodDonor && donorAvailable,
+      donorAvailable: isBloodDonor,
       familyMembers: familyMembers.map((member) => ({
         name: member.name,
         relationship: member.relation,
@@ -345,10 +344,6 @@ export function MemberForm({ initialData, isEdit }: MemberFormProps) {
             <div className="flex items-center gap-2">
               <input type="checkbox" id="isDonor" checked={isBloodDonor} onChange={(event) => setIsBloodDonor(event.target.checked)} className="w-4 h-4 rounded text-red-600 border-slate-300 focus:ring-red-500" />
               <Label htmlFor="isDonor" className="mb-0 font-normal">Register as Blood Donor</Label>
-            </div>
-            <div className="flex items-center gap-2">
-              <input type="checkbox" id="isAvailable" checked={donorAvailable} disabled={!isBloodDonor} onChange={(event) => setDonorAvailable(event.target.checked)} className="w-4 h-4 rounded text-red-600 border-slate-300 focus:ring-red-500" />
-              <Label htmlFor="isAvailable" className="mb-0 font-normal">Available to donate now</Label>
             </div>
           </div>
           <div className="space-y-2">
