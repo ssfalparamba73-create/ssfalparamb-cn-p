@@ -120,14 +120,16 @@ export default function ProfilePage() {
         bloodGroup: toDatabaseBloodGroup(updatedMember.bloodGroup),
         address: updatedMember.address,
         area: updatedMember.block,
-        occupation: updatedMember.occupation,
+        occupation: !updatedMember.isStudent && !updatedMember.isMuthaallim ? updatedMember.occupation : undefined,
         isStudent: updatedMember.isStudent,
         studentClass: updatedMember.isStudent ? updatedMember.studentClass : undefined,
         studentCourse: updatedMember.isStudent ? updatedMember.studentCourse : undefined,
         studentInstitution: updatedMember.isStudent ? updatedMember.studentInstitution : undefined,
         isMuthaallim: updatedMember.isMuthaallim,
         muthaallimInstitution: updatedMember.isMuthaallim ? updatedMember.muthaallimInstitution : undefined,
-        workLocation: updatedMember.workLocation || undefined,
+        workLocation: !updatedMember.isStudent && !updatedMember.isMuthaallim
+          ? updatedMember.workLocation || undefined
+          : undefined,
       });
       setMember(mapProfile(profile));
       setIsBiometricEnabled(profile.biometricEnabled);

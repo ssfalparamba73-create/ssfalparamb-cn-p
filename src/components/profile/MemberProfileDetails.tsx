@@ -66,8 +66,12 @@ export function MemberProfileDetails({ member }: MemberProfileDetailsProps) {
           {member.isStudent && <DetailItem colorScheme="slate" icon={<GraduationCap className="size-5" />} label="Student Details" value={[member.studentClass, member.studentCourse, member.studentInstitution].filter(Boolean).join(" · ") || "Not specified"} />}
           <DetailItem colorScheme="purple" icon={<GraduationCap className="size-5" />} label="Mutha'allim" value={member.isMuthaallim ? "Yes" : "No"} />
           {member.isMuthaallim && <DetailItem colorScheme="purple" icon={<GraduationCap className="size-5" />} label="Mutha'allim Institution" value={member.muthaallimInstitution || "Not specified"} />}
-          <DetailItem colorScheme="amber" icon={<Briefcase className="size-5" />} label="Occupation" value={member.occupation || "Not specified"} />
-          <DetailItem colorScheme="emerald" icon={<MapPin className="size-5" />} label="Work Location" value={member.workLocation === "abroad" ? "Abroad" : member.workLocation === "india" ? "India" : "Not specified"} />
+          {!member.isStudent && !member.isMuthaallim && (
+            <>
+              <DetailItem colorScheme="amber" icon={<Briefcase className="size-5" />} label="Occupation" value={member.occupation || "Not specified"} />
+              <DetailItem colorScheme="emerald" icon={<MapPin className="size-5" />} label="Work Location" value={member.workLocation === "abroad" ? "Abroad" : member.workLocation === "india" ? "India" : "Not specified"} />
+            </>
+          )}
           <DetailItem colorScheme="emerald" icon={<MapPin className="size-5" />} label="Address" value={member.address} />
         </div>
 

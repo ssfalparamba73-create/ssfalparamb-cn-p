@@ -37,7 +37,7 @@ export interface CreateMemberInput {
   studentInstitution?: string;
   isMuthaallim: boolean;
   muthaallimInstitution?: string;
-  workLocation: NonNullable<MemberDTO["workLocation"]>;
+  workLocation?: MemberDTO["workLocation"];
   monthlyTier: MemberDTO["monthlyTier"];
   monthlyAmount: number;
   status?: Exclude<MemberDTO["status"], "left">;
@@ -76,14 +76,14 @@ export interface CompleteMemberProfileInput {
   bloodGroup: string;
   address: string;
   area: string;
-  occupation: string;
+  occupation?: string;
   isStudent: boolean;
   studentClass?: string;
   studentCourse?: string;
   studentInstitution?: string;
   isMuthaallim: boolean;
   muthaallimInstitution?: string;
-  workLocation: NonNullable<MemberDTO["workLocation"]>;
+  workLocation?: MemberDTO["workLocation"];
 }
 
 export interface MemberRepository {

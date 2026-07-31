@@ -42,9 +42,9 @@ export function AdminMemberRow({ member }: AdminMemberRowProps) {
       </td>
       <td className="px-3 py-4 text-sm">
         <span className="inline-flex rounded-md border border-slate-200 bg-slate-50 px-2 py-1 text-xs font-medium text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">
-          {member.occupation || "Not specified"}
+          {member.isStudent ? "Student" : member.isMuthaallim ? "Mutha'allim" : member.occupation || "Not specified"}
         </span>
-        {member.workLocation && <div className="mt-1 max-w-36 truncate text-xs text-slate-500">{member.workLocation === "abroad" ? "Abroad" : "India"}</div>}
+        {!member.isStudent && !member.isMuthaallim && member.workLocation && <div className="mt-1 max-w-36 truncate text-xs text-slate-500">{member.workLocation === "abroad" ? "Abroad" : "India"}</div>}
       </td>      <td className="px-3 py-4">
         {member.bloodGroup && (
           <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border border-red-100 dark:border-red-900/30 text-red-600 dark:text-red-400 shadow-[0_2px_8px_rgba(220,38,38,0.08)] transition-all">

@@ -84,7 +84,9 @@ export default function CompleteProfilePage() {
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     const age = Number(form.age);
-    if (!form.whatsapp.trim() || !Number.isInteger(age) || age < 0 || age > 130 || !form.bloodGroup || !form.address.trim() || !form.block || !form.occupation.trim() || form.isStudent === null || form.isMuthaallim === null || !form.workLocation ||
+    const needsOccupation = form.isStudent === false && form.isMuthaallim === false;
+    if (!form.whatsapp.trim() || !Number.isInteger(age) || age < 0 || age > 130 || !form.bloodGroup || !form.address.trim() || !form.block || form.isStudent === null || form.isMuthaallim === null ||
+      (needsOccupation && (!form.occupation.trim() || !form.workLocation)) ||
       (form.isStudent && (!form.studentClass.trim() || !form.studentCourse.trim() || !form.studentInstitution.trim())) ||
       (form.isMuthaallim && !form.muthaallimInstitution.trim())) {
       setError("Please complete every required field with valid information.");
@@ -99,14 +101,14 @@ export default function CompleteProfilePage() {
         bloodGroup: form.bloodGroup,
         address: form.address,
         area: form.block,
-        occupation: form.occupation,
+        occupation: needsOccupation ? form.occupation : undefined,
         isStudent: form.isStudent,
         studentClass: form.isStudent ? form.studentClass : undefined,
         studentCourse: form.isStudent ? form.studentCourse : undefined,
         studentInstitution: form.isStudent ? form.studentInstitution : undefined,
         isMuthaallim: form.isMuthaallim,
         muthaallimInstitution: form.isMuthaallim ? form.muthaallimInstitution : undefined,
-        workLocation: form.workLocation,
+        workLocation: needsOccupation ? form.workLocation || undefined : undefined,
       });
       toast.success("Profile completed successfully.");
       window.location.replace("/member/dashboard");

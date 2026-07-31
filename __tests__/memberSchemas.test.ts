@@ -49,6 +49,8 @@ describe("member study and employment validation", () => {
   it("accepts complete student details", () => {
     const result = validateCreateMemberInput({
       ...validMember,
+      occupation: undefined,
+      workLocation: undefined,
       isStudent: true,
       studentClass: "Degree",
       studentCourse: "B.Com",
@@ -57,6 +59,8 @@ describe("member study and employment validation", () => {
 
     expect(result.ok).toBe(true);
     expect(result.data?.studentCourse).toBe("B.Com");
+    expect(result.data?.occupation).toBeUndefined();
+    expect(result.data?.workLocation).toBeUndefined();
   });
 
   it("requires institution when Mutha'allim is true", () => {
@@ -64,6 +68,30 @@ describe("member study and employment validation", () => {
 
     expect(result.ok).toBe(false);
     expect(result.error?.field).toBe("muthaallimInstitution");
+  });
+
+  it("accepts a Mutha'allim without occupation or work location", () => {
+    const result = validateCreateMemberInput({
+      ...validMember,
+      occupation: undefined,
+      workLocation: undefined,
+      isMuthaallim: true,
+      muthaallimInstitution: "Example Dars",
+    });
+
+    expect(result.ok).toBe(true);
+    expect(result.data?.occupation).toBeUndefined();
+    expect(result.data?.workLocation).toBeUndefined();
+  });
+
+  it("requires occupation when neither student nor Mutha'allim", () => {
+    const result = validateCreateMemberInput({
+      ...validMember,
+      occupation: undefined,
+    });
+
+    expect(result.ok).toBe(false);
+    expect(result.error?.field).toBe("occupation");
   });
 
   it("requires India or Abroad during profile completion", () => {

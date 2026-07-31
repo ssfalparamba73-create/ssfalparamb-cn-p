@@ -120,7 +120,8 @@ export function MemberForm({ initialData, isEdit }: MemberFormProps) {
       toast.error("Please fix the validation errors before submitting.");
       return;
     }
-    if (!studyEmployment.occupation.trim() || !studyEmployment.workLocation) {
+    const needsOccupation = !studyEmployment.isStudent && !studyEmployment.isMuthaallim;
+    if (needsOccupation && (!studyEmployment.occupation.trim() || !studyEmployment.workLocation)) {
       toast.error("Occupation and work location are required.");
       return;
     }
@@ -162,14 +163,14 @@ export function MemberForm({ initialData, isEdit }: MemberFormProps) {
       age: numberValue("age"),
       address: textValue("address"),
       area: area || undefined,
-      occupation: studyEmployment.occupation,
+      occupation: needsOccupation ? studyEmployment.occupation : undefined,
       isStudent: Boolean(studyEmployment.isStudent),
       studentClass: studyEmployment.isStudent ? studyEmployment.studentClass : undefined,
       studentCourse: studyEmployment.isStudent ? studyEmployment.studentCourse : undefined,
       studentInstitution: studyEmployment.isStudent ? studyEmployment.studentInstitution : undefined,
       isMuthaallim: Boolean(studyEmployment.isMuthaallim),
       muthaallimInstitution: studyEmployment.isMuthaallim ? studyEmployment.muthaallimInstitution : undefined,
-      workLocation: studyEmployment.workLocation as "india" | "abroad",
+      workLocation: needsOccupation ? studyEmployment.workLocation as "india" | "abroad" : undefined,
       status: status as Exclude<MemberStatus, "left">,
       monthlyTier,
       monthlyAmount: numberValue("monthlyAmount") ?? 50,

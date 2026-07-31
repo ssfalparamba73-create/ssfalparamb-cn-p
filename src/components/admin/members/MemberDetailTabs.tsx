@@ -50,8 +50,12 @@ export function MemberDetailTabs({ member }: MemberDetailTabsProps) {
               {member.isStudent && <SummaryCard label="Student Details" value={[member.studentClass, member.studentCourse, member.studentInstitution].filter(Boolean).join(" · ") || "Not specified"} />}
               <SummaryCard label="Mutha'allim" value={member.isMuthaallim ? "Yes" : "No"} />
               {member.isMuthaallim && <SummaryCard label="Mutha'allim Institution" value={member.muthaallimInstitution || "Not specified"} />}
-              <SummaryCard label="Occupation" value={member.occupation || "Not specified"} />
-              <SummaryCard label="Work Location" value={member.workLocation === "abroad" ? "Abroad" : member.workLocation === "india" ? "India" : "Not specified"} />
+              {!member.isStudent && !member.isMuthaallim && (
+                <>
+                  <SummaryCard label="Occupation" value={member.occupation || "Not specified"} />
+                  <SummaryCard label="Work Location" value={member.workLocation === "abroad" ? "Abroad" : member.workLocation === "india" ? "India" : "Not specified"} />
+                </>
+              )}
               <SummaryCard label="Joined Date" value={formatDate(member.createdAt)} />
               <SummaryCard label="Last Paid" value={member.lastPaidAt ? formatDate(member.lastPaidAt) : "Never"} />
             </div>

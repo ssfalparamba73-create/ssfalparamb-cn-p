@@ -51,7 +51,7 @@ export function AdminMemberCard({ member }: AdminMemberCardProps) {
         </div>
         <div>
           <div className="text-xs text-slate-500 mb-0.5">Work / Study</div>
-          <div className="truncate text-slate-700 dark:text-slate-300">{member.occupation || "Not specified"}</div>
+          <div className="truncate text-slate-700 dark:text-slate-300">{member.isStudent ? "Student" : member.isMuthaallim ? "Mutha'allim" : member.occupation || "Not specified"}</div>
         </div>        <div>
           <div className="text-xs text-slate-500 mb-0.5">Monthly Due</div>
           <div className="text-slate-700 dark:text-slate-300">₹{member.monthlyAmount} <span className="text-xs text-slate-500 capitalize">({member.monthlyTier})</span></div>

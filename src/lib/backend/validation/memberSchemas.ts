@@ -69,10 +69,6 @@ export function validateCreateMemberInput(input: Partial<CreateMemberInput>): Ba
   if (!area.ok) return fail(area.error!);
   if (area.data!.length > 80) return fail(validationError("Block is too long.", "area"));
 
-  const occupation = validateRequiredString(input.occupation, "occupation", "Occupation");
-  if (!occupation.ok) return fail(occupation.error!);
-  if (occupation.data!.length > 120) return fail(validationError("Occupation is too long.", "occupation"));
-
   const structuredProfile = validateStructuredProfile(input);
   if (!structuredProfile.ok) return fail(structuredProfile.error!);
 
@@ -84,7 +80,6 @@ export function validateCreateMemberInput(input: Partial<CreateMemberInput>): Ba
     age: age.data ?? undefined,
     address: normalizeOptionalString(input.address),
     area: normalizeOptionalString(input.area),
-    occupation: occupation.data!,
     ...structuredProfile.data!,
     monthlyTier: tier,
     monthlyAmount: amount.data!,
@@ -286,19 +281,12 @@ export function validateCompleteMemberProfileInput(
   const structuredProfile = validateStructuredProfile(input);
   if (!structuredProfile.ok) return fail(structuredProfile.error!);
 
-  const occupation = validateRequiredString(input.occupation, "occupation", "Occupation");
-  if (!occupation.ok) return fail(occupation.error!);
-  if (occupation.data!.length > 120) {
-    return fail(validationError("Occupation is too long.", "occupation"));
-  }
-
   return ok({
     whatsapp: whatsapp.data!,
     age: age.data,
     bloodGroup: input.bloodGroup,
     address: address.data!,
     area: area.data!,
-    occupation: occupation.data!,
     ...structuredProfile.data!,
   });
 }
@@ -351,6 +339,7 @@ interface StructuredProfileInput {
   studentInstitution?: string;
   isMuthaallim?: boolean;
   muthaallimInstitution?: string;
+  occupation?: string;
   workLocation?: string;
 }
 
@@ -361,7 +350,8 @@ interface StructuredProfileData {
   studentInstitution?: string;
   isMuthaallim: boolean;
   muthaallimInstitution?: string;
-  workLocation: "india" | "abroad";
+  occupation?: string;
+  workLocation?: "india" | "abroad";
 }
 
 function hasStructuredProfileFields(input: StructuredProfileInput): boolean {
@@ -372,6 +362,7 @@ function hasStructuredProfileFields(input: StructuredProfileInput): boolean {
     "studentInstitution",
     "isMuthaallim",
     "muthaallimInstitution",
+    "occupation",
     "workLocation",
   ].some((key) => hasOwn(input, key));
 }
@@ -383,17 +374,21 @@ function validateStructuredProfile(input: StructuredProfileInput): BackendResult
   if (typeof input.isMuthaallim !== "boolean") {
     return fail(validationError("Please select whether you are a Mutha'allim.", "isMuthaallim"));
   }
-  if (!input.workLocation || !includesValue(workLocations, input.workLocation)) {
-    return fail(validationError("Please select India or Abroad.", "workLocation"));
-  }
 
   const studentClass = normalizeOptionalString(input.studentClass);
   const studentCourse = normalizeOptionalString(input.studentCourse);
   const studentInstitution = normalizeOptionalString(input.studentInstitution);
   const muthaallimInstitution = normalizeOptionalString(input.muthaallimInstitution);
+  const occupation = normalizeOptionalString(input.occupation);
+  const needsOccupation = !input.isStudent && !input.isMuthaallim;
   const textFields = [studentClass, studentCourse, studentInstitution, muthaallimInstitution];
   if (textFields.some((value) => (value?.length ?? 0) > 160)) {
     return fail(validationError("Study information is too long.", "studentInstitution"));
+  }
+  if ((occupation?.length ?? 0) > 120) return fail(validationError("Occupation is too long.", "occupation"));
+  if (needsOccupation && !occupation) return fail(validationError("Occupation is required.", "occupation"));
+  if (needsOccupation && (!input.workLocation || !includesValue(workLocations, input.workLocation))) {
+    return fail(validationError("Please select India or Abroad.", "workLocation"));
   }
 
   if (input.isStudent && !studentClass) return fail(validationError("Class is required for students.", "studentClass"));
@@ -410,7 +405,8 @@ function validateStructuredProfile(input: StructuredProfileInput): BackendResult
     studentInstitution: input.isStudent ? studentInstitution : undefined,
     isMuthaallim: input.isMuthaallim,
     muthaallimInstitution: input.isMuthaallim ? muthaallimInstitution : undefined,
-    workLocation: input.workLocation,
+    occupation: needsOccupation ? occupation : undefined,
+    workLocation: needsOccupation ? input.workLocation as "india" | "abroad" : undefined,
   });
 }
 function validateFamilyMembers(input: FamilyMemberInput[] | undefined): BackendResult<FamilyMemberInput[] | undefined> {
