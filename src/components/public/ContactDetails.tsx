@@ -40,9 +40,7 @@ export function ContactDetails() {
   }
 
   if (error) return <p role="alert" className="text-red-600">{error}</p>;
-  if (contacts.length === 0) {
-    return <p>No active public support contact is configured at this time.</p>;
-  }
+  if (contacts.length === 0) return null;
 
   return (
     <div className="grid gap-3 sm:grid-cols-2">

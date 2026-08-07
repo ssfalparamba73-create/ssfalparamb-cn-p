@@ -5,9 +5,10 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { ArrowLeft, CreditCard, Banknote, ShieldCheck, Smartphone, QrCode, ChevronDown, AlertCircle } from "lucide-react"
+import { ArrowLeft, CreditCard, Banknote, ShieldCheck, Smartphone, QrCode, ChevronDown, AlertCircle, Loader2 } from "lucide-react"
 import Link from "next/link"
 import { useSearchParams } from "next/navigation"
+import { useRazorpayCheckout } from "@/lib/hooks/useRazorpayCheckout"
 
 function PayNowContent() {
   const searchParams = useSearchParams();
@@ -19,6 +20,7 @@ function PayNowContent() {
   const [showQrModal, setShowQrModal] = useState(false);
   const [isQrInlineOpen, setIsQrInlineOpen] = useState(false);
   const [memberQuery, setMemberQuery] = useState("");
+  const { initiateCheckout, isProcessing, error: razorpayError, clearError } = useRazorpayCheckout();
 
   // Preload receipt images in the background without causing lag
   useEffect(() => {
@@ -89,6 +91,30 @@ function PayNowContent() {
     } else {
       setIsQrInlineOpen(!isQrInlineOpen);
     }
+  };
+
+  const handleRazorpayCheckout = async () => {
+    if (isButtonDisabled) return;
+
+    // Create a mock payment ID for now - in real implementation, this would come from the server
+    const mockPaymentId = `mock_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+
+    await initiateCheckout({
+      paymentId: mockPaymentId,
+      amount: finalAmount,
+      memberName: memberQuery,
+      memberPhone: memberQuery,
+      onSuccess: (paymentId) => {
+        // Redirect to success page with payment details
+        window.location.href = `/success?method=upi&admin=${encodeURIComponent(selectedAdmin)}&phone=${encodeURIComponent(memberQuery)}&amount=${finalAmount}${activeTab === 'event' ? '&category=special_event' : ''}${source === 'member' ? '&source=member' : ''}&paymentId=${paymentId}`;
+      },
+      onError: (error) => {
+        console.error("Payment failed:", error);
+      },
+      onDismiss: () => {
+        console.log("Payment modal dismissed");
+      },
+    });
   };
 
   // Removed old isButtonDisabled
@@ -372,20 +398,51 @@ function PayNowContent() {
                 </div>
               )}
             </div>
+            {razorpayError && (
+              <div className="p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm flex items-center gap-2">
+                <AlertCircle className="size-4 flex-shrink-0" />
+                <span>{razorpayError}</span>
+                <button
+                  type="button"
+                  onClick={clearError}
+                  className="ml-auto text-red-500 hover:text-red-700"
+                >
+                  ×
+                </button>
+              </div>
+            )}
           </CardContent>
           <CardFooter className="flex-col gap-4">
-            <Link
-              href={isButtonDisabled ? "#" : `/success?method=${paymentMethod}&admin=${encodeURIComponent(selectedAdmin)}&phone=${encodeURIComponent(memberQuery)}&amount=${finalAmount}${activeTab === 'event' ? '&category=special_event' : ''}${source === 'member' ? '&source=member' : ''}`}
-              className={`w-full ${isButtonDisabled ? "pointer-events-none" : ""}`}
-            >
+            {paymentMethod === "upi" ? (
               <Button
                 size="lg"
                 className="w-full text-lg h-14 rounded-xl"
-                disabled={isButtonDisabled}
+                disabled={isButtonDisabled || isProcessing}
+                onClick={handleRazorpayCheckout}
               >
-                {paymentMethod === "upi" ? `Pay ₹${finalAmount || 0} via UPI` : `Record ₹${finalAmount || 0} Cash`}
+                {isProcessing ? (
+                  <>
+                    <Loader2 className="mr-2 size-5 animate-spin" />
+                    Processing...
+                  </>
+                ) : (
+                  `Pay ₹${finalAmount || 0} via UPI`
+                )}
               </Button>
-            </Link>
+            ) : (
+              <Link
+                href={isButtonDisabled ? "#" : `/success?method=${paymentMethod}&admin=${encodeURIComponent(selectedAdmin)}&phone=${encodeURIComponent(memberQuery)}&amount=${finalAmount}${activeTab === 'event' ? '&category=special_event' : ''}${source === 'member' ? '&source=member' : ''}`}
+                className={`w-full ${isButtonDisabled ? "pointer-events-none" : ""}`}
+              >
+                <Button
+                  size="lg"
+                  className="w-full text-lg h-14 rounded-xl"
+                  disabled={isButtonDisabled}
+                >
+                  Record ₹${finalAmount || 0} Cash
+                </Button>
+              </Link>
+            )}
             <p className="text-xs text-muted-foreground flex items-center justify-center gap-1 font-medium">
               <ShieldCheck className="size-4 text-green-600" /> Secure SSL Encrypted Transaction
             </p>

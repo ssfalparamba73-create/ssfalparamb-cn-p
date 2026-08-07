@@ -95,6 +95,18 @@ export function conflictError(
   });
 }
 
+export function paymentError(
+  message: string,
+  code: ErrorCode = ERROR_CODES.PAYMENT_VERIFICATION_FAILED
+): BackendError {
+  return createBackendError({
+    code,
+    type: "payment",
+    message,
+    retryable: false,
+  });
+}
+
 export function serverError(
   message = "Something went wrong. Please try again later."
 ): BackendError {

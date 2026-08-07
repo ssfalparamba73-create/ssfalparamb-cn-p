@@ -8,7 +8,9 @@ import { validateReceiptTokenInput } from "../validation/paymentSchemas";
 
 export function createReceiptService(deps: {
   receiptRepository: ReceiptRepository;
-}): ReceiptService {
+}): ReceiptService & {
+  createForPayment(paymentId: string, actor: ActorContext): Promise<void>;
+} {
   const { receiptRepository } = deps;
 
   return {
@@ -39,6 +41,10 @@ export function createReceiptService(deps: {
       } catch (err) {
         return fail(fromThrowable(err));
       }
-    }
+    },
+
+    async createForPayment(paymentId: string, actor: ActorContext): Promise<void> {
+      await receiptRepository.createForPayment(paymentId, actor);
+    },
   };
 }

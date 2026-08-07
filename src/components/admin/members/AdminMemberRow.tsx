@@ -44,8 +44,13 @@ export function AdminMemberRow({ member }: AdminMemberRowProps) {
         <span className="inline-flex rounded-md border border-slate-200 bg-slate-50 px-2 py-1 text-xs font-medium text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">
           {member.isStudent ? "Student" : member.isMuthaallim ? "Mutha'allim" : member.occupation || "Not specified"}
         </span>
-        {!member.isStudent && !member.isMuthaallim && member.workLocation && <div className="mt-1 max-w-36 truncate text-xs text-slate-500">{member.workLocation === "abroad" ? "Abroad" : "India"}</div>}
-      </td>      <td className="px-3 py-4">
+        {!member.isStudent && !member.isMuthaallim && member.workLocation && (
+          <div className="mt-1 max-w-36 truncate text-xs text-slate-500">
+            {member.workLocation === "abroad" ? "Abroad" : "India"}
+          </div>
+        )}
+      </td>
+      <td className="px-3 py-4">
         {member.bloodGroup && (
           <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border border-red-100 dark:border-red-900/30 text-red-600 dark:text-red-400 shadow-[0_2px_8px_rgba(220,38,38,0.08)] transition-all">
             <Droplet className="w-3.5 h-3.5 mr-1.5 fill-red-100 dark:fill-red-900/50 text-red-500" />
@@ -90,45 +95,43 @@ export function AdminMemberRow({ member }: AdminMemberRowProps) {
              <ChevronRight className="w-4 h-4 text-slate-400" />
            </AdminActionIcon>
         </div>
-      </td>
-
-      {/* Warning Modal */}
-      {showPaymentWarning && (
-        <div
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <div className="bg-white dark:bg-slate-900 rounded-xl max-w-sm w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-800 animate-in zoom-in-95 duration-200 text-left">
-            <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 mb-2">
-              Mark as Paid?
-            </h3>
-            <p className="text-slate-600 dark:text-slate-400 text-sm mb-6 leading-relaxed">
-              Payment recording is not connected yet. <span className="font-semibold text-slate-900 dark:text-slate-100">{member.name}</span>&apos;s pending dues will not be changed.
-            </p>
-            <div className="flex justify-end gap-3">
-              <Button
-                variant="outline"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setShowPaymentWarning(false);
-                }}
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setShowPaymentWarning(false);
-                  toast.info("Payment recording will be enabled in the payment phase.");
-                }}
-                className="bg-blue-600 text-white hover:bg-blue-700"
-              >
-                Okay
-              </Button>
+        {showPaymentWarning && (
+          <div
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/40 p-4 backdrop-blur-sm"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="w-full max-w-sm animate-in rounded-xl border border-slate-200 bg-white p-6 text-left shadow-2xl duration-200 zoom-in-95 dark:border-slate-800 dark:bg-slate-900">
+              <h3 className="mb-2 text-lg font-bold text-slate-900 dark:text-slate-100">
+                Mark as Paid?
+              </h3>
+              <p className="mb-6 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
+                Payment recording is not connected yet. <span className="font-semibold text-slate-900 dark:text-slate-100">{member.name}</span>&apos;s pending dues will not be changed.
+              </p>
+              <div className="flex justify-end gap-3">
+                <Button
+                  variant="outline"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowPaymentWarning(false);
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowPaymentWarning(false);
+                    toast.info("Payment recording will be enabled in the payment phase.");
+                  }}
+                  className="bg-blue-600 text-white hover:bg-blue-700"
+                >
+                  Okay
+                </Button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </td>
     </tr>
   );
 }

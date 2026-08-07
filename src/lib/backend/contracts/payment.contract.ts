@@ -50,6 +50,7 @@ export interface PaymentStatusTransitionInput {
 export interface PaymentRepository {
   findById(id: string): Promise<PaymentDTO | null>;
   findByReceiptId(receiptId: string): Promise<PaymentDTO | null>;
+  findByGatewayOrderId(gatewayOrderId: string): Promise<PaymentDTO | null>;
   list(filters: PaymentFilters, pagination: PaginationInput): Promise<PaginatedResult<PaymentDTO>>;
   listByMember(memberId: string, pagination: PaginationInput): Promise<PaginatedResult<MemberPaymentHistoryItemDTO>>;
   createPendingPayment(input: CreatePaymentIntentInput, actor: ActorContext): Promise<PaymentDTO>;
@@ -57,6 +58,9 @@ export interface PaymentRepository {
   approve(paymentId: string, actor: ActorContext, notes?: string): Promise<PaymentDTO>;
   reject(paymentId: string, actor: ActorContext, reason?: string): Promise<PaymentDTO>;
   cancel(paymentId: string, actor: ActorContext, reason?: string): Promise<PaymentDTO>;
+  updateGatewayOrderId(paymentId: string, gatewayOrderId: string): Promise<void>;
+  confirmPayment(paymentId: string, gatewayPaymentId: string, gatewaySignature: string): Promise<PaymentDTO>;
+  failPayment(paymentId: string, reason?: string): Promise<PaymentDTO>;
 }
 
 export interface ReceiptRepository {

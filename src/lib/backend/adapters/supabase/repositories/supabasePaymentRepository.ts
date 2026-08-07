@@ -265,4 +265,45 @@ export class SupabasePaymentRepository implements PaymentRepository {
     if (error) throw error;
     return mapRowToPaymentDTO(data);
   }
+
+  async findByGatewayOrderId(gatewayOrderId: string): Promise<PaymentDTO | null> {
+    const supabase = createSupabaseBackendClient();
+    const { data, error } = await supabase.from("payments").select("*, payment_months(*)").eq("gateway_order_id", gatewayOrderId).single();
+    if (error || !data) return null;
+    return mapRowToPaymentDTO(data, data.payment_months || []);
+  }
+
+  async updateGatewayOrderId(paymentId: string, gatewayOrderId: string): Promise<void> {
+    const supabase = createSupabaseBackendClient();
+    const { error } = await supabase.from("payments").update({
+      gateway_order_id: gatewayOrderId,
+      gateway_provider: "razorpay",
+    }).eq("id", paymentId);
+
+    if (error) throw error;
+  }
+
+  async confirmPayment(paymentId: string, gatewayPaymentId: string, gatewaySignature: string): Promise<PaymentDTO> {
+    const supabase = createSupabaseBackendClient();
+    const { data, error } = await supabase.from("payments").update({
+      status: "confirmed",
+      gateway_payment_id: gatewayPaymentId,
+      gateway_signature: gatewaySignature,
+      paid_at: new Date().toISOString(),
+    }).eq("id", paymentId).select("*").single();
+
+    if (error) throw error;
+    return mapRowToPaymentDTO(data);
+  }
+
+  async failPayment(paymentId: string, reason?: string): Promise<PaymentDTO> {
+    const supabase = createSupabaseBackendClient();
+    const { data, error } = await supabase.from("payments").update({
+      status: "failed",
+      notes: reason,
+    }).eq("id", paymentId).select("*").single();
+
+    if (error) throw error;
+    return mapRowToPaymentDTO(data);
+  }
 }
