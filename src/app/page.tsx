@@ -3,7 +3,8 @@ import Link from "next/link"
 import {
   LockKeyhole,
   Sparkles,
-  ArrowRight
+  ArrowRight,
+  CreditCard
 } from "lucide-react"
 import dynamic from "next/dynamic"
 
@@ -52,10 +53,17 @@ export default function LandingPage() {
               </p>
 
               {/* Mobile CTA (Hidden on desktop) */}
-              <div className="lg:hidden pt-8 w-full flex justify-center">
+              <div className="lg:hidden pt-8 w-full flex flex-col items-center gap-3">
                 <Link href="/login" className="block w-full max-w-sm group">
                   <Button size="lg" className="h-14 w-full rounded-full bg-slate-950 hover:bg-slate-900 text-base font-bold text-white shadow-[0_12px_30px_rgba(15,23,42,0.25)] transition-all flex items-center justify-center gap-2">
                     Access Portal
+                    <ArrowRight className="size-4 opacity-80 transition-transform group-hover:translate-x-1" />
+                  </Button>
+                </Link>
+                <Link href="/pay" className="block w-full max-w-sm group">
+                  <Button size="lg" variant="outline" className="h-14 w-full rounded-full border-2 border-blue-200 bg-white/60 text-base font-bold text-blue-700 shadow-[0_8px_24px_rgba(37,99,235,0.10)] backdrop-blur-xl transition-all hover:bg-blue-50 hover:border-blue-300 flex items-center justify-center gap-2">
+                    <CreditCard className="size-4" />
+                    Pay Now
                     <ArrowRight className="size-4 opacity-80 transition-transform group-hover:translate-x-1" />
                   </Button>
                 </Link>
@@ -126,6 +134,7 @@ export default function LandingPage() {
           </div>
           <div className="flex flex-col items-center gap-3 md:items-end">
             <nav aria-label="Policies" className="flex max-w-2xl flex-wrap justify-center gap-x-4 gap-y-2 text-xs font-semibold text-slate-500 md:justify-end">
+              <Link href="/pay" className="text-blue-600 hover:text-blue-700">Pay Now</Link>
               <Link href="/contribution-details" className="hover:text-blue-600">Contribution Details</Link>
               <Link href="/shipping-policy" className="hover:text-blue-600">Shipping</Link>
               <Link href="/cancellation-and-refund-policy" className="hover:text-blue-600">Cancellation & Refunds</Link>
