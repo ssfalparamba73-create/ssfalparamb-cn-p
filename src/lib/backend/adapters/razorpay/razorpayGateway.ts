@@ -70,11 +70,15 @@ async function razorpayApiCall<T>(
 export async function createRazorpayOrder(
   params: CreateOrderParams
 ): Promise<RazorpayOrder> {
+  const config = getRazorpayConfig();
   return razorpayApiCall<RazorpayOrder>("/orders", "POST", {
     amount: params.amount,
     currency: params.currency,
     receipt: params.receipt,
     notes: params.notes,
+    ...(config.checkoutConfigId
+      ? { checkout_config_id: config.checkoutConfigId }
+      : {}),
   });
 }
 

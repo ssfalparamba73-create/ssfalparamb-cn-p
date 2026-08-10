@@ -4,6 +4,7 @@ export interface RazorpayConfig {
   keyId: string;
   keySecret: string;
   webhookSecret: string;
+  checkoutConfigId?: string;
 }
 
 let _config: RazorpayConfig | null = null;
@@ -28,6 +29,7 @@ export function getRazorpayConfig(): RazorpayConfig {
     keyId: loadEnvVar("RAZORPAY_KEY_ID"),
     keySecret: loadEnvVar("RAZORPAY_KEY_SECRET"),
     webhookSecret: loadEnvVar("RAZORPAY_WEBHOOK_SECRET"),
+    checkoutConfigId: process.env.RAZORPAY_CHECKOUT_CONFIG_ID || undefined,
   };
 
   return _config;
