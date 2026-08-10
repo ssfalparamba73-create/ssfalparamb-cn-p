@@ -148,6 +148,15 @@ export function createRazorpayService(deps: {
           keyId: process.env.RAZORPAY_KEY_ID!,
         });
       } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        console.error(`[${actor.requestId}] Razorpay order creation failed:`, message);
+        if (message.includes("401 Unauthorized") || message.includes("Authentication failed")) {
+          return fail(
+            paymentError(
+              "Razorpay authentication failed. Verify that RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET are a matching pair from the same Test or Live mode."
+            )
+          );
+        }
         return fail(fromThrowable(err));
       }
     },
