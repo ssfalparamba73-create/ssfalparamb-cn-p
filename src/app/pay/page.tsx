@@ -58,6 +58,7 @@ function PayNowContent() {
   const [selectedMonths, setSelectedMonths] = useState<string[]>(["current"]);
   const [duesTier, setDuesTier] = useState<50 | 100>(50);
   const [customAmount, setCustomAmount] = useState<string>("");
+  const [checkoutHint, setCheckoutHint] = useState<string | null>(null);
 
   // Admin toggle for Special Event
   const isSpecialEventActive = true;
@@ -101,7 +102,11 @@ function PayNowContent() {
   };
 
   const handleRazorpayCheckout = async () => {
-    if (isButtonDisabled) return;
+    if (isButtonDisabled) {
+      setCheckoutHint("Enter your phone number or member ID above to continue with Razorpay.");
+      return;
+    }
+    setCheckoutHint(null);
 
     const intent = await requestBackend<{ paymentId: string }>("/api/v1/payments/intent", {
       method: "POST",
@@ -168,6 +173,9 @@ function PayNowContent() {
                 value={memberQuery}
                 onChange={(e) => setMemberQuery(e.target.value)}
               />
+              {!memberQuery.trim() && (
+                <p className="text-xs text-amber-700 dark:text-amber-300">Enter your phone number or member ID to enable payment.</p>
+              )}
             </div>
 
             {/* Category Tabs */}
@@ -337,6 +345,7 @@ function PayNowContent() {
                         type="button"
                         variant="outline"
                         className="w-full h-11 flex items-center justify-center gap-2 rounded-xl border-[#E5EAF3] hover:bg-slate-50 transition-all dark:border-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700"
+                        disabled={isButtonDisabled || isProcessing}
                         onClick={handleQrClick}
                       >
                         <QrCode className="h-5 w-5 text-primary" />
@@ -420,6 +429,11 @@ function PayNowContent() {
                 >
                   ×
                 </button>
+              </div>
+            )}
+            {checkoutHint && !razorpayError && (
+              <div className="p-3 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 text-sm">
+                {checkoutHint}
               </div>
             )}
           </CardContent>
