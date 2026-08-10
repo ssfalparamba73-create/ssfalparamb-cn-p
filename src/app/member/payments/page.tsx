@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { MEMBER_PAYMENTS_ENABLED } from "@/lib/featureFlags";
 import { getMemberPayments } from "@/lib/api/paymentClient";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export default function PaymentsPage() {
   const router = useRouter();
@@ -62,8 +63,16 @@ export default function PaymentsPage() {
         </div>
         
         {/* Visual Graphic for desktop to fill empty space elegantly */}
-        <div className="hidden md:flex size-24 bg-blue-50 border border-blue-100 shadow-[0_4px_12px_rgba(15,23,42,0.08)] text-blue-600 rounded-full items-center justify-center shrink-0 transition-all hover:-translate-y-1 dark:border-blue-500/20 dark:bg-blue-500/10 dark:text-blue-300 dark:shadow-none">
-          <CalendarRange className="size-10" />
+        <div className="flex items-center gap-4">
+          <Link
+            href="/pay?source=member"
+            className="rounded-xl bg-[#2563EB] px-5 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:-translate-y-0.5 hover:bg-blue-700"
+          >
+            Pay Now
+          </Link>
+          <div className="hidden md:flex size-24 bg-blue-50 border border-blue-100 shadow-[0_4px_12px_rgba(15,23,42,0.08)] text-blue-600 rounded-full items-center justify-center shrink-0 transition-all hover:-translate-y-1 dark:border-blue-500/20 dark:bg-blue-500/10 dark:text-blue-300 dark:shadow-none">
+            <CalendarRange className="size-10" />
+          </div>
         </div>
       </div>
 
