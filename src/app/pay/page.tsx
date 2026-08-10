@@ -10,6 +10,7 @@ import Link from "next/link"
 import { useSearchParams } from "next/navigation"
 import { useRazorpayCheckout } from "@/lib/hooks/useRazorpayCheckout"
 import { requestBackend } from "@/lib/api/backendClient"
+import { getCurrentMemberProfile } from "@/lib/api/memberClient"
 
 function PayNowContent() {
   const searchParams = useSearchParams();
@@ -22,6 +23,13 @@ function PayNowContent() {
   const [isQrInlineOpen, setIsQrInlineOpen] = useState(false);
   const [memberQuery, setMemberQuery] = useState("");
   const { initiateCheckout, isProcessing, error: razorpayError, clearError } = useRazorpayCheckout();
+
+  useEffect(() => {
+    if (source !== "member") return;
+    getCurrentMemberProfile()
+      .then((profile) => setMemberQuery(profile.phone))
+      .catch(() => undefined);
+  }, [source]);
 
   // Preload receipt images in the background without causing lag
   useEffect(() => {
