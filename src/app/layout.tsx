@@ -31,8 +31,40 @@ const cooper = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "SSF Alparamba - Digital Varisankhya",
+  metadataBase: new URL(process.env.APP_BASE_URL || "http://localhost:3000"),
+  applicationName: "SSF Alparamba",
+  title: {
+    default: "SSF Alparamba - Digital Varisankhya",
+    template: "%s | SSF Alparamba",
+  },
   description: "Digital Varisankhya Collection Portal for SSF Alparamba Unit",
+  manifest: "/manifest.webmanifest",
+  openGraph: {
+    type: "website",
+    locale: "en_IN",
+    siteName: "SSF Alparamba Unit",
+    title: "SSF Alparamba - Digital Varisankhya",
+    description: "Secure and transparent Digital Varisankhya Collection Portal for SSF Alparamba Unit",
+    images: [
+      {
+        url: "/social/ssf-alparamba-share.png",
+        width: 1200,
+        height: 630,
+        alt: "SSF Alparamba Unit - Digital Varisankhya Collection Portal",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "SSF Alparamba - Digital Varisankhya",
+    description: "Secure and transparent Digital Varisankhya Collection Portal for SSF Alparamba Unit",
+    images: ["/social/ssf-alparamba-share.png"],
+  },
+  appleWebApp: {
+    capable: true,
+    title: "SSF Alparamba",
+    statusBarStyle: "default",
+  },
 };
 
 export default function RootLayout({
