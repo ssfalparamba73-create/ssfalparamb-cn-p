@@ -17,10 +17,12 @@ function PayNowContent() {
   const source = searchParams.get("source");
   const [paymentMethod, setPaymentMethod] = useState<"upi" | "cash">("upi");
   const [selectedUpiApp, setSelectedUpiApp] = useState<string | null>(null);
+  const [showQrModal] = useState(false);
+  const setShowQrModal = (_open: boolean) => undefined;
+  const isQrInlineOpen = false;
+  const renderMockQrCode = () => null;
   const [selectedAdmin, setSelectedAdmin] = useState<string>("");
   const [isAdminDropdownOpen, setIsAdminDropdownOpen] = useState(false);
-  const [showQrModal, setShowQrModal] = useState(false);
-  const [isQrInlineOpen, setIsQrInlineOpen] = useState(false);
   const [memberQuery, setMemberQuery] = useState("");
   const { initiateCheckout, isProcessing, error: razorpayError, clearError } = useRazorpayCheckout();
 
@@ -95,11 +97,7 @@ function PayNowContent() {
   ];
 
   const handleQrClick = () => {
-    if (typeof window !== "undefined" && window.innerWidth >= 768) {
-      setShowQrModal(true);
-    } else {
-      setIsQrInlineOpen(!isQrInlineOpen);
-    }
+    void handleRazorpayCheckout();
   };
 
   const handleRazorpayCheckout = async () => {
@@ -138,12 +136,6 @@ function PayNowContent() {
   };
 
   // Removed old isButtonDisabled
-
-  const renderMockQrCode = () => (
-    <svg width="180" height="180" viewBox="0 0 29 29" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-40 h-40 mx-auto text-slate-800">
-      <path d="M0 0h7v7H0V0zm1 1v5h5V1H1zm1 1h3v3H2V2zM0 22h7v7H0v-7zm1 1v5h5v-5H1zm2 2v-1h1v1H3zm-2-2h1v1H1v-1zm4 0h1v1H5v-1zm1 2h1v1H6v-1zm-4 2h1v1H2v-1zm3 0h1v1H5v-1zM22 0h7v7h-7V0zm1 1v5h5V1h-5zm1 1h3v3h-3V2zM22 22h7v7h-7v-7zm1 1h5v5h-5v-5zm2 2h1v1h-1v-1zM9 1h1v1H9V1zm2 0h1v1h-1V1zm3 0h2v1h-2V1zm4 0h1v1h-1V1zm-9 2h1v1H9V3zm2 0h2v1h-2V3zm3 0h1v1h-1V3zm2 0h1v1h-1V3zm-8 2h2v1H9V5zm3 0h1v1h-1V5zm1 0h1v1h-1V5zm2 0h1v1h-1V5zm-7 2h1v1H9V7zm2 0h1v1h-1V7zm2 0h2v1h-2V7zm3 0h1v1h-1V7zm-8 2h1v1H8V9zm3 0h2v1h-2V9zm4 0h1v1h-1V9zm-8 2h1v1H8v-1zm2 0h1v1h-1v-1zm3 0h1v1h-1v-1zm1 0h1v1h-1v-1zm2 0h1v1h-1v-1zm-9 2h2v1H8v-1zm3 0h1v1h-1v-1zm1 0h1v1h-1v-1zm3 0h1v1h-1v-1zm2 0h1v1h-1v-1zm-9 2h1v1H8v-1zm2 0h1v1h-1v-1zm2 0h2v1h-2v-1zm4 0h1v1h-1v-1zm-9 2h1v1H8v-1zm3 0h2v1h-2v-1zm3 0h1v1h-1v-1zm1 0h1v1h-1v-1zm-8 2h1v1H9v-1zm2 0h1v1h-1v-1zm1 0h1v1h-1v-1zm3 0h1v1h-1v-1zm-7 2h2v1H9v-1zm3 0h1v1h-1v-1zm1 0h1v1h-1v-1zm3 0h1v1h-1v-1zm-7 2h1v1H9v-1zm2 0h1v1h-1v-1zm2 0h2v1h-2v-1zm3 0h1v1h-1v-1z" fill="currentColor"/>
-    </svg>
-  );
 
   return (
     <div className="min-h-screen bg-secondary/50 flex flex-col items-center justify-center p-4 py-12 relative transition-colors duration-300 dark:bg-slate-900">
@@ -332,8 +324,7 @@ function PayNowContent() {
                   {selectedUpiApp === "other" && (
                     <div className="pt-2 animate-in fade-in slide-in-from-top-2 duration-200 space-y-4">
                       <div>
-                        <Label htmlFor="upi-id" className="text-xs text-muted-foreground">Enter UPI ID</Label>
-                        <Input id="upi-id" placeholder="example@okhdfcbank" className="mt-1 h-11 bg-background dark:bg-slate-900/50 dark:border-slate-700 dark:text-slate-50 dark:focus-visible:ring-blue-500/30 dark:focus-visible:border-blue-500/50" />
+                        <p className="text-xs text-muted-foreground">Razorpay will securely show the available UPI apps and QR option after you continue.</p>
                       </div>
 
                       <div className="relative flex items-center py-1">
@@ -349,7 +340,7 @@ function PayNowContent() {
                         onClick={handleQrClick}
                       >
                         <QrCode className="h-5 w-5 text-primary" />
-                        <span>Show QR Code</span>
+                        <span>Open Razorpay UPI / QR</span>
                       </Button>
 
                       {isQrInlineOpen && (
