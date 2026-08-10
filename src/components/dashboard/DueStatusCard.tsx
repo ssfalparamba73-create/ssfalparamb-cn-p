@@ -33,7 +33,7 @@ export function DueStatusCard({ amountDue }: DueStatusCardProps) {
         </div>
       </div>
 
-      {!isClear && MEMBER_PAYMENTS_ENABLED && (
+      {MEMBER_PAYMENTS_ENABLED && (
         <div className="mt-5">
           <Link href="/pay?source=member" className="block w-full">
             <Button className="w-full bg-[#2563EB] hover:bg-blue-700 text-white rounded-xl h-12 text-base font-semibold shadow-sm transition-all flex items-center justify-center gap-2">
@@ -41,7 +41,7 @@ export function DueStatusCard({ amountDue }: DueStatusCardProps) {
             </Button>
           </Link>
           <p className="text-center text-xs text-slate-400 mt-3 font-medium dark:text-slate-500">
-            Clear your dues before the end of this month
+            {isClear ? "Make a contribution or pay upcoming dues" : "Clear your dues before the end of this month"}
           </p>
         </div>
       )}
