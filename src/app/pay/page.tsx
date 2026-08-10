@@ -9,6 +9,7 @@ import { ArrowLeft, CreditCard, Banknote, ShieldCheck, Smartphone, QrCode, Chevr
 import Link from "next/link"
 import { useSearchParams } from "next/navigation"
 import { useRazorpayCheckout } from "@/lib/hooks/useRazorpayCheckout"
+import { requestBackend } from "@/lib/api/backendClient"
 
 function PayNowContent() {
   const searchParams = useSearchParams();
@@ -96,11 +97,22 @@ function PayNowContent() {
   const handleRazorpayCheckout = async () => {
     if (isButtonDisabled) return;
 
-    // Create a mock payment ID for now - in real implementation, this would come from the server
-    const mockPaymentId = `mock_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+    const intent = await requestBackend<{ paymentId: string }>("/api/v1/payments/intent", {
+      method: "POST",
+      body: JSON.stringify({
+        memberQuery,
+        payerName: memberQuery,
+        payerPhone: memberQuery,
+        category: activeTab === "event" ? "special_event" : "monthly_dues",
+        method: "upi",
+        selectedMonthIds: activeTab === "dues" ? selectedMonths : undefined,
+        tier: activeTab === "dues" ? (duesTier === 50 ? "base" : "premium") : "custom",
+        customAmount: activeTab === "event" ? finalAmount : undefined,
+      }),
+    });
 
     await initiateCheckout({
-      paymentId: mockPaymentId,
+      paymentId: intent.paymentId,
       amount: finalAmount,
       memberName: memberQuery,
       memberPhone: memberQuery,
