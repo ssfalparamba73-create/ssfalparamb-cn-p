@@ -16,6 +16,18 @@ interface RazorpayCheckoutOptions {
     email?: string;
   };
   notes?: Record<string, string>;
+  config?: {
+    display?: {
+      blocks?: Record<string, {
+        name: string;
+        instruments: Array<{ method: string }>;
+      }>;
+      sequence?: string[];
+      preferences?: {
+        show_default_blocks?: boolean;
+      };
+    };
+  };
   modal?: {
     ondismiss?: () => void;
   };
@@ -167,6 +179,22 @@ export function useRazorpayCheckout() {
         },
         notes: {
           paymentId: params.paymentId,
+        },
+        // Keep UPI visible when it is enabled for this Razorpay account.
+        // Razorpay still filters methods that are unavailable for the account/order.
+        config: {
+          display: {
+            blocks: {
+              upi: {
+                name: "UPI",
+                instruments: [{ method: "upi" }],
+              },
+            },
+            sequence: ["block.upi", "card", "netbanking", "wallet", "paylater"],
+            preferences: {
+              show_default_blocks: true,
+            },
+          },
         },
         modal: {
           ondismiss: () => {

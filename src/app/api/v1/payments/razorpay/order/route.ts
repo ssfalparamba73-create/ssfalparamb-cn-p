@@ -40,8 +40,7 @@ export async function POST(request: NextRequest) {
 
     return createBackendResponse(result, actor.requestId);
   } catch (err) {
-    void err;
-    console.error(`[${actor.requestId}] Unhandled Razorpay order route error.`);
+    console.error(`[${actor.requestId}] Unhandled Razorpay order route error:`, err instanceof Error ? err.message : err);
     const errResult = fail(serverError("An internal server error occurred."));
     return createBackendResponse(errResult, actor.requestId);
   }
