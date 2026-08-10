@@ -12,10 +12,14 @@ import { useRazorpayCheckout } from "@/lib/hooks/useRazorpayCheckout"
 import { requestBackend } from "@/lib/api/backendClient"
 import { getCurrentMemberProfile } from "@/lib/api/memberClient"
 
+const isUpiAvailable = process.env.NEXT_PUBLIC_RAZORPAY_UPI_ENABLED === "true";
+
 function PayNowContent() {
   const searchParams = useSearchParams();
   const source = searchParams.get("source");
-  const [paymentMethod, setPaymentMethod] = useState<"upi" | "cash">("upi");
+  const [paymentMethod, setPaymentMethod] = useState<"upi" | "cash">(
+    isUpiAvailable ? "upi" : "cash"
+  );
   const [selectedUpiApp, setSelectedUpiApp] = useState<string | null>(null);
   const [showQrModal] = useState(false);
   const setShowQrModal = (_open: boolean) => undefined;
@@ -84,6 +88,7 @@ function PayNowContent() {
 
   const isButtonDisabled =
     !memberQuery.trim() ||
+    (paymentMethod === "upi" && !isUpiAvailable) ||
     (paymentMethod === "cash" && !selectedAdmin) ||
     (activeTab === "dues" && selectedMonths.length === 0) ||
     (activeTab === "event" && finalAmount < 30);
@@ -102,6 +107,11 @@ function PayNowContent() {
   };
 
   const handleRazorpayCheckout = async () => {
+    if (!isUpiAvailable) {
+      setCheckoutHint("UPI payments will be available after Razorpay account verification is completed.");
+      return;
+    }
+
     if (isButtonDisabled) {
       setCheckoutHint("Enter your phone number or member ID above to continue with Razorpay.");
       return;
@@ -276,11 +286,12 @@ function PayNowContent() {
                 <Button
                   type="button"
                   variant="outline"
-                  className={`h-16 flex flex-col gap-1 transition-all ${paymentMethod === "upi" ? "border-primary bg-primary/5 text-primary dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/50" : "text-muted-foreground hover:text-foreground dark:bg-slate-800 dark:border-slate-700 dark:hover:bg-slate-700 dark:hover:text-slate-200"}`}
+                  className={`h-16 flex flex-col gap-1 transition-all ${paymentMethod === "upi" ? "border-primary bg-primary/5 text-primary dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/50" : "text-muted-foreground hover:text-foreground dark:bg-slate-800 dark:border-slate-700 dark:hover:bg-slate-700 dark:hover:text-slate-200"} ${!isUpiAvailable ? "cursor-not-allowed opacity-60" : ""}`}
                   onClick={() => setPaymentMethod("upi")}
+                  disabled={!isUpiAvailable}
                 >
                   <CreditCard className="size-5" />
-                  <span className="text-xs">UPI App</span>
+                  <span className="text-xs">{isUpiAvailable ? "UPI App" : "UPI Under Review"}</span>
                 </Button>
                 <Button
                   type="button"
@@ -293,8 +304,14 @@ function PayNowContent() {
                 </Button>
               </div>
 
+              {!isUpiAvailable && (
+                <div className="mt-3 rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs leading-5 text-amber-800 dark:border-amber-800/60 dark:bg-amber-950/30 dark:text-amber-200">
+                  UPI payments are temporarily unavailable while Razorpay verifies the account. Please use Cash Handover for now.
+                </div>
+              )}
+
               {/* UPI Options Dropdown/Area */}
-              {paymentMethod === "upi" && (
+              {paymentMethod === "upi" && isUpiAvailable && (
                 <div className="mt-4 p-4 rounded-xl border bg-secondary/30 space-y-3 animate-in fade-in slide-in-from-top-2 duration-200 dark:bg-slate-800/50 dark:border-slate-700">
                   <p className="text-xs font-medium text-muted-foreground">Select your UPI App</p>
                   <div className="grid grid-cols-2 gap-2">
