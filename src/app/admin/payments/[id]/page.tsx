@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, ExternalLink, Receipt, Clock, Save, FileText, User, Hash } from "lucide-react";
@@ -8,43 +8,49 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
-import { MOCK_PAYMENTS } from "@/lib/admin/mock-data";
+import { getAdminPayments, transitionAdminPayment } from "@/lib/api/adminPaymentClient";
+import type { PaymentDTO } from "@/lib/backend/dto/payment.dto";
 
 export default function PaymentDetailPage() {
   const params = useParams();
   const router = useRouter();
   
-  const [paymentStatus, setPaymentStatus] = useState(params.id === "pay_3" ? "Pending" : "Confirmed");
+  const [actualPayment, setActualPayment] = useState<PaymentDTO | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [paymentStatus, setPaymentStatus] = useState<PaymentDTO["status"]>("pending");
 
-  // In a real app, fetch based on params.id
-  // Find the actual payment
-  const actualPayment = MOCK_PAYMENTS.find(p => p.id === params.id);
-  
-  // Mock Data mapped to existing shape
-  const payment = actualPayment ? {
+  useEffect(() => {
+    getAdminPayments()
+      .then((result) => {
+        const found = result.items.find((item) => item.id === params.id);
+        if (found) {
+          setActualPayment(found);
+          setPaymentStatus(found.status);
+          setNotes(found.notes || "");
+        } else {
+          setLoadError("Payment not found.");
+        }
+      })
+      .catch((error) => setLoadError(error instanceof Error ? error.message : "Unable to load payment."))
+      .finally(() => setIsLoading(false));
+  }, [params.id]);
+
+  if (isLoading) return <div className="p-8 text-sm text-slate-500">Loading payment details...</div>;
+  if (!actualPayment) return <div className="p-8 text-sm text-red-600">{loadError || "Payment not found."}</div>;
+
+  const payment = {
     id: actualPayment.id,
     receiptId: actualPayment.receiptId,
     amount: actualPayment.amount,
-    memberName: actualPayment.payerName || "Unknown",
-    memberId: actualPayment.memberId || "N/A",
+    memberName: actualPayment.payerName || "Guest payer",
+    memberId: actualPayment.memberId || "Guest",
     category: actualPayment.category === "monthly_dues" ? "Monthly Dues" : "Special Event",
-    date: new Date(actualPayment.paidAt).toLocaleDateString("en-GB", { day: '2-digit', month: 'short', year: 'numeric' }),
-    method: actualPayment.method.toUpperCase().replace("_", " "),
-    recordedBy: actualPayment.collectedByAdminName ? `${actualPayment.collectedByAdminName} (Admin)` : "Self",
+    date: new Date(actualPayment.paidAt || actualPayment.recordedAt).toLocaleDateString("en-GB", { day: '2-digit', month: 'short', year: 'numeric' }),
+    method: actualPayment.method.toUpperCase().replaceAll("_", " "),
+    recordedBy: actualPayment.collectedByAdminName || actualPayment.recordedByAdminId || "System",
     recordedAt: new Date(actualPayment.recordedAt).toLocaleString(),
     notes: actualPayment.notes || "No notes provided."
-  } : {
-    id: params.id as string,
-    receiptId: "REC-2026-07-001",
-    amount: 100,
-    memberName: "Farhan M",
-    memberId: "SSF-101",
-    category: "Monthly Dues",
-    date: "04 Jul 2026",
-    method: "UPI (Google Pay)",
-    recordedBy: "Shibili N (Admin)",
-    recordedAt: "04 Jul 2026, 10:30 AM",
-    notes: "Payment received directly to unit account."
   };
 
   const [notes, setNotes] = useState(payment.notes);
@@ -56,6 +62,17 @@ export default function PaymentDetailPage() {
       setIsSaving(false);
       toast.success("Notes updated successfully");
     }, 600);
+  };
+
+  const handleTransition = async (action: "approve" | "reject" | "cancel") => {
+    try {
+      const updated = await transitionAdminPayment(actualPayment.id, action, notes);
+      setActualPayment(updated);
+      setPaymentStatus(updated.status);
+      toast.success(`Payment ${action === "approve" ? "approved" : action === "reject" ? "rejected" : "cancelled"}.`);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Unable to update payment.");
+    }
   };
 
   return (
@@ -88,13 +105,13 @@ export default function PaymentDetailPage() {
                  <div className="text-4xl font-bold text-slate-900 dark:text-slate-100 font-mono tracking-tight">₹{payment.amount}</div>
                </div>
                <Badge className={
-                 paymentStatus === "Confirmed" 
+                 paymentStatus === "confirmed"
                    ? "bg-green-50 text-green-700 border-green-200 shadow-none dark:bg-green-900/20 dark:text-green-400 dark:border-green-800 px-3 py-1 text-sm"
-                   : paymentStatus === "Pending"
+                   : paymentStatus === "pending"
                    ? "bg-amber-50 text-amber-700 border-amber-200 shadow-none dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800 px-3 py-1 text-sm"
                    : "bg-red-50 text-red-700 border-red-200 shadow-none dark:bg-red-900/20 dark:text-red-400 dark:border-red-800 px-3 py-1 text-sm"
                }>
-                 {paymentStatus}
+                 {paymentStatus.charAt(0).toUpperCase() + paymentStatus.slice(1)}
                </Badge>
             </div>
 
@@ -145,30 +162,30 @@ export default function PaymentDetailPage() {
            <Card className="p-4 border-slate-200 dark:border-slate-800 shadow-sm bg-white dark:bg-slate-900">
              <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100 mb-3">Actions</h3>
              
-             {paymentStatus === "Pending" && (
+             {paymentStatus === "pending" && (
                <div className="space-y-2 mb-4 pb-4 border-b border-slate-100 dark:border-slate-800">
                  <Button 
                    className="w-full bg-green-600 hover:bg-green-700 text-white shadow-none" 
-                   onClick={() => { setPaymentStatus("Confirmed"); toast.success("Payment Approved"); }}
+                   onClick={() => void handleTransition("approve")}
                  >
                    Approve Payment
                  </Button>
                  <Button 
                    variant="outline" 
                    className="w-full text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200 dark:border-red-900/50 dark:hover:bg-red-900/20 shadow-none"
-                   onClick={() => { setPaymentStatus("Rejected"); toast.error("Payment Rejected"); }}
+                   onClick={() => void handleTransition("reject")}
                  >
                    Reject
                  </Button>
                </div>
              )}
 
-             {paymentStatus === "Confirmed" && (
+             {paymentStatus === "confirmed" && (
                <div className="mb-4 pb-4 border-b border-slate-100 dark:border-slate-800">
                  <Button 
                    variant="outline" 
                    className="w-full text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200 dark:border-red-900/50 dark:hover:bg-red-900/20 shadow-none"
-                   onClick={() => { setPaymentStatus("Cancelled"); toast.info("Payment Cancelled"); }}
+                   onClick={() => void handleTransition("cancel")}
                  >
                    Cancel / Undo Payment
                  </Button>

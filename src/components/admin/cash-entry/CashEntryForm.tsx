@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,7 +9,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Check, Search, ArrowLeft, Receipt, User, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import { PremiumReceiptCard } from "@/components/receipt/PremiumReceiptCard";
-import { MOCK_MEMBERS } from "@/lib/admin/mock-data";
+import { getAdminMembers } from "@/lib/api/memberClient";
+import { recordAdminCashEntry } from "@/lib/api/adminPaymentClient";
+import { getCurrentSession } from "@/lib/api/authClient";
 
 export function CashEntryForm() {
   const [category, setCategory] = useState("monthly_dues");
@@ -22,11 +24,24 @@ export function CashEntryForm() {
   const [guestPhone, setGuestPhone] = useState("");
   const [amount, setAmount] = useState("");
   const [admin, setAdmin] = useState("Farhan (President)");
+  const [adminId, setAdminId] = useState("");
+  const [notes, setNotes] = useState("");
+  const [months, setMonths] = useState("");
+  const [eventId, setEventId] = useState("");
   
   // UI State
   const [showConfirm, setShowConfirm] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [generatedReceiptId, setGeneratedReceiptId] = useState("");
+
+  useEffect(() => {
+    getCurrentSession().then((session) => {
+      if (session.actorType === "admin") {
+        setAdminId(session.actorId);
+        setAdmin(session.actorName);
+      }
+    }).catch(() => undefined);
+  }, []);
 
   const handleInitialSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,13 +60,30 @@ export function CashEntryForm() {
     setShowConfirm(true);
   };
 
-  const confirmAndSave = () => {
-    // Simulate save
-    const newReceiptId = `REC-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
-    setGeneratedReceiptId(newReceiptId);
-    setShowConfirm(false);
-    setShowSuccess(true);
-    toast.success("Payment recorded successfully!");
+  const confirmAndSave = async () => {
+    if (!adminId) {
+      toast.error("Unable to identify the signed-in admin.");
+      return;
+    }
+    try {
+      const entry = await recordAdminCashEntry({
+        memberId: isGuest ? undefined : selectedMember?.id,
+        guestName: isGuest ? guestName : undefined,
+        guestPhone: isGuest ? guestPhone : undefined,
+        category,
+        amount: Number(amount),
+        months: category === "monthly_dues" ? months.split(",").map((month) => month.trim()).filter(Boolean) : undefined,
+        eventId: category === "special_event" ? eventId : undefined,
+        receivedByAdminId: adminId,
+        notes,
+      });
+      setGeneratedReceiptId(entry.id);
+      setShowConfirm(false);
+      setShowSuccess(true);
+      toast.success("Payment recorded successfully!");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Unable to record payment.");
+    }
   };
 
   const resetForm = () => {
@@ -64,11 +96,12 @@ export function CashEntryForm() {
   };
 
 
-  const handleSearch = () => {
+  const handleSearch = async () => {
     if (memberSearch.length > 3) {
-      const found = MOCK_MEMBERS.find(m => m.name.toLowerCase().includes(memberSearch.toLowerCase()) || m.phone.includes(memberSearch));
+      const result = await getAdminMembers({ page: 1, pageSize: 10, search: memberSearch });
+      const found = result.items[0];
       if (found) {
-        setSelectedMember({ name: found.name, phone: found.phone, id: found.memberId });
+        setSelectedMember({ name: found.name, phone: found.phone, id: found.id });
         toast.success("Member found");
       } else {
         toast.error("No member found");
@@ -271,14 +304,14 @@ export function CashEntryForm() {
                 
                 <div className="space-y-2">
                   <Label htmlFor="months">Months Covering (e.g. July, Aug)</Label>
-                  <Input id="months" placeholder="e.g. July 2026" className="bg-white dark:bg-slate-950" required={!isGuest} />
+                      <Input id="months" value={months} onChange={(event) => setMonths(event.target.value)} placeholder="e.g. July 2026" className="bg-white dark:bg-slate-950" required={!isGuest} />
                 </div>
               </>
             ) : (
               <>
                 <div className="space-y-2 md:col-span-2">
                   <Label htmlFor="event">Select Special Event</Label>
-                  <Select defaultValue="building_fund">
+                    <Select value={eventId} onValueChange={setEventId}>
                     <SelectTrigger className="w-full bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800">
                       <SelectValue placeholder="Select Event" />
                     </SelectTrigger>
@@ -330,7 +363,7 @@ export function CashEntryForm() {
             {/* Notes */}
             <div className="space-y-2 md:col-span-2">
               <Label htmlFor="notes">Notes (Optional)</Label>
-              <Input id="notes" placeholder="Any additional information..." className="bg-white dark:bg-slate-950" />
+              <Input id="notes" value={notes} onChange={(event) => setNotes(event.target.value)} placeholder="Any additional information..." className="bg-white dark:bg-slate-950" />
             </div>
           </div>
         </CardContent>

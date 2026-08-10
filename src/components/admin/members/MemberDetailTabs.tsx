@@ -68,7 +68,7 @@ export function MemberDetailTabs({ member }: MemberDetailTabsProps) {
         )}
 
         {activeTab === "payments" && (
-          <TabSection title="Payment History" message="Payment history will be available after the payment module is connected." />
+          <TabSection title="Payment History" message="Payment history is available in the Payments Ledger. Use Record Cash to add a confirmed cash payment for this member." />
         )}
 
         {activeTab === "family" && (

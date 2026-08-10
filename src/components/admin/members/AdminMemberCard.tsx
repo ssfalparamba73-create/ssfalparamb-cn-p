@@ -105,7 +105,7 @@ export function AdminMemberCard({ member }: AdminMemberCardProps) {
               Mark as Paid?
             </h3>
             <p className="text-slate-600 dark:text-slate-400 text-sm mb-6 leading-relaxed">
-              Payment recording is not connected yet. <span className="font-semibold text-slate-900 dark:text-slate-100">{member.name}</span>&apos;s pending dues will not be changed.
+              Record a cash payment for <span className="font-semibold text-slate-900 dark:text-slate-100">{member.name}</span> in the payment ledger.
             </p>
             <div className="flex justify-end gap-3">
               <Button
@@ -121,11 +121,11 @@ export function AdminMemberCard({ member }: AdminMemberCardProps) {
                 onClick={(e) => {
                   e.stopPropagation();
                   setShowPaymentWarning(false);
-                  toast.info("Payment recording will be enabled in the payment phase.");
+                  window.location.href = `/admin/cash-entry?memberId=${encodeURIComponent(member.id)}`;
                 }}
                 className="bg-blue-600 text-white hover:bg-blue-700"
               >
-                Okay
+                Record Payment
               </Button>
             </div>
           </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Search, ExternalLink, Receipt, Building, User } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -10,7 +10,8 @@ import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { TablePagination } from "@/components/ui/table-pagination";
 
-import { MOCK_PAYMENTS } from "@/lib/admin/mock-data";
+import { getAdminPayments } from "@/lib/api/adminPaymentClient";
+import type { PaymentDTO } from "@/lib/backend/dto/payment.dto";
 
 const PAGE_SIZE = 10;
 
@@ -19,6 +20,19 @@ export function PaymentsTable() {
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [methodFilter, setMethodFilter] = useState("all");
   const [page, setPage] = useState(1);
+  const [payments, setPayments] = useState<PaymentDTO[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+
+  useEffect(() => {
+    getAdminPayments({
+      category: categoryFilter === "all" ? undefined : categoryFilter as PaymentDTO["category"],
+      method: methodFilter === "all" ? undefined : methodFilter as PaymentDTO["method"],
+    })
+      .then((result) => setPayments(result.items))
+      .catch((error) => setLoadError(error instanceof Error ? error.message : "Unable to load payments."))
+      .finally(() => setIsLoading(false));
+  }, [categoryFilter, methodFilter]);
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -42,8 +56,7 @@ export function PaymentsTable() {
     return method.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
   };
 
-  // Map central MOCK_PAYMENTS to the shape expected by the table
-  const tablePayments = MOCK_PAYMENTS.map(p => ({
+  const tablePayments = payments.map(p => ({
     id: p.id,
     receiptId: p.receiptId,
     memberName: p.payerName || "Unknown",
@@ -52,7 +65,7 @@ export function PaymentsTable() {
     method: p.method,
     amount: p.amount,
     status: p.status,
-    date: new Date(p.paidAt).toLocaleDateString("en-GB", { day: '2-digit', month: 'short', year: 'numeric' }),
+    date: new Date(p.paidAt || p.recordedAt).toLocaleDateString("en-GB", { day: '2-digit', month: 'short', year: 'numeric' }),
     eventName: p.eventName
   }));
 
@@ -125,12 +138,15 @@ export function PaymentsTable() {
                 <SelectItem value="upi">UPI</SelectItem>
                 <SelectItem value="qr_code">QR Code</SelectItem>
                 <SelectItem value="cash_handover">Cash Handover</SelectItem>
-                <SelectItem value="admin_cash">Admin Entry</SelectItem>
+                <SelectItem value="admin_cash_entry">Admin Entry</SelectItem>
               </SelectContent>
             </Select>
           </div>
         </div>
       </div>
+
+      {loadError && <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{loadError}</p>}
+      {isLoading && <p className="text-sm text-slate-500">Loading payments...</p>}
 
       {/* Desktop Table View */}
       <div className="hidden md:block bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
@@ -191,6 +207,7 @@ export function PaymentsTable() {
                   </td>
                 </tr>
               ))}
+              {paginatedPayments.length === 0 && !isLoading && <tr><td colSpan={7} className="px-4 py-10 text-center text-sm text-slate-500">No payments found.</td></tr>}
             </tbody>
           </table>
         </div>

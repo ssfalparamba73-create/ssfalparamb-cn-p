@@ -152,7 +152,7 @@ export default function MemberDetailPage() {
               <Button onClick={handleIssuePin} disabled={isIssuingPin || member.status !== "active"} variant="outline" className="w-full h-10 border-slate-200 text-slate-700 dark:border-slate-700 dark:text-slate-300">
                 <Key className="w-4 h-4 mr-2" /> {isIssuingPin ? "Generating..." : "Reset PIN"}
               </Button>
-              <Button onClick={() => toast.info("Cash recording will be enabled in the payment phase.")} className="col-span-2 md:col-auto w-full h-10 bg-blue-600 hover:bg-blue-700 text-white">
+              <Button onClick={() => router.push(`/admin/cash-entry?memberId=${member.id}`)} className="col-span-2 md:col-auto w-full h-10 bg-blue-600 hover:bg-blue-700 text-white">
                 <Banknote className="w-4 h-4 mr-2" /> Record Cash
               </Button>
            </div>
