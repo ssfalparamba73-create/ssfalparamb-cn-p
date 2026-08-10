@@ -1,39 +1,40 @@
+"use client";
+
 import { ShieldCheck, CalendarRange } from "lucide-react";
 import { TransactionCard, Transaction } from "@/components/payments/TransactionCard";
-import { redirect } from "next/navigation";
+import { useEffect, useState } from "react";
 import { MEMBER_PAYMENTS_ENABLED } from "@/lib/featureFlags";
-
-const MOCK_TRANSACTIONS: Transaction[] = [
-  {
-    id: "tx_1",
-    date: "July 2, 2026",
-    amount: 100,
-    method: "UPI",
-    status: "COMPLETED",
-    receiptUrl: "/receipt/tx_1?method=UPI&admin=Admin&phone=Member&source=member"
-  },
-  {
-    id: "tx_2",
-    date: "June 1, 2026",
-    amount: 100,
-    method: "CASH",
-    status: "COMPLETED",
-    receiptUrl: "/receipt/tx_2?method=CASH&admin=Farhan%20(President)&phone=Member&source=member"
-  },
-  {
-    id: "tx_3",
-    date: "May 5, 2026",
-    amount: 150,
-    method: "UPI",
-    status: "COMPLETED",
-    receiptUrl: "/receipt/tx_3?method=UPI&admin=Admin&phone=Member&source=member"
-  },
-];
+import { getMemberPayments } from "@/lib/api/paymentClient";
+import { useRouter } from "next/navigation";
 
 export default function PaymentsPage() {
-  if (!MEMBER_PAYMENTS_ENABLED) redirect("/member/dashboard");
+  const router = useRouter();
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const totalPaid = MOCK_TRANSACTIONS.reduce((sum, tx) => sum + (tx.status === "COMPLETED" ? tx.amount : 0), 0);
+  useEffect(() => {
+    if (!MEMBER_PAYMENTS_ENABLED) {
+      router.replace("/member/dashboard");
+      return;
+    }
+
+    getMemberPayments()
+      .then((result) => {
+        setTransactions(result.items.map((payment) => ({
+          id: payment.id,
+          date: new Date(payment.date).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" }),
+          amount: payment.amount,
+          method: payment.method.toUpperCase().includes("CASH") ? "CASH" : "UPI",
+          status: payment.status,
+          receiptUrl: payment.receiptUrl,
+        })));
+      })
+      .catch((requestError) => setError(requestError instanceof Error ? requestError.message : "Unable to load payment history."))
+      .finally(() => setIsLoading(false));
+  }, [router]);
+
+  const totalPaid = transactions.reduce((sum, tx) => sum + (tx.status === "COMPLETED" ? tx.amount : 0), 0);
 
   return (
     <div className="p-4 md:p-6 min-h-screen bg-[#F6F8FC] animate-in fade-in duration-300 pb-24 md:pb-6 transition-colors dark:bg-slate-900">
@@ -70,11 +71,11 @@ export default function PaymentsPage() {
       <div className="space-y-4">
         <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2 dark:text-slate-50">
           Recent Transactions
-          <span className="bg-slate-200 text-slate-600 text-xs py-0.5 px-2 rounded-full dark:bg-slate-700 dark:text-slate-300">{MOCK_TRANSACTIONS.length}</span>
+          <span className="bg-slate-200 text-slate-600 text-xs py-0.5 px-2 rounded-full dark:bg-slate-700 dark:text-slate-300">{transactions.length}</span>
         </h2>
         
         <div className="flex flex-col gap-3">
-          {MOCK_TRANSACTIONS.map((tx) => (
+          {isLoading ? <p className="text-sm text-slate-500">Loading payment history...</p> : error ? <p className="text-sm text-red-600">{error}</p> : transactions.length === 0 ? <p className="text-sm text-slate-500">No payment transactions yet.</p> : transactions.map((tx) => (
             <TransactionCard key={tx.id} transaction={tx} />
           ))}
         </div>

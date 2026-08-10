@@ -6,7 +6,7 @@ export interface Transaction {
   date: string;
   amount: number;
   method: "UPI" | "CASH";
-  status: "COMPLETED" | "PENDING" | "FAILED";
+  status: "COMPLETED" | "PENDING" | "FAILED" | "CANCELLED";
   receiptUrl?: string;
 }
 
