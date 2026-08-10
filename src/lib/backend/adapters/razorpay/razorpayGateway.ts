@@ -85,7 +85,7 @@ export function verifyRazorpaySignature(
   const body = `${params.razorpayOrderId}|${params.razorpayPaymentId}`;
   
   const expectedSignature = crypto
-    .createHmac("sha256", config.webhookSecret)
+    .createHmac("sha256", config.keySecret)
     .update(body)
     .digest("hex");
 
