@@ -11,6 +11,7 @@ import { useSearchParams } from "next/navigation"
 import { useRazorpayCheckout } from "@/lib/hooks/useRazorpayCheckout"
 import { requestBackend } from "@/lib/api/backendClient"
 import { getCurrentMemberProfile } from "@/lib/api/memberClient"
+import { getCashReceivers, type CashReceiver } from "@/lib/api/cashReceiverClient"
 
 const isUpiAvailable = process.env.NEXT_PUBLIC_RAZORPAY_UPI_ENABLED === "true";
 
@@ -26,6 +27,7 @@ function PayNowContent() {
   const isQrInlineOpen = false;
   const renderMockQrCode = () => null;
   const [selectedAdmin, setSelectedAdmin] = useState<string>("");
+  const [admins, setAdmins] = useState<CashReceiver[]>([]);
   const [isAdminDropdownOpen, setIsAdminDropdownOpen] = useState(false);
   const [memberQuery, setMemberQuery] = useState("");
   const { initiateCheckout, isProcessing, error: razorpayError, clearError } = useRazorpayCheckout();
@@ -36,6 +38,10 @@ function PayNowContent() {
       .then((profile) => setMemberQuery(profile.phone))
       .catch(() => undefined);
   }, [source]);
+
+  useEffect(() => {
+    getCashReceivers().then(setAdmins).catch(() => setAdmins([]));
+  }, []);
 
   // Preload receipt images in the background without causing lag
   useEffect(() => {
@@ -93,14 +99,7 @@ function PayNowContent() {
     (activeTab === "dues" && selectedMonths.length === 0) ||
     (activeTab === "event" && finalAmount < 30);
 
-  const admins = [
-    { id: "1", name: "Farhan", role: "President" },
-    { id: "2", name: "Shafi", role: "Secretary" },
-    { id: "3", name: "Faisal", role: "Treasurer" },
-    { id: "4", name: "Yasir", role: "Joint Secretary" },
-    { id: "5", name: "Najeeb", role: "Vice President" },
-    { id: "6", name: "Anas", role: "Committee Member" },
-  ];
+  const selectedAdminName = admins.find((admin) => admin.id === selectedAdmin)?.name || "";
 
   const handleQrClick = () => {
     void handleRazorpayCheckout();
@@ -139,7 +138,7 @@ function PayNowContent() {
       memberPhone: memberQuery,
       onSuccess: (paymentId) => {
         // Redirect to success page with payment details
-        window.location.href = `/success?method=upi&admin=${encodeURIComponent(selectedAdmin)}&phone=${encodeURIComponent(memberQuery)}&amount=${finalAmount}${activeTab === 'event' ? '&category=special_event' : ''}${source === 'member' ? '&source=member' : ''}&paymentId=${paymentId}`;
+        window.location.href = `/success?method=upi&admin=${encodeURIComponent(selectedAdminName)}&phone=${encodeURIComponent(memberQuery)}&amount=${finalAmount}${activeTab === 'event' ? '&category=special_event' : ''}${source === 'member' ? '&source=member' : ''}&paymentId=${paymentId}`;
       },
       onError: (error) => {
         console.error("Payment failed:", error);
@@ -148,6 +147,35 @@ function PayNowContent() {
         console.log("Payment modal dismissed");
       },
     });
+  };
+
+  const handleCashHandover = async () => {
+    if (isButtonDisabled) {
+      setCheckoutHint("Enter your phone number and select the admin receiving the cash.");
+      return;
+    }
+
+    setCheckoutHint(null);
+    try {
+      const intent = await requestBackend<{ paymentId: string }>("/api/v1/payments/intent", {
+        method: "POST",
+        body: JSON.stringify({
+          memberQuery,
+          payerName: memberQuery,
+          payerPhone: memberQuery,
+          category: activeTab === "event" ? "special_event" : "monthly_dues",
+          method: "cash_handover",
+          selectedMonthIds: activeTab === "dues" ? selectedMonths : undefined,
+          tier: activeTab === "dues" ? (duesTier === 50 ? "base" : "premium") : "custom",
+          customAmount: activeTab === "event" ? finalAmount : undefined,
+          receivedByAdminId: selectedAdmin,
+        }),
+      });
+
+      window.location.href = `/success?method=cash_handover&admin=${encodeURIComponent(selectedAdminName)}&phone=${encodeURIComponent(memberQuery)}&amount=${finalAmount}${activeTab === 'event' ? '&category=special_event' : ''}${source === 'member' ? '&source=member' : ''}&paymentId=${intent.paymentId}`;
+    } catch (error) {
+      setCheckoutHint(error instanceof Error ? error.message : "Unable to record the cash handover.");
+    }
   };
 
   // Removed old isButtonDisabled
@@ -397,7 +425,7 @@ function PayNowContent() {
                     >
                       <span className={selectedAdmin ? "text-foreground font-medium" : "text-muted-foreground"}>
                         {selectedAdmin
-                          ? `${selectedAdmin} (${admins.find(a => a.name === selectedAdmin)?.role})`
+                          ? selectedAdminName
                           : "Select Admin"}
                       </span>
                       <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform duration-200 ${isAdminDropdownOpen ? "rotate-180" : ""}`} />
@@ -415,17 +443,17 @@ function PayNowContent() {
                               key={admin.id}
                               type="button"
                               className={`w-full text-left px-4 py-1.5 rounded-lg transition-colors flex flex-col ${
-                                selectedAdmin === admin.name
+                                selectedAdmin === admin.id
                                   ? "bg-primary/10 text-primary font-medium dark:bg-blue-500/15 dark:text-blue-400"
                                   : "text-slate-700 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-700"
                               }`}
                               onClick={() => {
-                                setSelectedAdmin(admin.name);
+                                setSelectedAdmin(admin.id);
                                 setIsAdminDropdownOpen(false);
                               }}
                             >
                               <span className="font-semibold text-[14px] leading-tight">{admin.name}</span>
-                              <span className="text-[11px] text-slate-400 font-normal leading-none mt-0.5">{admin.role}</span>
+                              <span className="text-[11px] text-slate-400 font-normal leading-none mt-0.5">Cash Receiver</span>
                             </button>
                           ))}
                         </div>
@@ -472,18 +500,14 @@ function PayNowContent() {
                 )}
               </Button>
             ) : (
-              <Link
-                href={isButtonDisabled ? "#" : `/success?method=${paymentMethod}&admin=${encodeURIComponent(selectedAdmin)}&phone=${encodeURIComponent(memberQuery)}&amount=${finalAmount}${activeTab === 'event' ? '&category=special_event' : ''}${source === 'member' ? '&source=member' : ''}`}
-                className={`w-full ${isButtonDisabled ? "pointer-events-none" : ""}`}
+              <Button
+                size="lg"
+                className="w-full text-lg h-14 rounded-xl"
+                disabled={isButtonDisabled}
+                onClick={handleCashHandover}
               >
-                <Button
-                  size="lg"
-                  className="w-full text-lg h-14 rounded-xl"
-                  disabled={isButtonDisabled}
-                >
-                  Record ₹${finalAmount || 0} Cash
-                </Button>
-              </Link>
+                Record ₹{finalAmount || 0} Cash
+              </Button>
             )}
             <p className="text-xs text-muted-foreground flex items-center justify-center gap-1 font-medium">
               <ShieldCheck className="size-4 text-green-600" /> Secure SSL Encrypted Transaction

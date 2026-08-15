@@ -12,6 +12,8 @@ import { PremiumReceiptCard } from "@/components/receipt/PremiumReceiptCard";
 import { getAdminMembers } from "@/lib/api/memberClient";
 import { recordAdminCashEntry } from "@/lib/api/adminPaymentClient";
 import { getCurrentSession } from "@/lib/api/authClient";
+import { getAdminUsers } from "@/lib/api/adminUserClient";
+import type { AdminUserDTO } from "@/lib/backend/dto/admin.dto";
 
 export function CashEntryForm() {
   const [category, setCategory] = useState("monthly_dues");
@@ -25,6 +27,7 @@ export function CashEntryForm() {
   const [amount, setAmount] = useState("");
   const [admin, setAdmin] = useState("Farhan (President)");
   const [adminId, setAdminId] = useState("");
+  const [admins, setAdmins] = useState<AdminUserDTO[]>([]);
   const [notes, setNotes] = useState("");
   const [months, setMonths] = useState("");
   const [eventId, setEventId] = useState("");
@@ -35,6 +38,10 @@ export function CashEntryForm() {
   const [generatedReceiptId, setGeneratedReceiptId] = useState("");
 
   useEffect(() => {
+    getAdminUsers()
+      .then((result) => setAdmins(result.items.filter((item) => item.status === "active" && item.canReceiveCash)))
+      .catch(() => setAdmins([]));
+
     getCurrentSession().then((session) => {
       if (session.actorType === "admin") {
         setAdminId(session.actorId);
@@ -346,18 +353,21 @@ export function CashEntryForm() {
             {/* Received By Admin */}
             <div className="space-y-2 md:col-span-2">
               <Label htmlFor="admin">Cash Received By (Admin) <span className="text-red-500">*</span></Label>
-              <Select value={admin} onValueChange={setAdmin}>
-                <SelectTrigger className="w-full bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800">
-                  <SelectValue placeholder="Select Admin" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Farhan (President)">Farhan (President)</SelectItem>
-                  <SelectItem value="Shibili (Secretary)">Shibili (Secretary)</SelectItem>
-                  <SelectItem value="Safwan (Treasurer)">Safwan (Treasurer)</SelectItem>
-                  <SelectItem value="Fawas (Collector)">Fawas (Collector)</SelectItem>
-                  <SelectItem value="Anshid (Collector)">Anshid (Collector)</SelectItem>
-                </SelectContent>
-              </Select>
+                <Select value={adminId} onValueChange={(value) => {
+                  setAdminId(value);
+                  setAdmin(admins.find((item) => item.id === value)?.name || "");
+                }}>
+                  <SelectTrigger className="w-full bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800">
+                    <SelectValue placeholder="Select Admin" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {admins.map((item) => (
+                      <SelectItem key={item.id} value={item.id}>
+                        {item.name} ({item.roles[0] || "Cash Receiver"})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
             </div>
 
             {/* Notes */}
