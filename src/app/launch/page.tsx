@@ -16,8 +16,8 @@ export default function LaunchPage() {
         />
 
         <Link
-          href="/pay"
-          aria-label="Launch the SSF payment portal"
+          href="/"
+          aria-label="Launch the SSF Alparamba Unit app"
           className="absolute left-[5.3%] top-[72.7%] h-[11.5%] w-[23%] rounded-[1.5rem] outline-none transition focus-visible:ring-4 focus-visible:ring-blue-300"
         />
       </section>
@@ -32,7 +32,7 @@ export default function LaunchPage() {
             The launch artwork is designed for desktop screens.
           </p>
           <Link
-            href="/pay"
+            href="/"
             className="mt-6 inline-flex rounded-xl bg-[#2563eb] px-5 py-3 font-semibold text-white"
           >
             Open payment portal
