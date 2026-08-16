@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,10 +10,40 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { MOCK_DEFAULTERS } from "@/lib/admin/mock-data";
+import { getAdminMembers } from "@/lib/api/memberClient";
+import type { MemberDTO } from "@/lib/backend/dto/member.dto";
 import { TablePagination } from "@/components/ui/table-pagination";
 
 const PAGE_SIZE = 10;
+
+interface DefaulterRow {
+  id: string;
+  name: string;
+  phone: string;
+  area?: string;
+  dueMonths: number;
+  amount: number;
+  category: "current_due" | "long_overdue";
+  lastPaid: string;
+  lastReminded: string | null;
+  reminderCount: number;
+}
+
+function toDefaulterRow(member: MemberDTO): DefaulterRow {
+  const dueMonths = member.monthlyAmount > 0 ? Math.max(1, Math.ceil(member.duesPending / member.monthlyAmount)) : 1;
+  return {
+    id: member.id,
+    name: member.name,
+    phone: member.phone,
+    area: member.area,
+    dueMonths,
+    amount: member.duesPending,
+    category: dueMonths > 1 ? "long_overdue" : "current_due",
+    lastPaid: member.lastPaidAt ? new Date(member.lastPaidAt).toLocaleDateString("en-IN", { month: "short", year: "numeric" }) : "Not recorded",
+    lastReminded: member.lastRemindedAt ? new Date(member.lastRemindedAt).toLocaleDateString("en-IN") : null,
+    reminderCount: member.reminderCount,
+  };
+}
 
 export function DefaultersManager() {
   const router = useRouter();
@@ -21,7 +51,16 @@ export function DefaultersManager() {
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [page, setPage] = useState(1);
 
-  const [members, setMembers] = useState(MOCK_DEFAULTERS);
+  const [members, setMembers] = useState<DefaulterRow[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+
+  useEffect(() => {
+    getAdminMembers({ page: 1, pageSize: 100, paymentStatus: "arrears", sort: "dues-desc" })
+      .then((result) => setMembers(result.items.map(toDefaulterRow)))
+      .catch((error) => setLoadError(error instanceof Error ? error.message : "Unable to load pending payments."))
+      .finally(() => setIsLoading(false));
+  }, []);
 
   const filteredMembers = members.filter(m => {
     const matchesSearch = m.name.toLowerCase().includes(searchQuery.toLowerCase()) || m.phone.includes(searchQuery);
@@ -100,6 +139,9 @@ export function DefaultersManager() {
           </Button>
         </div>
       </div>
+
+      {loadError && <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{loadError}</p>}
+      {isLoading && <p className="text-sm text-slate-500">Loading live pending payments…</p>}
 
       {/* Info Banner */}
       <div className="bg-blue-50 dark:bg-blue-900/20 text-blue-800 dark:text-blue-300 p-4 rounded-xl flex items-start gap-3 border border-blue-100 dark:border-blue-800/30">

@@ -1,7 +1,7 @@
 import React from "react";
 import { PaymentsTable } from "@/components/admin/payments/PaymentsTable";
 import { Button } from "@/components/ui/button";
-import { Download } from "lucide-react";
+import { PaymentsExportButton } from "@/components/admin/exports/PaymentsExportButton";
 
 export const metadata = {
   title: "Payments Ledger | SSF Alparamba Admin",
@@ -19,10 +19,7 @@ export default function PaymentsPage() {
           </p>
         </div>
         
-        <Button variant="outline" className="shrink-0">
-          <Download className="w-4 h-4 mr-2" />
-          Export CSV
-        </Button>
+        <PaymentsExportButton />
       </div>
 
       <div className="mt-6">

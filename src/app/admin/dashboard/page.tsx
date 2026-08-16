@@ -9,9 +9,9 @@ import {
   TrendingUp,
   CreditCard,
   Droplet,
-  UserPlus,
-  FileText
+  UserPlus
 } from "lucide-react";
+import { DashboardExportButton } from "@/components/admin/exports/DashboardExportButton";
 import { StatsCard } from "@/components/admin/dashboard/StatsCard";
 import { RecentPayments } from "@/components/admin/dashboard/RecentPayments";
 import { RecentCashHandovers } from "@/components/admin/dashboard/RecentCashHandovers";
@@ -76,10 +76,7 @@ export default function AdminDashboardPage() {
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          <Button variant="outline" className="h-10 border-slate-200 text-slate-700 font-medium hidden sm:flex">
-            <FileText className="w-4 h-4 mr-2" />
-            Export Report
-          </Button>
+          <DashboardExportButton />
           <Button className="h-10 bg-blue-600 hover:bg-blue-700 text-white font-medium">
             <Banknote className="w-4 h-4 mr-2" />
             Record Cash
