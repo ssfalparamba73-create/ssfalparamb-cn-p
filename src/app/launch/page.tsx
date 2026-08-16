@@ -4,7 +4,7 @@ import { ArrowRight, Check, CreditCard, FileText, House, ReceiptText, UserRound 
 
 function PhonePreview() {
   return (
-    <div className="relative mx-auto w-[clamp(250px,24vw,380px)] rotate-[3deg] rounded-[3.5rem] border-[10px] border-[#111827] bg-white p-3 shadow-[10px_18px_28px_rgba(15,23,42,0.24)]">
+    <div className="relative mx-auto w-[clamp(225px,20vw,335px)] rotate-[2deg] rounded-[3.4rem] border-[9px] border-[#111827] bg-white p-2.5 shadow-[10px_18px_28px_rgba(15,23,42,0.24)]">
       <div className="absolute -right-[18px] top-44 h-24 w-2 rounded-r-full bg-[#111827]" />
       <div className="absolute left-1/2 top-3 z-10 h-7 w-28 -translate-x-1/2 rounded-full bg-black" />
       <div className="overflow-hidden rounded-[2.6rem] bg-white">
