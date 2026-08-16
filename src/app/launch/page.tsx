@@ -4,7 +4,7 @@ import { ArrowRight, Check, CreditCard, FileText, House, ReceiptText, UserRound 
 
 function PhonePreview() {
   return (
-    <div className="relative mx-auto w-[min(31vw,400px)] min-w-[300px] rotate-[3deg] rounded-[3.5rem] border-[10px] border-[#111827] bg-white p-3 shadow-[10px_18px_28px_rgba(15,23,42,0.24)]">
+    <div className="relative mx-auto w-[clamp(250px,24vw,380px)] rotate-[3deg] rounded-[3.5rem] border-[10px] border-[#111827] bg-white p-3 shadow-[10px_18px_28px_rgba(15,23,42,0.24)]">
       <div className="absolute -right-[18px] top-44 h-24 w-2 rounded-r-full bg-[#111827]" />
       <div className="absolute left-1/2 top-3 z-10 h-7 w-28 -translate-x-1/2 rounded-full bg-black" />
       <div className="overflow-hidden rounded-[2.6rem] bg-white">
@@ -23,13 +23,13 @@ function PhonePreview() {
 export default function LaunchPage() {
   return (
     <main className="min-h-screen overflow-hidden bg-white">
-      <section className="relative mx-auto hidden min-h-screen max-w-[1720px] items-center overflow-hidden px-[7vw] py-12 md:flex">
+      <section className="relative mx-auto hidden h-screen max-h-screen max-w-[1720px] items-center overflow-hidden px-[6vw] py-[5vh] md:flex">
         <div className="pointer-events-none absolute -bottom-48 -left-40 size-[500px] rounded-full bg-[#eff6ff]" /><div className="pointer-events-none absolute -right-36 bottom-[-20%] size-[760px] rounded-full bg-[#eff6ff]" />
         <div className="relative z-10 w-[56%]">
-          <div className="flex items-end gap-5"><Image src="/logo/1.webp" alt="SSF logo" width={120} height={160} className="h-32 w-24 object-contain" priority /><div><p className="font-cooper text-[clamp(4.5rem,8vw,8rem)] leading-[0.75] tracking-tight text-[#2563eb]">SSF</p><p className="mt-5 text-[clamp(1.6rem,2.6vw,2.6rem)] font-semibold tracking-tight text-[#0f1f42]">Alparamba Unit</p></div></div>
-          <h1 className="mt-12 max-w-[820px] text-[clamp(3.5rem,6.1vw,6.8rem)] font-extrabold leading-[0.98] tracking-[-0.055em] text-[#0f1f42]">Our Digital Platform<br />is Launching Soon</h1>
-          <p className="mt-10 flex flex-wrap items-center gap-x-5 gap-y-2 text-[clamp(1.15rem,1.8vw,1.8rem)] font-semibold text-[#2563eb]"><span>Secure Payments</span><i className="size-2 rounded-full bg-[#2563eb]" /><span>Member Services</span><i className="size-2 rounded-full bg-[#2563eb]" /><span>Easy Access</span></p>
-          <Link href="/" className="mt-14 inline-flex rounded-2xl bg-[#1557e8] px-16 py-5 text-[clamp(1.5rem,2vw,2rem)] font-bold text-white shadow-[0_12px_22px_rgba(37,99,235,0.28)] transition hover:bg-[#114bd1] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-300">Launch App</Link>
+          <div className="flex items-end gap-[clamp(0.75rem,1.5vw,1.5rem)]"><Image src="/logo/1.webp" alt="SSF logo" width={120} height={160} className="h-[clamp(4.5rem,9vw,8rem)] w-[clamp(3.5rem,6vw,6rem)] object-contain" priority /><div><p className="font-cooper text-[clamp(3.5rem,6.5vw,7rem)] leading-[0.75] tracking-tight text-[#2563eb]">SSF</p><p className="mt-[clamp(0.75rem,1.5vw,1.25rem)] text-[clamp(1.2rem,2vw,2.4rem)] font-semibold tracking-tight text-[#0f1f42]">Alparamba Unit</p></div></div>
+          <h1 className="mt-[clamp(2rem,5vh,4rem)] max-w-[850px] text-[clamp(2.75rem,4.2vw,5.4rem)] font-extrabold leading-[0.98] tracking-[-0.055em] text-[#0f1f42]">Our Digital Platform<br />is Launching Soon</h1>
+          <p className="mt-[clamp(1.5rem,4vh,2.75rem)] flex flex-wrap items-center gap-x-[clamp(0.65rem,1.2vw,1.25rem)] gap-y-2 text-[clamp(0.85rem,1.35vw,1.65rem)] font-semibold text-[#2563eb]"><span>Secure Payments</span><i className="size-2 rounded-full bg-[#2563eb]" /><span>Member Services</span><i className="size-2 rounded-full bg-[#2563eb]" /><span>Easy Access</span></p>
+          <Link href="/" className="mt-[clamp(1.75rem,4vh,3.5rem)] inline-flex rounded-2xl bg-[#1557e8] px-[clamp(2.5rem,4vw,4rem)] py-[clamp(0.75rem,1.5vh,1.25rem)] text-[clamp(1.15rem,1.7vw,1.8rem)] font-bold text-white shadow-[0_12px_22px_rgba(37,99,235,0.28)] transition hover:bg-[#114bd1] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-300">Launch App</Link>
         </div>
         <div className="relative z-10 flex w-[44%] justify-center pt-12"><PhonePreview /></div>
       </section>
