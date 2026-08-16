@@ -36,11 +36,16 @@ export function AppQueryProvider({ children }: { children: ReactNode }) {
       persistOptions={{
         persister,
         maxAge: TWENTY_ONE_DAYS,
-        buster: "member-cache-v2",
+        // Financial activity must always be verified against the server after a reload.
+        buster: "member-cache-v3",
         dehydrateOptions: {
           shouldDehydrateQuery: (query) => {
             const scope = query.queryKey[0];
-            return query.state.status === "success" && (scope === "auth" || scope === "member");
+            if (query.state.status !== "success") return false;
+            if (scope === "auth") return true;
+            if (scope !== "member") return false;
+            const resource = query.queryKey[1];
+            return resource !== "dashboard" && resource !== "payments";
           },
         },
       }}
