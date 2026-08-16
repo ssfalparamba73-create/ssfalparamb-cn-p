@@ -140,11 +140,16 @@ export function completeCurrentMemberProfile(input: CompleteMemberProfileInput):
   });
 }
 
-export function getMemberDirectory(filters: Pick<MemberListFilters, "search" | "area" | "bloodGroup" | "donorAvailable"> = {}): Promise<PaginatedResult<MemberDirectoryItemDTO>> {
-  const params = new URLSearchParams({ page: "1", pageSize: "100" });
+export function getMemberDirectory(
+  filters: Pick<MemberListFilters, "search" | "area" | "bloodGroup" | "donorAvailable"> = {},
+  signal?: AbortSignal,
+  page = 1,
+  pageSize = 30
+): Promise<PaginatedResult<MemberDirectoryItemDTO>> {
+  const params = new URLSearchParams({ page: String(page), pageSize: String(pageSize) });
   if (filters.search) params.set("search", filters.search);
   if (filters.area) params.set("area", filters.area);
   if (filters.bloodGroup) params.set("bloodGroup", filters.bloodGroup);
   if (filters.donorAvailable !== undefined) params.set("donorAvailable", String(filters.donorAvailable));
-  return requestBackend<PaginatedResult<MemberDirectoryItemDTO>>(`/api/v1/member/directory?${params}`);
+  return requestBackend<PaginatedResult<MemberDirectoryItemDTO>>(`/api/v1/member/directory?${params}`, { signal });
 }

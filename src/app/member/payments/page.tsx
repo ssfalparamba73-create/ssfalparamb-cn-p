@@ -2,17 +2,20 @@
 
 import { ShieldCheck, CalendarRange } from "lucide-react";
 import { TransactionCard, Transaction } from "@/components/payments/TransactionCard";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { MEMBER_PAYMENTS_ENABLED } from "@/lib/featureFlags";
-import { getMemberPayments } from "@/lib/api/paymentClient";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { memberPaymentsQuery } from "@/lib/client/memberQueries";
+import { CardCollectionSkeleton } from "@/components/ui/loading-skeletons";
 
 export default function PaymentsPage() {
   const router = useRouter();
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data: payments, isPending, error } = useQuery({
+    ...memberPaymentsQuery,
+    enabled: MEMBER_PAYMENTS_ENABLED,
+  });
 
   useEffect(() => {
     if (!MEMBER_PAYMENTS_ENABLED) {
@@ -20,20 +23,16 @@ export default function PaymentsPage() {
       return;
     }
 
-    getMemberPayments()
-      .then((result) => {
-        setTransactions(result.items.map((payment) => ({
-          id: payment.id,
-          date: new Date(payment.date).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" }),
-          amount: payment.amount,
-          method: payment.method.toUpperCase().includes("CASH") ? "CASH" : "UPI",
-          status: payment.status,
-          receiptUrl: payment.receiptUrl,
-        })));
-      })
-      .catch((requestError) => setError(requestError instanceof Error ? requestError.message : "Unable to load payment history."))
-      .finally(() => setIsLoading(false));
   }, [router]);
+
+  const transactions: Transaction[] = (payments?.items ?? []).map((payment) => ({
+    id: payment.id,
+    date: new Date(payment.date).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" }),
+    amount: payment.amount,
+    method: payment.method.toUpperCase().includes("CASH") ? "CASH" : "UPI",
+    status: payment.status,
+    receiptUrl: payment.receiptUrl,
+  }));
 
   const totalPaid = transactions.reduce((sum, tx) => sum + (tx.status === "COMPLETED" ? tx.amount : 0), 0);
 
@@ -84,7 +83,7 @@ export default function PaymentsPage() {
         </h2>
         
         <div className="flex flex-col gap-3">
-          {isLoading ? <p className="text-sm text-slate-500">Loading payment history...</p> : error ? <p className="text-sm text-red-600">{error}</p> : transactions.length === 0 ? <p className="text-sm text-slate-500">No payment transactions yet.</p> : transactions.map((tx) => (
+          {isPending ? <CardCollectionSkeleton count={3} /> : error ? <p className="text-sm text-red-600">{error.message}</p> : transactions.length === 0 ? <p className="text-sm text-slate-500">No payment transactions yet.</p> : transactions.map((tx) => (
             <TransactionCard key={tx.id} transaction={tx} />
           ))}
         </div>

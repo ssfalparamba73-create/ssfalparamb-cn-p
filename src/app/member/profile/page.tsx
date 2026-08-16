@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTheme } from "next-themes";
 import { useRouter } from "next/navigation";
 import { MemberProfileDetails, MemberProfileData } from "@/components/profile/MemberProfileDetails";
@@ -8,13 +9,17 @@ import { EditProfileDrawer } from "@/components/profile/EditProfileDrawer";
 import { ContactAdminsDrawer } from "@/components/profile/ContactAdminsDrawer";
 import { Fingerprint, MessageCircle, LogOut, ChevronRight, Edit3, CheckCircle2, Moon, Sun } from "lucide-react";
 import type { MemberProfileDTO } from "@/lib/backend/dto/member.dto";
-import type { SupportContactDTO } from "@/lib/backend/dto/support.dto";
-import { BackendApiError } from "@/lib/api/backendClient";
 import { logoutSession } from "@/lib/api/authClient";
-import { getCurrentMemberProfile, updateCurrentMemberProfile } from "@/lib/api/memberClient";
-import { getSupportContacts } from "@/lib/api/supportClient";
-import { getPublicBlockOptions } from "@/lib/api/settingsClient";
+import { updateCurrentMemberProfile } from "@/lib/api/memberClient";
 import { CardCollectionSkeleton } from "@/components/ui/loading-skeletons";
+import {
+  memberBlockOptionsQuery,
+  memberDashboardQuery,
+  memberProfileQuery,
+  memberQueryKeys,
+  memberSessionQuery,
+  memberSupportContactsQuery,
+} from "@/lib/client/memberQueries";
 
 function toUiBloodGroup(value?: string): string {
   if (!value) return "";
@@ -52,63 +57,19 @@ function mapProfile(profile: MemberProfileDTO): MemberProfileData {
 
 export default function ProfilePage() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const { resolvedTheme, setTheme } = useTheme();
-  const [isBiometricEnabled, setIsBiometricEnabled] = useState(false);
-  const [member, setMember] = useState<MemberProfileData | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [loadError, setLoadError] = useState<string | null>(null);
-  const [contacts, setContacts] = useState<SupportContactDTO[]>([]);
-  const [blockOptions, setBlockOptions] = useState<string[]>([]);
-  const [contactsLoading, setContactsLoading] = useState(true);
-  const [contactsError, setContactsError] = useState<string | null>(null);
+  const profileQuery = useQuery(memberProfileQuery);
+  const contactsQuery = useQuery(memberSupportContactsQuery);
+  const blockOptionsQuery = useQuery(memberBlockOptionsQuery);
   const [isSaving, setIsSaving] = useState(false);
   const [isEditDrawerOpen, setIsEditDrawerOpen] = useState(false);
   const [isContactDrawerOpen, setIsContactDrawerOpen] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const isDark = resolvedTheme === "dark";
-
-  useEffect(() => {
-    let active = true;
-    getCurrentMemberProfile()
-      .then((profile) => {
-        if (!active) return;
-        setMember(mapProfile(profile));
-        setIsBiometricEnabled(profile.biometricEnabled);
-      })
-      .catch((error: unknown) => {
-        if (error instanceof BackendApiError && error.status === 401) {
-          router.replace("/login");
-          return;
-        }
-        if (active) setLoadError(error instanceof Error ? error.message : "Unable to load profile.");
-      })
-      .finally(() => {
-        if (active) setIsLoading(false);
-      });
-
-    getPublicBlockOptions()
-      .then((result) => {
-        if (active) setBlockOptions(result.blocks);
-      })
-      .catch(() => {
-        if (active) setBlockOptions([]);
-      });
-
-    getSupportContacts()
-      .then((result) => {
-        if (active) setContacts(result);
-      })
-      .catch((error: unknown) => {
-        if (active) setContactsError(error instanceof Error ? error.message : "Unable to load contacts.");
-      })
-      .finally(() => {
-        if (active) setContactsLoading(false);
-      });
-
-    return () => {
-      active = false;
-    };
-  }, [router]);
+  const member = profileQuery.data ? mapProfile(profileQuery.data) : null;
+  const isBiometricEnabled = profileQuery.data?.biometricEnabled ?? false;
+  const blockOptions = blockOptionsQuery.data?.blocks ?? [];
 
   const handleSaveProfile = async (updatedMember: MemberProfileData) => {
     setIsSaving(true);
@@ -131,8 +92,11 @@ export default function ProfilePage() {
           ? updatedMember.workLocation || undefined
           : undefined,
       });
-      setMember(mapProfile(profile));
-      setIsBiometricEnabled(profile.biometricEnabled);
+      queryClient.setQueryData(memberQueryKeys.profile, profile);
+      queryClient.setQueryData(memberSessionQuery.queryKey, (current) =>
+        current ? { ...current, actorName: profile.name } : current
+      );
+      await queryClient.invalidateQueries({ queryKey: memberDashboardQuery.queryKey });
       setIsEditDrawerOpen(false);
       setShowToast(true);
       window.setTimeout(() => setShowToast(false), 3000);
@@ -162,7 +126,7 @@ export default function ProfilePage() {
         </div>
         <button
           onClick={() => member && setIsEditDrawerOpen(true)}
-          disabled={!member || isLoading}
+          disabled={!member || profileQuery.isPending}
           className="flex items-center gap-1.5 bg-white text-blue-600 px-3 py-2 rounded-xl text-sm font-bold shadow-sm border border-slate-200 hover:bg-blue-50 transition-colors dark:border-slate-700 dark:bg-slate-800 dark:text-blue-400 dark:shadow-none dark:hover:bg-slate-700"
         >
           <Edit3 className="size-4" />
@@ -171,8 +135,8 @@ export default function ProfilePage() {
       </div>
 
       {/* Main Profile Card */}
-      {isLoading && <CardCollectionSkeleton count={1} className="mb-6" cardClassName="min-h-48" />}
-      {loadError && <p className="mb-6 text-sm text-red-600 dark:text-red-400">{loadError}</p>}
+      {profileQuery.isPending && <CardCollectionSkeleton count={1} className="mb-6" cardClassName="min-h-48" />}
+      {profileQuery.error && <p className="mb-6 text-sm text-red-600 dark:text-red-400">{profileQuery.error.message}</p>}
       {member && <MemberProfileDetails member={member} />}
 
       {/* Settings Section */}
@@ -276,9 +240,9 @@ export default function ProfilePage() {
       <ContactAdminsDrawer
         isOpen={isContactDrawerOpen}
         onClose={() => setIsContactDrawerOpen(false)}
-        contacts={contacts}
-        isLoading={contactsLoading}
-        error={contactsError}
+        contacts={contactsQuery.data ?? []}
+        isLoading={contactsQuery.isPending}
+        error={contactsQuery.error?.message ?? null}
       />
 
     </div>

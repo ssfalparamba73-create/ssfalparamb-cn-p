@@ -4,9 +4,12 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { LayoutDashboard, History, User, Users } from "lucide-react";
 import { MEMBER_PAYMENTS_ENABLED } from "@/lib/featureFlags";
+import { useQueryClient } from "@tanstack/react-query";
+import { prefetchMemberRoute } from "@/lib/client/memberQueries";
 
 export function MemberBottomNav() {
   const pathname = usePathname();
+  const queryClient = useQueryClient();
 
   const navItems = [
     {
@@ -42,6 +45,9 @@ export function MemberBottomNav() {
             <Link
               key={item.name}
               href={item.href}
+              onTouchStart={() => prefetchMemberRoute(queryClient, item.href)}
+              onMouseEnter={() => prefetchMemberRoute(queryClient, item.href)}
+              onFocus={() => prefetchMemberRoute(queryClient, item.href)}
               className={`flex flex-col items-center justify-center w-full h-full space-y-1 transition-colors ${
                 isActive ? "text-[#2563EB] dark:text-blue-400" : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
               }`}

@@ -1,17 +1,23 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { LogOut, Save, ShieldCheck } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { logoutSession } from "@/lib/api/authClient";
-import { completeCurrentMemberProfile, getCurrentMemberProfile } from "@/lib/api/memberClient";
-import type { MemberProfileDTO } from "@/lib/backend/dto/member.dto";
+import { completeCurrentMemberProfile } from "@/lib/api/memberClient";
 import { FormPageSkeleton } from "@/components/ui/loading-skeletons";
-import { getPublicBlockOptions } from "@/lib/api/settingsClient";
 import { StudyEmploymentFields, type StudyEmploymentValue } from "@/components/profile/StudyEmploymentFields";
+import {
+  memberBlockOptionsQuery,
+  memberDashboardQuery,
+  memberProfileQuery,
+  memberQueryKeys,
+  memberSessionQuery,
+} from "@/lib/client/memberQueries";
 
 const BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"] as const;
 const INPUT_CLASS = "min-h-11 w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 outline-none transition-colors focus:border-blue-500 focus:ring-2 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-50 dark:focus:ring-blue-500/20";
@@ -26,50 +32,44 @@ interface CompletionFormState extends StudyEmploymentValue {
 
 export default function CompleteProfilePage() {
   const router = useRouter();
-  const [profile, setProfile] = useState<MemberProfileDTO | null>(null);
+  const queryClient = useQueryClient();
+  const profileQuery = useQuery(memberProfileQuery);
+  const blockOptionsQuery = useQuery(memberBlockOptionsQuery);
   const [form, setForm] = useState<CompletionFormState>({
     whatsapp: "", age: "", bloodGroup: "", address: "", block: "",
     isStudent: null, studentClass: "", studentCourse: "", studentInstitution: "",
     isMuthaallim: null, muthaallimInstitution: "", occupation: "", workLocation: "",
   });
-  const [blockOptions, setBlockOptions] = useState<string[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const hasInitializedForm = useRef(false);
 
   useEffect(() => {
-    let active = true;
-    Promise.all([getCurrentMemberProfile(), getPublicBlockOptions()])
-      .then(([result, blockResult]) => {
-        if (!active) return;
-        setProfile(result);
-        setBlockOptions(result.area && !blockResult.blocks.includes(result.area) ? [result.area, ...blockResult.blocks] : blockResult.blocks);
-        setForm({
-          whatsapp: result.whatsapp || result.phone,
-          age: result.age == null ? "" : String(result.age),
-          bloodGroup: result.bloodGroup || "",
-          address: result.address || "",
-          block: result.area || "",
-          isStudent: result.isStudent,
-          studentClass: result.studentClass || "",
-          studentCourse: result.studentCourse || "",
-          studentInstitution: result.studentInstitution || "",
-          isMuthaallim: result.isMuthaallim,
-          muthaallimInstitution: result.muthaallimInstitution || "",
-          occupation: result.occupation || "",
-          workLocation: result.workLocation || "",
-        });
-      })
-      .catch((requestError) => {
-        if (active) setError(requestError instanceof Error ? requestError.message : "Unable to load your profile.");
-      })
-      .finally(() => {
-        if (active) setIsLoading(false);
-      });
-    return () => {
-      active = false;
-    };
-  }, []);
+    const result = profileQuery.data;
+    if (!result || hasInitializedForm.current) return;
+    hasInitializedForm.current = true;
+    setForm({
+      whatsapp: result.whatsapp || result.phone,
+      age: result.age == null ? "" : String(result.age),
+      bloodGroup: result.bloodGroup || "",
+      address: result.address || "",
+      block: result.area || "",
+      isStudent: result.isStudent,
+      studentClass: result.studentClass || "",
+      studentCourse: result.studentCourse || "",
+      studentInstitution: result.studentInstitution || "",
+      isMuthaallim: result.isMuthaallim,
+      muthaallimInstitution: result.muthaallimInstitution || "",
+      occupation: result.occupation || "",
+      workLocation: result.workLocation || "",
+    });
+  }, [profileQuery.data]);
+
+  const profile = profileQuery.data;
+  const configuredBlocks = blockOptionsQuery.data?.blocks ?? [];
+  const blockOptions = profile?.area && !configuredBlocks.includes(profile.area)
+    ? [profile.area, ...configuredBlocks]
+    : configuredBlocks;
 
   const updateField = <K extends keyof CompletionFormState>(field: K, value: CompletionFormState[K]) => {
     setForm((current) => ({ ...current, [field]: value }));
@@ -93,7 +93,7 @@ export default function CompleteProfilePage() {
     setIsSaving(true);
     setError(null);
     try {
-      await completeCurrentMemberProfile({
+      const completedProfile = await completeCurrentMemberProfile({
         whatsapp: form.whatsapp,
         age,
         bloodGroup: form.bloodGroup,
@@ -108,8 +108,13 @@ export default function CompleteProfilePage() {
         muthaallimInstitution: form.isMuthaallim ? form.muthaallimInstitution : undefined,
         workLocation: !form.isStudent && !form.isMuthaallim ? form.workLocation || undefined : undefined,
       });
+      queryClient.setQueryData(memberQueryKeys.profile, completedProfile);
+      queryClient.setQueryData(memberSessionQuery.queryKey, (current) =>
+        current ? { ...current, profileComplete: true } : current
+      );
+      await queryClient.invalidateQueries({ queryKey: memberDashboardQuery.queryKey });
       toast.success("Profile completed successfully.");
-      window.location.replace("/member/dashboard");
+      router.replace("/member/dashboard");
     } catch (saveError) {
       setError(saveError instanceof Error ? saveError.message : "Unable to complete your profile.");
       setIsSaving(false);
@@ -122,10 +127,12 @@ export default function CompleteProfilePage() {
     router.refresh();
   };
 
-  if (isLoading || !profile) {
+  if (profileQuery.isPending || blockOptionsQuery.isPending || !profile) {
     return (
       <div className="min-h-screen px-4 py-6 md:px-6 md:py-10">
-        {error ? <p className="text-sm text-red-600">{error}</p> : <FormPageSkeleton />}
+        {profileQuery.error || blockOptionsQuery.error
+          ? <p className="text-sm text-red-600">{profileQuery.error?.message ?? blockOptionsQuery.error?.message}</p>
+          : <FormPageSkeleton />}
       </div>
     );
   }

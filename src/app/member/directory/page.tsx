@@ -1,14 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { keepPreviousData, useInfiniteQuery } from "@tanstack/react-query";
 import { Search, Phone, MessageCircle, HeartPulse, X } from "lucide-react";
 import { MemberDetailDrawer, MemberStats } from "@/components/directory/MemberDetailDrawer";
 import { Input } from "@/components/ui/input";
 import type { BloodGroup, MemberDirectoryItemDTO } from "@/lib/backend/dto/member.dto";
-import { BackendApiError } from "@/lib/api/backendClient";
-import { getMemberDirectory } from "@/lib/api/memberClient";
 import { Skeleton } from "@/components/ui/skeleton";
+import { memberDirectoryQuery } from "@/lib/client/memberQueries";
 
 const BLOOD_GROUPS = ["O+ve", "O-ve", "A+ve", "A-ve", "B+ve", "B-ve", "AB+ve", "AB-ve"];
 
@@ -32,49 +31,35 @@ function toMemberStats(member: MemberDirectoryItemDTO): MemberStats {
 }
 
 export default function DirectoryPage() {
-  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [selectedMember, setSelectedMember] = useState<MemberStats | null>(null);
   const [isBloodGroupModalOpen, setIsBloodGroupModalOpen] = useState(false);
   const [selectedBloodGroup, setSelectedBloodGroup] = useState<string | null>(null);
-  const [members, setMembers] = useState<MemberStats[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
-    let active = true;
     const timer = window.setTimeout(() => {
-      getMemberDirectory({
-        search: searchQuery.trim() || undefined,
-        bloodGroup: toDatabaseBloodGroup(selectedBloodGroup),
-        donorAvailable: selectedBloodGroup ? true : undefined,
-      })
-        .then((result) => {
-          if (!active) return;
-          setMembers(result.items.map(toMemberStats));
-          setLoadError(null);
-        })
-        .catch((error: unknown) => {
-          if (!active) return;
-          if (error instanceof BackendApiError && error.status === 401) {
-            router.replace("/login");
-            return;
-          }
-          setMembers([]);
-          setLoadError(error instanceof Error ? error.message : "Unable to load members.");
-        })
-        .finally(() => {
-          if (active) setIsLoading(false);
-        });
+      setDebouncedSearch(searchQuery.trim());
     }, 250);
 
     return () => {
-      active = false;
       window.clearTimeout(timer);
     };
-  }, [router, searchQuery, selectedBloodGroup]);
+  }, [searchQuery]);
 
-  const filteredMembers = members;
+  const bloodGroup = toDatabaseBloodGroup(selectedBloodGroup);
+  const {
+    data: directory,
+    isPending,
+    error: loadError,
+    hasNextPage,
+    fetchNextPage,
+    isFetchingNextPage,
+  } = useInfiniteQuery({
+    ...memberDirectoryQuery(debouncedSearch, bloodGroup),
+    placeholderData: keepPreviousData,
+  });
+  const filteredMembers = (directory?.pages.flatMap((page) => page.items) ?? []).map(toMemberStats);
 
   return (
     <div className="p-4 md:p-6 min-h-screen bg-[#F6F8FC] animate-in fade-in duration-300 pb-24 md:pb-6 transition-colors dark:bg-slate-900">
@@ -92,10 +77,7 @@ export default function DirectoryPage() {
             placeholder="Search name, phone or blood group..."
             className="pl-10 pr-[52px] h-14 rounded-2xl bg-white border-[#E5EAF3] shadow-sm text-base dark:border-slate-700 dark:bg-slate-800 dark:text-slate-50"
             value={searchQuery}
-            onChange={(e) => {
-              setIsLoading(true);
-              setSearchQuery(e.target.value);
-            }}
+            onChange={(e) => setSearchQuery(e.target.value)}
           />
           {/* Blood Group Filter Button (Inside Input) */}
           <button
@@ -126,7 +108,6 @@ export default function DirectoryPage() {
           </div>
           <button
             onClick={() => {
-              setIsLoading(true);
               setSelectedBloodGroup(null);
             }}
             className="text-xs font-bold text-red-600 bg-red-100 hover:bg-red-200 px-2.5 py-1 rounded-md transition-colors"
@@ -139,7 +120,7 @@ export default function DirectoryPage() {
       {/* Member List */}
       <div className="bg-white rounded-2xl border border-[#E5EAF3] shadow-sm overflow-hidden transition-colors duration-300 dark:border-slate-700 dark:bg-slate-800 dark:shadow-none">
         <div className="divide-y divide-[#E5EAF3] dark:divide-slate-700">
-          {isLoading && (
+          {isPending && (
             <div aria-hidden>
               {Array.from({ length: 6 }, (_, index) => (
                 <div key={index} className="flex items-center justify-between p-4">
@@ -158,12 +139,12 @@ export default function DirectoryPage() {
               ))}
             </div>
           )}
-          {loadError && !isLoading && (
+          {loadError && !isPending && (
             <div className="p-6 text-center text-sm text-red-600 dark:text-red-300">
-              {loadError}
+              {loadError.message}
             </div>
           )}
-          {!isLoading && !loadError && filteredMembers.length > 0 ? (
+          {!isPending && !loadError && filteredMembers.length > 0 ? (
             filteredMembers.map((member) => {
               const isBloodGroupSearched = searchQuery && member.bloodGroup.toLowerCase().includes(searchQuery.toLowerCase());
               const showBloodBadge = selectedBloodGroup !== null || isBloodGroupSearched;
@@ -213,7 +194,7 @@ export default function DirectoryPage() {
               </div>
             );
             })
-          ) : !isLoading && !loadError ? (
+          ) : !isPending && !loadError ? (
             <div className="p-10 text-center flex flex-col items-center">
               <div className="size-12 bg-red-50 rounded-full flex items-center justify-center mb-3">
                 <HeartPulse className="size-5 text-red-500" />
@@ -225,7 +206,6 @@ export default function DirectoryPage() {
               {selectedBloodGroup && (
                 <button
                   onClick={() => {
-                    setIsLoading(true);
                     setSelectedBloodGroup(null);
                   }}
                   className="mt-4 text-sm font-bold text-red-600 hover:text-red-700"
@@ -237,6 +217,22 @@ export default function DirectoryPage() {
           ) : null}
         </div>
       </div>
+
+      {hasNextPage && (
+        <div className="mt-4 flex justify-center">
+          {isFetchingNextPage ? (
+            <Skeleton className="h-11 w-full max-w-56 rounded-xl" />
+          ) : (
+            <button
+              type="button"
+              onClick={() => void fetchNextPage()}
+              className="h-11 w-full max-w-56 rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-blue-600 shadow-sm transition-colors hover:bg-blue-50 dark:border-slate-700 dark:bg-slate-800 dark:text-blue-300 dark:hover:bg-slate-700"
+            >
+              Load more members
+            </button>
+          )}
+        </div>
+      )}
 
       {/* Detail Drawer */}
       <MemberDetailDrawer
@@ -277,7 +273,6 @@ export default function DirectoryPage() {
                 <button
                   key={bg}
                   onClick={() => {
-                    setIsLoading(true);
                     setSelectedBloodGroup(bg === selectedBloodGroup ? null : bg);
                     setIsBloodGroupModalOpen(false);
                   }}
@@ -295,7 +290,6 @@ export default function DirectoryPage() {
             {selectedBloodGroup && (
               <button
                 onClick={() => {
-                  setIsLoading(true);
                   setSelectedBloodGroup(null);
                   setIsBloodGroupModalOpen(false);
                 }}

@@ -6,19 +6,22 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useTheme } from "next-themes";
-import { getCurrentSession, logoutSession } from "@/lib/api/authClient";
+import { logoutSession } from "@/lib/api/authClient";
 import { MEMBER_PAYMENTS_ENABLED } from "@/lib/featureFlags";
+import { memberSessionQuery, prefetchMemberRoute } from "@/lib/client/memberQueries";
 
 const subscribeToHydration = () => () => undefined;
 
 export function MemberHeader() {
   const pathname = usePathname();
   const router = useRouter();
+  const queryClient = useQueryClient();
+  const { data: session } = useQuery(memberSessionQuery);
   const { resolvedTheme, setTheme } = useTheme();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [memberIdentity, setMemberIdentity] = useState({ name: "Member", initials: "MB" });
   const isThemeMounted = useSyncExternalStore(
     subscribeToHydration,
     () => true,
@@ -38,22 +41,9 @@ export function MemberHeader() {
     };
   }, []);
 
-  useEffect(() => {
-    let active = true;
-    getCurrentSession()
-      .then((session) => {
-        if (!active || session.actorType !== "member") return;
-        setMemberIdentity({
-          name: session.actorName,
-          initials: session.actorName.slice(0, 2).toUpperCase(),
-        });
-      })
-      .catch(() => undefined);
-
-    return () => {
-      active = false;
-    };
-  }, []);
+  const memberIdentity = session?.actorType === "member"
+    ? { name: session.actorName, initials: session.actorName.slice(0, 2).toUpperCase() }
+    : { name: "Member", initials: "MB" };
 
   const navItems = [
     { name: "Dashboard", href: "/member/dashboard" },
@@ -85,6 +75,8 @@ export function MemberHeader() {
               <Link
                 key={item.name}
                 href={item.href}
+                onMouseEnter={() => prefetchMemberRoute(queryClient, item.href)}
+                onFocus={() => prefetchMemberRoute(queryClient, item.href)}
                 className={`px-4 py-2 rounded-full text-sm font-semibold transition-colors ${
                   isActive
                     ? "bg-white text-[#2563EB] shadow-sm border border-[#E5EAF3] dark:border-slate-700 dark:bg-slate-800 dark:text-blue-400"

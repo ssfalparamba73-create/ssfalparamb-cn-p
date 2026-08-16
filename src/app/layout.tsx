@@ -4,6 +4,7 @@ import { Inter, Noto_Sans_Malayalam, Quicksand } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "sonner";
 import { ThemeProvider } from "@/components/theme/ThemeProvider";
+import { AppQueryProvider } from "@/components/providers/AppQueryProvider";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -76,8 +77,10 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} ${notoMalayalam.variable} ${cooper.variable} ${quicksand.variable} antialiased transition-colors duration-300`} suppressHydrationWarning>
         <ThemeProvider>
-          {children}
-          <Toaster position="bottom-right" richColors />
+          <AppQueryProvider>
+            {children}
+            <Toaster position="bottom-right" richColors />
+          </AppQueryProvider>
         </ThemeProvider>
       </body>
     </html>

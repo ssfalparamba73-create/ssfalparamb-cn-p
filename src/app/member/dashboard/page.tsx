@@ -1,44 +1,18 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
 import { DueStatusCard } from "@/components/dashboard/DueStatusCard";
 import { RecentActivityCard } from "@/components/dashboard/RecentActivityCard";
-import { BackendApiError } from "@/lib/api/backendClient";
-import { getMemberDashboard } from "@/lib/api/dashboardClient";
-import type { MemberDashboardViewDTO } from "@/lib/backend/dto/dashboard.dto";
 import { PageContentSkeleton } from "@/components/ui/loading-skeletons";
+import { memberDashboardQuery } from "@/lib/client/memberQueries";
 
 export default function MemberDashboardPage() {
-  const router = useRouter();
-  const [dashboard, setDashboard] = useState<MemberDashboardViewDTO | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    let active = true;
-    getMemberDashboard()
-      .then((data) => {
-        if (active) setDashboard(data);
-      })
-      .catch((requestError: unknown) => {
-        if (requestError instanceof BackendApiError && requestError.status === 401) {
-          router.replace("/login");
-          return;
-        }
-        if (active) {
-          setError(requestError instanceof Error ? requestError.message : "Unable to load dashboard.");
-        }
-      });
-
-    return () => {
-      active = false;
-    };
-  }, [router]);
+  const { data: dashboard, error } = useQuery(memberDashboardQuery);
 
   if (!dashboard) {
     return (
       <div className="p-4 md:p-6 space-y-6 animate-in fade-in duration-300">
-        {error ? <p className="text-sm text-red-600 dark:text-red-400">{error}</p> : <PageContentSkeleton />}
+        {error ? <p className="text-sm text-red-600 dark:text-red-400">{error.message}</p> : <PageContentSkeleton />}
       </div>
     );
   }
