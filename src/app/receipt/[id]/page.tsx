@@ -5,20 +5,23 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { PremiumReceiptCard } from "@/components/receipt/PremiumReceiptCard";
+import { requestBackend } from "@/lib/api/backendClient";
+import type { PaymentDTO } from "@/lib/backend/dto/payment.dto";
 
 import Image from 'next/image';
 
 function ReceiptPageContent({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = React.use(params);
   const searchParams = useSearchParams();
-
-  const receiptId = resolvedParams.id || "TXN-8924719";
-  const method = searchParams.get("method") || "upi";
-  const admin = searchParams.get("admin") || "";
-  const phone = searchParams.get("phone") || "Guest Member";
-  const amount = searchParams.get("amount") || "100";
-  const category = searchParams.get("category") || "dues";
   const source = searchParams.get("source");
+  const [payment, setPayment] = React.useState<PaymentDTO | null>(null);
+  const [error, setError] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    requestBackend<PaymentDTO>(`/api/v1/payments/${encodeURIComponent(resolvedParams.id)}/receipt`)
+      .then(setPayment)
+      .catch((reason) => setError(reason instanceof Error ? reason.message : "Receipt not found."));
+  }, [resolvedParams.id]);
 
 
 
@@ -65,14 +68,16 @@ function ReceiptPageContent({ params }: { params: Promise<{ id: string }> }) {
         </div>
 
         <div className="animate-in fade-in zoom-in-95 duration-500 delay-150 fill-mode-both">
-          <PremiumReceiptCard
-            receiptId={receiptId}
-            method={method}
-            admin={admin}
-            phone={phone}
-            amount={amount}
-            category={category}
-          />
+          {error ? <div className="rounded-2xl border border-red-200 bg-red-50 p-6 text-center text-sm text-red-700">{error}</div> : payment ? <PremiumReceiptCard
+            receiptId={payment.receiptId}
+            method={payment.method}
+            admin={payment.collectedByAdminName || "SSF Alparamba Unit"}
+            payerName={payment.payerName}
+            phone={payment.payerPhone}
+            amount={payment.amount}
+            category={payment.category}
+            paidAt={payment.paidAt || payment.recordedAt}
+          /> : <div className="rounded-2xl border border-slate-200 bg-white p-6 text-center text-sm text-slate-500">Loading receipt…</div>}
         </div>
 
       </div>

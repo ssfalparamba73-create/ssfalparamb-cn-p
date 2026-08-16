@@ -19,9 +19,11 @@ interface PremiumReceiptCardProps {
   receiptId: string;
   method: string;
   admin: string;
+  payerName?: string;
   phone: string;
   amount: string | number;
   category: string;
+  paidAt?: string;
   customBg?: string;
 }
 
@@ -29,9 +31,11 @@ export function PremiumReceiptCard({
   receiptId,
   method,
   admin,
+  payerName,
   phone,
   amount,
   category,
+  paidAt,
   customBg
 }: PremiumReceiptCardProps) {
   const [isDownloading, setIsDownloading] = useState(false);
@@ -109,7 +113,7 @@ export function PremiumReceiptCard({
   };
 
   // Format date to DD/MM/YYYY
-  const today = new Date();
+  const today = paidAt ? new Date(paidAt) : new Date();
   const dateStr = `${today.getDate().toString().padStart(2, "0")}/${(
     today.getMonth() + 1
   ).toString().padStart(2, "0")}/${today.getFullYear()}`;
@@ -118,7 +122,7 @@ export function PremiumReceiptCard({
   const timeStr = today.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
 
   // Use phone as donor name if it's the only identifier
-  const donorName = phone === "Guest Member" ? "Valuable Contributor" : phone;
+  const donorName = payerName || (phone === "Guest Member" ? "Valuable Contributor" : phone);
 
   // Amount formatting
   const formattedAmount = Number(amount).toLocaleString("en-IN");
