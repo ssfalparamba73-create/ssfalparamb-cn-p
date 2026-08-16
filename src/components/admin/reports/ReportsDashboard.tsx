@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { CollectionTrendChart } from "@/components/admin/dashboard/CollectionTrendChart";
 import { PaymentMethodChart } from "@/components/admin/dashboard/PaymentMethodChart";
 import { getAdminPayments } from "@/lib/api/adminPaymentClient";
+import { getAllAdminPayments } from "@/lib/api/adminPaymentExportClient";
 import type { PaymentDTO } from "@/lib/backend/dto/payment.dto";
 
 const money = (value: number) => `₹${value.toLocaleString("en-IN")}`;
@@ -50,10 +51,13 @@ export function ReportsDashboard() {
     return { month: date.toLocaleString("en-IN", { month: "short" }), amount: livePayments.filter((payment) => monthKey(new Date(payment.paidAt || payment.recordedAt)) === key).reduce((sum, payment) => sum + payment.amount, 0) };
   }), [livePayments]);
 
-  const handleExportCSV = () => {
-    const rows = [["Receipt ID", "Payer", "Category", "Method", "Amount", "Status", "Date"], ...livePayments.map((payment) => [payment.receiptId, payment.payerName || payment.payerPhone, payment.category, payment.method, String(payment.amount), payment.status, payment.paidAt || payment.recordedAt])];
-    const blob = new Blob([rows.map((row) => row.map((value) => `"${value.replaceAll('"', '""')}"`).join(",")).join("\n")], { type: "text/csv;charset=utf-8" });
-    const url = URL.createObjectURL(blob); const link = document.createElement("a"); link.href = url; link.download = "ssf-payment-report.csv"; link.click(); URL.revokeObjectURL(url); toast.success("Live payment report downloaded.");
+  const handleExportCSV = async () => {
+    try {
+      const exportPayments = await import("@/lib/api/adminPaymentExportClient").then((module) => module.getAllAdminPayments());
+      const rows = [["Receipt ID", "Payer", "Category", "Method", "Amount", "Status", "Date"], ...exportPayments.filter((payment) => payment.status === "confirmed" && !payment.voidedAt).map((payment) => [payment.receiptId, payment.payerName || payment.payerPhone, payment.category, payment.method, String(payment.amount), payment.status, payment.paidAt || payment.recordedAt])];
+      const blob = new Blob([rows.map((row) => row.map((value) => `"${value.replaceAll('"', '""')}"`).join(",")).join("\n")], { type: "text/csv;charset=utf-8" });
+      const url = URL.createObjectURL(blob); const link = document.createElement("a"); link.href = url; link.download = "ssf-payment-report.csv"; link.click(); URL.revokeObjectURL(url); toast.success("Live payment report downloaded.");
+    } catch (reason) { toast.error(reason instanceof Error ? reason.message : "Unable to export report."); }
   };
 
   const emptyState = <Card className="p-8 text-center text-sm text-slate-500">No confirmed records are available for this report yet.</Card>;
