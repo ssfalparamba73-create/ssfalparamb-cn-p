@@ -18,6 +18,8 @@ const DEFAULTS = {
   includeYear: true,
 };
 
+const DUES_FREQUENCIES = new Set(["monthly", "bimonthly", "quarterly"]);
+
 async function getAdmin(request: NextRequest) {
   const context = buildPublicActorContext(request);
   const actorResult = await resolveAuthenticatedActor(request, context.requestId);
@@ -55,6 +57,9 @@ export async function PATCH(request: NextRequest) {
       receiptPrefix: String(body.receiptPrefix || "REC").trim().toUpperCase(),
       includeYear: Boolean(body.includeYear),
     };
+    if (!DUES_FREQUENCIES.has(settings.duesFrequency)) {
+      return createBackendResponse(fail(validationError("Invalid dues frequency.", "duesFrequency")), context.requestId);
+    }
     if (!settings.upiId || !settings.merchantName || !settings.receiptPrefix || [settings.baseTier, settings.premiumTier, settings.customMinimum].some((value) => !Number.isFinite(value) || value <= 0)) {
       return createBackendResponse(fail(validationError("Please provide valid payment settings.")), context.requestId);
     }

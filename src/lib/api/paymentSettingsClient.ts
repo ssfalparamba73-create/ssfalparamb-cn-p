@@ -1,10 +1,12 @@
 import { requestBackend } from "./backendClient";
 
+export type DuesFrequency = "monthly" | "bimonthly" | "quarterly";
+
 export interface PaymentSettings {
   upiId: string;
   merchantName: string;
   qrCodeUrl: string;
-  duesFrequency: string;
+  duesFrequency: DuesFrequency;
   baseTier: number;
   premiumTier: number;
   customMinimum: number;
