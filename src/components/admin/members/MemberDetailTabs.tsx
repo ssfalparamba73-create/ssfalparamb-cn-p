@@ -1,8 +1,10 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import type { Member } from "@/lib/admin/admin-types";
 import { Activity, CreditCard, Droplet, History, Users } from "lucide-react";
+import { getAdminMemberPayments } from "@/lib/api/memberClient";
+import type { PaymentDTO } from "@/lib/backend/dto/payment.dto";
 
 interface MemberDetailTabsProps {
   member: Member;
@@ -18,6 +20,19 @@ const tabs = [
 
 export function MemberDetailTabs({ member }: MemberDetailTabsProps) {
   const [activeTab, setActiveTab] = useState<(typeof tabs)[number]["id"]>("overview");
+  const [payments, setPayments] = useState<PaymentDTO[]>([]);
+  const [paymentsLoading, setPaymentsLoading] = useState(false);
+  const [paymentsError, setPaymentsError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (activeTab !== "payments") return;
+    let active = true;
+    getAdminMemberPayments(member.id)
+      .then((result) => { if (active) setPayments(result.items); })
+      .catch((error) => { if (active) setPaymentsError(error instanceof Error ? error.message : "Unable to load payment history."); })
+      .finally(() => { if (active) setPaymentsLoading(false); });
+    return () => { active = false; };
+  }, [activeTab, member.id]);
 
   return (
     <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
@@ -26,7 +41,13 @@ export function MemberDetailTabs({ member }: MemberDetailTabsProps) {
           {tabs.map((tab) => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
+              onClick={() => {
+                setActiveTab(tab.id);
+                if (tab.id === "payments") {
+                  setPaymentsLoading(true);
+                  setPaymentsError(null);
+                }
+              }}
               className={`whitespace-nowrap py-3 md:py-4 px-3 md:px-4 md:border-b-2 rounded-lg md:rounded-none font-medium text-sm flex items-center justify-center md:justify-start gap-2 transition-colors ${
                 activeTab === tab.id
                   ? "bg-blue-50 md:bg-transparent md:border-blue-600 text-blue-700 md:text-blue-600 dark:bg-blue-900/20 dark:md:bg-transparent dark:md:border-blue-500 dark:text-blue-400"
@@ -68,7 +89,7 @@ export function MemberDetailTabs({ member }: MemberDetailTabsProps) {
         )}
 
         {activeTab === "payments" && (
-          <TabSection title="Payment History" message="Payment history is available in the Payments Ledger. Use Record Cash to add a confirmed cash payment for this member." />
+          <PaymentHistory payments={payments} isLoading={paymentsLoading} error={paymentsError} />
         )}
 
         {activeTab === "family" && (
@@ -131,6 +152,35 @@ function TabSection({ title, message }: { title: string; message: string }) {
     <div className="animate-in fade-in">
       <h3 className="text-lg font-medium text-slate-900 dark:text-slate-100 mb-4">{title}</h3>
       <EmptyState message={message} />
+    </div>
+  );
+}
+
+function PaymentHistory({ payments, isLoading, error }: { payments: PaymentDTO[]; isLoading: boolean; error: string | null }) {
+  return (
+    <div className="animate-in fade-in">
+      <h3 className="text-lg font-medium text-slate-900 dark:text-slate-100 mb-4">Payment History</h3>
+      {isLoading && <EmptyState message="Loading payment history..." />}
+      {error && <EmptyState message={error} />}
+      {!isLoading && !error && payments.length === 0 && <EmptyState message="No payments recorded for this member." />}
+      {!isLoading && !error && payments.length > 0 && (
+        <div className="overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-800">
+          <table className="w-full text-sm text-left">
+            <thead className="bg-slate-50 dark:bg-slate-800/60 text-slate-500">
+              <tr><th className="px-4 py-3">Receipt</th><th className="px-4 py-3">Date</th><th className="px-4 py-3">Method</th><th className="px-4 py-3 text-right">Amount</th><th className="px-4 py-3 text-right">Status</th></tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+              {payments.map((payment) => <tr key={payment.id}>
+                <td className="px-4 py-3 font-mono text-xs text-slate-700 dark:text-slate-300">{payment.receiptId}</td>
+                <td className="px-4 py-3 text-slate-600 dark:text-slate-400">{formatDate(payment.paidAt || payment.recordedAt)}</td>
+                <td className="px-4 py-3 text-slate-600 dark:text-slate-400">{payment.method.replaceAll("_", " ")}</td>
+                <td className="px-4 py-3 text-right font-semibold">₹{payment.amount}</td>
+                <td className="px-4 py-3 text-right"><span className="capitalize text-xs font-medium">{payment.voidedAt ? "Voided" : payment.status}</span></td>
+              </tr>)}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }

@@ -3,13 +3,14 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, ExternalLink, Receipt, Clock, Save, FileText, User, Hash } from "lucide-react";
+import { ArrowLeft, ExternalLink, Receipt, Clock, Save, FileText, User, Hash, ShieldAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 import { getAdminPayments, transitionAdminPayment } from "@/lib/api/adminPaymentClient";
 import type { PaymentDTO } from "@/lib/backend/dto/payment.dto";
+import { useAuth } from "@/lib/admin/AuthContext";
 
 export default function PaymentDetailPage() {
   const params = useParams();
@@ -19,6 +20,12 @@ export default function PaymentDetailPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [paymentStatus, setPaymentStatus] = useState<PaymentDTO["status"]>("pending");
+  const [notes, setNotes] = useState("");
+  const [isVoiding, setIsVoiding] = useState(false);
+  const [voidReason, setVoidReason] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
+  const { currentUser } = useAuth();
+  const canVoid = currentUser?.permissions.includes("payments.void") ?? false;
 
   useEffect(() => {
     getAdminPayments()
@@ -53,9 +60,6 @@ export default function PaymentDetailPage() {
     notes: actualPayment.notes || "No notes provided."
   };
 
-  const [notes, setNotes] = useState(payment.notes);
-  const [isSaving, setIsSaving] = useState(false);
-
   const handleSaveNotes = () => {
     setIsSaving(true);
     setTimeout(() => {
@@ -73,6 +77,21 @@ export default function PaymentDetailPage() {
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Unable to update payment.");
     }
+  };
+
+  const handleVoid = async () => {
+    const reason = voidReason.trim();
+    if (!reason) { toast.error("Enter a reason before voiding this payment."); return; }
+    if (!window.confirm(`Void ₹${payment.amount} for ${payment.memberName}? This will hide it from member totals and keep an audit record.`)) return;
+    setIsVoiding(true);
+    try {
+      const updated = await transitionAdminPayment(actualPayment.id, "void", reason);
+      setActualPayment(updated);
+      setVoidReason("");
+      toast.success("Payment voided. The original record was preserved for audit.");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Unable to void payment.");
+    } finally { setIsVoiding(false); }
   };
 
   return (
@@ -105,13 +124,15 @@ export default function PaymentDetailPage() {
                  <div className="text-4xl font-bold text-slate-900 dark:text-slate-100 font-mono tracking-tight">₹{payment.amount}</div>
                </div>
                <Badge className={
-                 paymentStatus === "confirmed"
+                 actualPayment.voidedAt
+                   ? "bg-slate-100 text-slate-600 border-slate-200 shadow-none px-3 py-1 text-sm"
+                   : paymentStatus === "confirmed"
                    ? "bg-green-50 text-green-700 border-green-200 shadow-none dark:bg-green-900/20 dark:text-green-400 dark:border-green-800 px-3 py-1 text-sm"
                    : paymentStatus === "pending"
                    ? "bg-amber-50 text-amber-700 border-amber-200 shadow-none dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800 px-3 py-1 text-sm"
                    : "bg-red-50 text-red-700 border-red-200 shadow-none dark:bg-red-900/20 dark:text-red-400 dark:border-red-800 px-3 py-1 text-sm"
                }>
-                 {paymentStatus.charAt(0).toUpperCase() + paymentStatus.slice(1)}
+                 {actualPayment.voidedAt ? "Voided" : paymentStatus.charAt(0).toUpperCase() + paymentStatus.slice(1)}
                </Badge>
             </div>
 
@@ -180,7 +201,7 @@ export default function PaymentDetailPage() {
                </div>
              )}
 
-             {paymentStatus === "confirmed" && (
+             {paymentStatus === "confirmed" && !actualPayment.voidedAt && (
                <div className="mb-4 pb-4 border-b border-slate-100 dark:border-slate-800">
                  <Button 
                    variant="outline" 
@@ -189,6 +210,24 @@ export default function PaymentDetailPage() {
                  >
                    Cancel / Undo Payment
                  </Button>
+               </div>
+             )}
+
+             {canVoid && !actualPayment.voidedAt && (
+               <div className="mb-4 pb-4 border-b border-slate-100 dark:border-slate-800 space-y-2">
+                 <div className="rounded-lg bg-red-50 p-3 text-xs text-red-700 dark:bg-red-900/20 dark:text-red-300">
+                   <ShieldAlert className="inline size-4 mr-1" /> Super Admin only. This does not refund Razorpay automatically.
+                 </div>
+                 <textarea value={voidReason} onChange={(event) => setVoidReason(event.target.value)} placeholder="Required reason for voiding" className="w-full min-h-20 rounded-lg border border-red-200 p-2 text-sm dark:border-red-900 dark:bg-slate-950" />
+                 <Button variant="outline" disabled={isVoiding} onClick={() => void handleVoid()} className="w-full text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200 shadow-none">
+                   {isVoiding ? "Voiding..." : "Void Payment (Audit)"}
+                 </Button>
+               </div>
+             )}
+
+             {actualPayment.voidedAt && (
+               <div className="mb-4 rounded-lg bg-slate-100 p-3 text-xs text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                 Voided on {new Date(actualPayment.voidedAt).toLocaleString()}. Reason: {actualPayment.voidReason || "Not recorded"}
                </div>
              )}
 

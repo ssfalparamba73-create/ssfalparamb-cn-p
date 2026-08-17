@@ -34,7 +34,8 @@ export function PaymentsTable() {
       .finally(() => setIsLoading(false));
   }, [categoryFilter, methodFilter]);
 
-  const getStatusBadge = (status: string) => {
+  const getStatusBadge = (status: string, voided = false) => {
+    if (voided) return <Badge className="bg-slate-100 text-slate-600 border-slate-200 shadow-none">Voided</Badge>;
     switch (status) {
       case "confirmed":
         return <Badge className="bg-green-50 text-green-700 hover:bg-green-50 border-green-200 shadow-none">Confirmed</Badge>;
@@ -66,7 +67,8 @@ export function PaymentsTable() {
     amount: p.amount,
     status: p.status,
     date: new Date(p.paidAt || p.recordedAt).toLocaleDateString("en-GB", { day: '2-digit', month: 'short', year: 'numeric' }),
-    eventName: p.eventName
+    eventName: p.eventName,
+    voidedAt: p.voidedAt,
   }));
 
   const filteredPayments = tablePayments.filter(payment => {
@@ -189,7 +191,7 @@ export function PaymentsTable() {
                     <span className="font-semibold text-slate-900 dark:text-slate-100">₹{payment.amount}</span>
                   </td>
                   <td className="px-4 py-3 text-center">
-                    {getStatusBadge(payment.status)}
+                    {getStatusBadge(payment.status, Boolean(payment.voidedAt))}
                   </td>
                   <td className="px-4 py-3 text-right">
                     <div className="flex justify-end gap-2">
@@ -222,7 +224,7 @@ export function PaymentsTable() {
                 <div className="font-bold text-slate-900 dark:text-slate-100 text-lg">₹{payment.amount}</div>
                 <div className="text-xs text-slate-500">{payment.receiptId} • {payment.date}</div>
               </div>
-              {getStatusBadge(payment.status)}
+              {getStatusBadge(payment.status, Boolean(payment.voidedAt))}
             </div>
             
             <div className="flex items-center gap-2 text-sm bg-slate-50 dark:bg-slate-900/40 p-2 rounded-lg border border-slate-100 dark:border-slate-700/50">

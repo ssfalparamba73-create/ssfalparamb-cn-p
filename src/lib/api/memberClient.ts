@@ -4,6 +4,7 @@ import type { IssuedMemberPinDTO } from "@/lib/backend/dto/member.dto";
 import type { CompleteMemberProfileInput, CreateMemberInput, UpdateMemberInput } from "@/lib/backend/contracts/member.contract";
 import type { UpdateMemberProfileInput } from "@/lib/backend/contracts/member.contract";
 import type { MemberDirectoryItemDTO, MemberListFilters, MemberProfileDTO } from "@/lib/backend/dto/member.dto";
+import type { PaymentDTO } from "@/lib/backend/dto/payment.dto";
 import { requestBackend, requestBackendVoid } from "./backendClient";
 import { invalidateQueries, setQueryData } from "@/lib/client/queryCache";
 
@@ -41,6 +42,12 @@ export function getAdminMembers(
 
 export function getAdminMember(id: string): Promise<MemberDTO> {
   return requestBackend<MemberDTO>(`/api/v1/admin/members/${encodeURIComponent(id)}`);
+}
+
+export function getAdminMemberPayments(id: string): Promise<PaginatedResult<PaymentDTO>> {
+  return requestBackend<PaginatedResult<PaymentDTO>>(
+    `/api/v1/admin/members/${encodeURIComponent(id)}/payments?page=1&pageSize=50`,
+  );
 }
 
 export async function createAdminMember(input: CreateMemberInput): Promise<MemberDTO> {

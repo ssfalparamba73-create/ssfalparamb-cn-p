@@ -31,7 +31,9 @@ export async function requestBackend<T>(
   const isAdminRead = method === "GET" && path.startsWith("/api/v1/admin/") && !bypassAdminCache;
 
   if (isAdminRead) {
-    const cacheKey = `admin:api:${path}`;
+    // Bump dashboard cache namespace after payment void filtering was enabled.
+    // This prevents an older persisted dashboard snapshot from resurfacing.
+    const cacheKey = path.includes("/dashboard") ? `admin:api:v2:${path}` : `admin:api:${path}`;
     const staleTime = path.includes("/dashboard")
       ? 30_000
       : path.includes("/settings/")
