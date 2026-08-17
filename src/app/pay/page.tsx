@@ -186,8 +186,8 @@ function PayNowContent() {
 
         <Card className="shadow-lg border-primary/10">
           <CardHeader>
-            <CardTitle>Member Details</CardTitle>
-            <CardDescription>Enter your details to fetch pending dues.</CardDescription>
+                  <CardTitle>Contribution Details</CardTitle>
+                  <CardDescription>Confirm the member and contribution information before continuing.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-5">
             <div className="space-y-2">
@@ -263,8 +263,8 @@ function PayNowContent() {
                       <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
                     </div>
                     <div>
-                      <h4 className="text-sm font-bold text-amber-900 dark:text-amber-300">Ramadan Relief Fund</h4>
-                      <p className="text-xs text-amber-700/80 mt-0.5 leading-snug dark:text-amber-200/70">Your generous contributions help those in need during this special month.</p>
+                      <h4 className="text-sm font-bold text-amber-900 dark:text-amber-300">Special Event Contribution</h4>
+                      <p className="text-xs text-amber-700/80 mt-0.5 leading-snug dark:text-amber-200/70">Review the approved event details and applicable amount before continuing.</p>
                     </div>
                   </div>
 
@@ -289,6 +289,16 @@ function PayNowContent() {
                   </div>
                 </div>
               )}
+            </div>
+
+            <div className="rounded-xl border border-blue-100 bg-blue-50/50 p-4 dark:border-blue-500/20 dark:bg-blue-500/10">
+              <p className="mb-3 text-xs font-bold uppercase tracking-wider text-blue-700 dark:text-blue-300">Contribution Summary</p>
+              <dl className="space-y-2 text-sm">
+                <div className="flex items-center justify-between gap-4"><dt className="text-muted-foreground">Member</dt><dd className="max-w-[62%] truncate text-right font-semibold text-slate-900 dark:text-slate-50">{memberQuery.trim() || "Enter member details"}</dd></div>
+                <div className="flex items-center justify-between gap-4"><dt className="text-muted-foreground">Contribution Period</dt><dd className="text-right font-semibold text-slate-900 dark:text-slate-50">{activeTab === "dues" ? currentContributionPeriod : "Approved event"}</dd></div>
+                <div className="flex items-center justify-between gap-4"><dt className="text-muted-foreground">Payment Purpose</dt><dd className="text-right font-semibold text-slate-900 dark:text-slate-50">Member contribution</dd></div>
+                <div className="flex items-center justify-between gap-4 border-t border-blue-100 pt-2 dark:border-blue-500/20"><dt className="font-semibold text-slate-700 dark:text-slate-300">Amount</dt><dd className="text-right text-lg font-bold text-slate-950 dark:text-slate-50">₹{finalAmount || 0}</dd></div>
+              </dl>
             </div>
 
             <div className="space-y-3">
@@ -479,7 +489,7 @@ function PayNowContent() {
                     Processing...
                   </>
                 ) : (
-                  `Pay ₹${finalAmount || 0} via UPI`
+                  `Make Contribution ₹${finalAmount || 0} via UPI`
                 )}
               </Button>
             ) : (
@@ -489,7 +499,7 @@ function PayNowContent() {
                 disabled={isButtonDisabled}
                 onClick={handleCashHandover}
               >
-                Record ₹{finalAmount || 0} Cash
+                Record ₹{finalAmount || 0} Cash Contribution
               </Button>
             )}
             <p className="text-xs text-muted-foreground flex items-center justify-center gap-1 font-medium">

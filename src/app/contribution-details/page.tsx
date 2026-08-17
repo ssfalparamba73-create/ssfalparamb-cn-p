@@ -15,6 +15,16 @@ export default function ContributionDetailsPage() {
       title="Member Contribution Details"
       description="A clear overview of how monthly and approved event contributions are presented and recorded in the portal."
     >
+      <PolicySection title="Member Contribution">
+        <p>
+          This portal is used exclusively for collecting member contributions for SSF Alparamba Unit. Contributions are associated with the respective member and contribution period. This portal does not sell physical products or commercial services.
+        </p>
+      </PolicySection>
+
+      <PolicySection title="Who Can Make a Contribution?">
+        <p>Registered members/contributors of SSF Alparamba Unit can use this portal to make their applicable contributions.</p>
+      </PolicySection>
+
       <PolicySection title="What the portal supports">
         <PolicyList items={[
           "Monthly member contributions associated with an eligible member profile.",

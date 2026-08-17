@@ -4,7 +4,10 @@ import {
   LockKeyhole,
   Sparkles,
   ArrowRight,
-  CreditCard
+  CreditCard,
+  Users,
+  Info,
+  
 } from "lucide-react"
 import dynamic from "next/dynamic"
 
@@ -16,10 +19,10 @@ import { ProfessionalPortalSections } from "@/components/landing/ProfessionalPor
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen flex flex-col overflow-hidden bg-[#eef7ff] text-slate-950 selection:bg-cyan-100 selection:text-blue-950">
+    <div className="min-h-screen flex flex-col overflow-hidden bg-[linear-gradient(135deg,#f8fbff_0%,#eef8ff_48%,#effdf7_100%)] text-slate-950 selection:bg-cyan-100 selection:text-blue-950">
       <Header />
 
-      <main className="flex-1 flex flex-col bg-[radial-gradient(circle_at_18%_18%,rgba(59,130,246,0.24),transparent_24rem),radial-gradient(circle_at_86%_24%,rgba(34,197,94,0.24),transparent_20rem),linear-gradient(135deg,#f8fbff_0%,#eef8ff_48%,#effdf7_100%)]">
+      <main className="flex-1 flex flex-col bg-[radial-gradient(circle_at_12%_8%,rgba(59,130,246,0.32),transparent_28rem),radial-gradient(circle_at_88%_18%,rgba(34,197,94,0.28),transparent_25rem),linear-gradient(135deg,#f8fbff_0%,#eef8ff_48%,#effdf7_100%)]">
         {/* Hero Section */}
         <section className="relative grid md:min-h-[calc(100vh-5rem)] py-8 md:py-0 grid-cols-1 overflow-hidden lg:grid-cols-2">
           <div className="pointer-events-none absolute inset-0 opacity-70 [background-image:radial-gradient(circle_at_1px_1px,rgba(37,99,235,0.16)_1px,transparent_0)] [background-size:34px_34px]" />
@@ -63,7 +66,7 @@ export default function LandingPage() {
                 <Link href="/pay" className="block w-full max-w-sm group">
                   <Button size="lg" variant="outline" className="h-14 w-full rounded-full border-2 border-blue-200 bg-white/60 text-base font-bold text-blue-700 shadow-[0_8px_24px_rgba(37,99,235,0.10)] backdrop-blur-xl transition-all hover:bg-blue-50 hover:border-blue-300 flex items-center justify-center gap-2">
                     <CreditCard className="size-4" />
-                    Pay Now
+                    Make Contribution
                     <ArrowRight className="size-4 opacity-80 transition-transform group-hover:translate-x-1" />
                   </Button>
                 </Link>
@@ -102,6 +105,33 @@ export default function LandingPage() {
           </div>
         </section>
 
+        {/* Contribution purpose and eligibility */}
+        <section className="border-t border-white/70 bg-white/75 py-14 backdrop-blur-2xl md:py-18">
+          <div className="container grid gap-5 px-4 md:grid-cols-2 md:px-8">
+            <div className="rounded-3xl border border-blue-100 bg-white/90 p-6 shadow-[0_12px_35px_rgba(37,99,235,0.08)] md:p-8">
+              <div className="mb-5 flex size-11 items-center justify-center rounded-2xl bg-blue-50 text-blue-700">
+                <Info className="size-5" aria-hidden="true" />
+              </div>
+              <h2 className="text-2xl font-bold tracking-tight text-slate-950 md:text-3xl">Member Contribution</h2>
+              <p className="mt-3 text-sm font-medium leading-7 text-slate-600 md:text-base">
+                This portal is used exclusively for collecting member contributions for SSF Alparamba Unit. Contributions are associated with the respective member and contribution period. This portal does not sell physical products or commercial services.
+              </p>
+            </div>
+            <div className="rounded-3xl border border-emerald-100 bg-emerald-50/55 p-6 shadow-[0_12px_35px_rgba(16,185,129,0.07)] md:p-8">
+              <div className="mb-5 flex size-11 items-center justify-center rounded-2xl bg-white text-emerald-700 shadow-sm">
+                <Users className="size-5" aria-hidden="true" />
+              </div>
+              <h2 className="text-2xl font-bold tracking-tight text-slate-950 md:text-3xl">Who Can Make a Contribution?</h2>
+              <p className="mt-3 text-sm font-medium leading-7 text-slate-600 md:text-base">
+                Registered members/contributors of SSF Alparamba Unit can use this portal to make their applicable contributions.
+              </p>
+              <Link href="/contribution-details" className="mt-5 inline-flex items-center gap-2 text-sm font-bold text-blue-700 hover:text-blue-800 hover:underline">
+                View contribution details <ArrowRight className="size-4" aria-hidden="true" />
+              </Link>
+            </div>
+          </div>
+        </section>
+
         {/* Member Benefits Section */}
         <section className="relative border-t border-white/60 bg-white/60 py-16 backdrop-blur-2xl md:py-20 overflow-hidden">
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_22%_18%,rgba(59,130,246,0.14),transparent_24rem),radial-gradient(circle_at_78%_36%,rgba(16,185,129,0.16),transparent_22rem)]" />
@@ -134,7 +164,7 @@ export default function LandingPage() {
           </div>
           <div className="flex flex-col items-center gap-3 md:items-end">
             <nav aria-label="Policies" className="flex max-w-2xl flex-wrap justify-center gap-x-4 gap-y-2 text-xs font-semibold text-slate-500 md:justify-end">
-              <Link href="/pay" className="text-blue-600 hover:text-blue-700">Pay Now</Link>
+              <Link href="/pay" className="text-blue-600 hover:text-blue-700">Make Contribution</Link>
               <Link href="/contribution-details" className="hover:text-blue-600">Contribution Details</Link>
               <Link href="/shipping-policy" className="hover:text-blue-600">Shipping</Link>
               <Link href="/cancellation-and-refund-policy" className="hover:text-blue-600">Cancellation & Refunds</Link>
