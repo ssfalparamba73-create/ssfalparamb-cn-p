@@ -9,6 +9,7 @@ vi.mock("@/lib/backend/adapters/razorpay/razorpayGateway", () => ({
   verifyRazorpaySignature: vi.fn(),
   verifyWebhookSignature: vi.fn(),
   fetchRazorpayPayment: vi.fn(),
+  fetchRazorpayOrder: vi.fn(),
 }));
 
 // Mock the config module
@@ -156,13 +157,18 @@ describe("RazorpayService", () => {
       const {
         verifyRazorpaySignature,
         fetchRazorpayPayment,
+        fetchRazorpayOrder,
       } = await import("@/lib/backend/adapters/razorpay/razorpayGateway");
 
       (verifyRazorpaySignature as any).mockReturnValue(true);
+      mockPaymentRepository.findById.mockResolvedValue({ ...mockPayment, gatewayProvider: "razorpay", gatewayOrderId: "order_razorpay_123" });
+      (fetchRazorpayOrder as any).mockResolvedValue({ amount: 10000, currency: "INR" });
       (fetchRazorpayPayment as any).mockResolvedValue({
         id: "pay_razorpay_456",
         status: "captured",
         amount: 10000,
+        order_id: "order_razorpay_123",
+        currency: "INR",
       });
       mockPaymentRepository.confirmPayment.mockResolvedValue({
         ...mockPayment,
@@ -209,13 +215,18 @@ describe("RazorpayService", () => {
       const {
         verifyRazorpaySignature,
         fetchRazorpayPayment,
+        fetchRazorpayOrder,
       } = await import("@/lib/backend/adapters/razorpay/razorpayGateway");
 
       (verifyRazorpaySignature as any).mockReturnValue(true);
+      mockPaymentRepository.findById.mockResolvedValue({ ...mockPayment, gatewayProvider: "razorpay", gatewayOrderId: "order_razorpay_123" });
+      (fetchRazorpayOrder as any).mockResolvedValue({ amount: 10000, currency: "INR" });
       (fetchRazorpayPayment as any).mockResolvedValue({
         id: "pay_razorpay_456",
         status: "failed",
         amount: 10000,
+        order_id: "order_razorpay_123",
+        currency: "INR",
       });
 
       const result = await service.verifyPayment(

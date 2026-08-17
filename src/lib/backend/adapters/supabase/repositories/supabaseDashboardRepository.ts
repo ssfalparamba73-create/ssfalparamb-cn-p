@@ -118,12 +118,14 @@ export class SupabaseDashboardRepository implements DashboardRepository {
         .from("payments")
         .select("id,receipt_id,payer_name,category,method,amount,status,paid_at,recorded_at")
         .eq("status", "confirmed")
+        .is("voided_at", null)
         .gte("recorded_at", currentMonthStart.toISOString())
         .lt("recorded_at", nextMonthStart.toISOString()),
       supabase
         .from("payments")
         .select("id,receipt_id,payer_name,category,method,amount,status,paid_at,recorded_at")
         .eq("status", "confirmed")
+        .is("voided_at", null)
         .gte("recorded_at", trendStart.toISOString())
         .lt("recorded_at", nextMonthStart.toISOString()),
       supabase
@@ -137,6 +139,7 @@ export class SupabaseDashboardRepository implements DashboardRepository {
       supabase
         .from("payments")
         .select("id,receipt_id,payer_name,category,method,amount,status,paid_at,recorded_at")
+        .is("voided_at", null)
         .order("recorded_at", { ascending: false })
         .limit(5),
       supabase
@@ -255,12 +258,14 @@ export class SupabaseDashboardRepository implements DashboardRepository {
         .from("payments")
         .select("id,receipt_id,payer_name,category,method,amount,status,paid_at,recorded_at")
         .eq("member_id", memberId)
+        .is("voided_at", null)
         .order("recorded_at", { ascending: false })
         .limit(5),
       supabase
         .from("payments")
         .select("payment_months(label,month_key)")
         .eq("member_id", memberId)
+        .is("voided_at", null)
         .eq("status", "pending"),
     ]);
 
@@ -274,6 +279,17 @@ export class SupabaseDashboardRepository implements DashboardRepository {
     }>).flatMap((payment) =>
       (payment.payment_months ?? []).map((month) => month.label ?? month.month_key)
     );
+    const recentPayments = (recentResult.data ?? []) as PaymentRow[];
+    const hasPendingPayment = recentPayments.some((payment) => payment.status === "pending");
+    const hasFailedPayment = recentPayments.some((payment) => payment.status === "failed");
+    const pendingAmount = toNumber(member.dues_pending);
+    const paymentStatus = hasFailedPayment
+      ? "payment_failed"
+      : hasPendingPayment
+        ? "payment_pending"
+        : pendingAmount > 0
+          ? "contribution_due"
+          : "all_clear";
 
     return {
       member: {
@@ -284,10 +300,11 @@ export class SupabaseDashboardRepository implements DashboardRepository {
         status: member.status,
       },
       dueSummary: {
-        pendingAmount: toNumber(member.dues_pending),
+        pendingAmount,
         monthlyAmount: toNumber(member.monthly_amount),
         pendingMonths: Array.from(new Set(pendingMonths)),
-        hasOverdue: toNumber(member.dues_pending) > 0,
+        hasOverdue: pendingAmount > 0,
+        paymentStatus,
       },
       recentActivity: ((recentResult.data ?? []) as PaymentRow[]).map(mapMemberActivity),
     };

@@ -36,6 +36,12 @@ export function mapRowToPaymentDTO(row: any, monthsRows: any[] = []): PaymentDTO
     paidAt: row.paid_at,
     recordedAt: row.recorded_at,
     verifiedAt: row.verified_at,
+    voidedAt: row.voided_at,
+    voidedByAdminId: row.voided_by_admin_id,
+    voidReason: row.void_reason,
+    gatewayProvider: row.gateway_provider,
+    gatewayOrderId: row.gateway_order_id,
+    gatewayPaymentId: row.gateway_payment_id,
   };
 }
 
@@ -94,7 +100,7 @@ export function mapRowToMemberPaymentHistoryItemDTO(row: any): MemberPaymentHist
     date: row.paid_at || row.created_at,
     amount: Number(row.amount),
     method: row.method,
-    status: row.status === "confirmed" ? "COMPLETED" : row.status === "pending" ? "PENDING" : row.status === "cancelled" || row.status === "rejected" ? "CANCELLED" : "FAILED",
+    status: row.status === "confirmed" ? "COMPLETED" : row.status === "pending" ? "PENDING" : row.status === "refunded" ? "REFUNDED" : row.status === "cancelled" || row.status === "rejected" ? "CANCELLED" : "FAILED",
     receiptUrl: undefined,
   };
 }

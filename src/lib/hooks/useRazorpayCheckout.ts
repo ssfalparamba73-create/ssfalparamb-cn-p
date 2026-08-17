@@ -71,7 +71,7 @@ export function useRazorpayCheckout() {
     });
   }, []);
 
-  const createOrder = useCallback(async (paymentId: string, amount: number) => {
+  const createOrder = useCallback(async (paymentId: string) => {
     const response = await fetch("/api/v1/payments/razorpay/order", {
       method: "POST",
       headers: {
@@ -79,7 +79,6 @@ export function useRazorpayCheckout() {
       },
       body: JSON.stringify({
         paymentId,
-        amount,
         currency: "INR",
       }),
     });
@@ -134,7 +133,7 @@ export function useRazorpayCheckout() {
       }
 
       // Create order
-      const orderResult = await createOrder(params.paymentId, params.amount);
+      const orderResult = await createOrder(params.paymentId);
       
       if (!orderResult.ok) {
         throw new Error(orderResult.error?.message || "Failed to create payment order");
@@ -145,7 +144,7 @@ export function useRazorpayCheckout() {
       // Initialize Razorpay checkout
       const options: RazorpayCheckoutOptions = {
         key: keyId,
-        amount: Math.round(params.amount * 100), // Convert to paise
+        amount: Math.round(Number(orderResult.data.amount) * 100), // Server-authoritative amount
         currency: currency || "INR",
         name: "SSF Alparamba Unit",
         description: "Payment for SSF Alparamba Unit",

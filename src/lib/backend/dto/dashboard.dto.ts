@@ -50,6 +50,7 @@ export interface MemberDashboardViewDTO {
     monthlyAmount: number;
     pendingMonths: string[];
     hasOverdue: boolean;
+    paymentStatus: "all_clear" | "payment_pending" | "contribution_due" | "payment_failed";
   };
   recentActivity: MemberDashboardActivityDTO[];
 }

@@ -37,6 +37,12 @@ export interface PaymentDTO {
   paidAt?: ISODateTime;
   recordedAt: ISODateTime;
   verifiedAt?: ISODateTime;
+  voidedAt?: ISODateTime;
+  voidedByAdminId?: ID;
+  voidReason?: string;
+  gatewayProvider?: string;
+  gatewayOrderId?: string;
+  gatewayPaymentId?: string;
 }
 
 export interface PaymentIntentDTO {
@@ -57,7 +63,7 @@ export interface MemberPaymentHistoryItemDTO {
   date: string;
   amount: number;
   method: string;
-  status: "PENDING" | "COMPLETED" | "FAILED" | "CANCELLED";
+  status: "PENDING" | "COMPLETED" | "FAILED" | "CANCELLED" | "REFUNDED";
   receiptUrl?: string;
 }
 

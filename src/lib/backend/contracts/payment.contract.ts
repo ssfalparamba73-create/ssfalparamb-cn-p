@@ -58,6 +58,7 @@ export interface PaymentRepository {
   approve(paymentId: string, actor: ActorContext, notes?: string): Promise<PaymentDTO>;
   reject(paymentId: string, actor: ActorContext, reason?: string): Promise<PaymentDTO>;
   cancel(paymentId: string, actor: ActorContext, reason?: string): Promise<PaymentDTO>;
+  voidPayment(paymentId: string, actor: ActorContext, reason: string): Promise<PaymentDTO>;
   updateGatewayOrderId(paymentId: string, gatewayOrderId: string): Promise<void>;
   confirmPayment(paymentId: string, gatewayPaymentId: string, gatewaySignature: string): Promise<PaymentDTO>;
   failPayment(paymentId: string, reason?: string): Promise<PaymentDTO>;
@@ -82,6 +83,7 @@ export interface PaymentService {
 
 export interface ReceiptService {
   getReceiptByToken(receiptId: string, token: string, actor: ActorContext): Promise<BackendResult<ReceiptDTO>>;
+  getReceiptForMember(paymentId: string, actor: ActorContext): Promise<BackendResult<ReceiptDTO>>;
 }
 
 export interface AdminPaymentService {
@@ -93,4 +95,5 @@ export interface AdminPaymentService {
   approvePayment(input: PaymentStatusTransitionInput, actor: ActorContext): Promise<BackendResult<PaymentDTO>>;
   rejectPayment(input: PaymentStatusTransitionInput, actor: ActorContext): Promise<BackendResult<PaymentDTO>>;
   cancelPayment(input: PaymentStatusTransitionInput, actor: ActorContext): Promise<BackendResult<PaymentDTO>>;
+  voidPayment(input: PaymentStatusTransitionInput, actor: ActorContext): Promise<BackendResult<PaymentDTO>>;
 }

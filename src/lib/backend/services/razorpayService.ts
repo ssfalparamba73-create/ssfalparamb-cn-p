@@ -14,12 +14,13 @@ import {
   verifyRazorpaySignature,
   verifyWebhookSignature,
   fetchRazorpayPayment,
+  fetchRazorpayOrder,
 } from "../adapters/razorpay/razorpayGateway";
 import { isRazorpayConfigured } from "../config/razorpay.config";
 
 export interface CreateRazorpayOrderInput {
   paymentId: string;
-  amount: number; // in INR
+  amount?: number; // optional client hint; the server record is authoritative
   currency?: string;
 }
 
@@ -117,9 +118,18 @@ export function createRazorpayService(deps: {
           );
         }
 
+        if (payment.gatewayProvider === "razorpay" && payment.gatewayOrderId) {
+          return ok({
+            orderId: payment.gatewayOrderId,
+            amount: payment.amount,
+            currency: "INR",
+            keyId: process.env.RAZORPAY_KEY_ID!,
+          });
+        }
+
         // Verify the amount matches what we expect
         const expectedAmount = Math.round(payment.amount * 100); // Convert to paise
-        if (input.amount * 100 !== expectedAmount) {
+        if (input.amount !== undefined && input.amount * 100 !== expectedAmount) {
           return fail(
             validationError("Payment amount mismatch.", "amount", ERROR_CODES.INVALID_AMOUNT)
           );
@@ -190,6 +200,20 @@ export function createRazorpayService(deps: {
           );
         }
 
+        const payment = await paymentRepository.findById(input.paymentId);
+        if (!payment) return fail(notFoundError("Payment not found.", ERROR_CODES.PAYMENT_NOT_FOUND));
+        if (payment.status === "confirmed" && payment.gatewayPaymentId === input.razorpayPaymentId) {
+          return ok(payment);
+        }
+        if (payment.status !== "pending" || payment.gatewayOrderId !== input.razorpayOrderId) {
+          return fail(paymentError("Payment order does not match the server record.", ERROR_CODES.PAYMENT_VERIFICATION_FAILED));
+        }
+
+        const razorpayOrder = await fetchRazorpayOrder(input.razorpayOrderId);
+        if (razorpayOrder.amount !== Math.round(payment.amount * 100) || razorpayOrder.currency !== "INR") {
+          return fail(paymentError("Payment amount or currency mismatch.", ERROR_CODES.PAYMENT_VERIFICATION_FAILED));
+        }
+
         // Fetch payment details from Razorpay
         const razorpayPayment = await fetchRazorpayPayment(
           input.razorpayPaymentId
@@ -204,7 +228,11 @@ export function createRazorpayService(deps: {
           );
         }
 
-        // Update payment in database
+        if (razorpayPayment.order_id !== input.razorpayOrderId || razorpayPayment.amount !== Math.round(payment.amount * 100)) {
+          return fail(paymentError("Gateway payment does not match the server order.", ERROR_CODES.PAYMENT_VERIFICATION_FAILED));
+        }
+
+        // Update payment in database only after all server-side checks pass.
         const confirmedPayment = await paymentRepository.confirmPayment(
           input.paymentId,
           input.razorpayPaymentId,
@@ -250,7 +278,7 @@ export function createRazorpayService(deps: {
             paymentEntity.order_id
           );
 
-          if (payment && payment.status === "pending") {
+          if (payment && payment.status === "pending" && payment.amount * 100 === paymentEntity.amount) {
             await paymentRepository.confirmPayment(
               payment.id,
               paymentEntity.id,

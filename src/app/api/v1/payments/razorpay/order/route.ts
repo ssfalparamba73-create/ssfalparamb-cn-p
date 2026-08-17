@@ -7,7 +7,7 @@ import { getRazorpayService } from "../../../../../../lib/backend/composition/ra
 
 interface CreateOrderRequest {
   paymentId: string;
-  amount: number;
+  amount?: number;
   currency?: string;
 }
 
@@ -20,11 +20,6 @@ export async function POST(request: NextRequest) {
     // Validate required fields
     if (!body.paymentId) {
       const errResult = fail(validationError("Payment ID is required.", "paymentId"));
-      return createBackendResponse(errResult, actor.requestId);
-    }
-
-    if (!body.amount || body.amount <= 0) {
-      const errResult = fail(validationError("Valid amount is required.", "amount"));
       return createBackendResponse(errResult, actor.requestId);
     }
 

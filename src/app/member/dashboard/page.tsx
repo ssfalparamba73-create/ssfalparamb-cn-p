@@ -24,7 +24,7 @@ export default function MemberDashboardPage() {
         <h1 className="text-2xl font-black text-slate-900 tracking-tight leading-none dark:text-slate-50">{dashboard.member.name}</h1>
       </div>
 
-      <DueStatusCard amountDue={dashboard.dueSummary.pendingAmount} />
+      <DueStatusCard amountDue={dashboard.dueSummary.pendingAmount} paymentStatus={dashboard.dueSummary.paymentStatus} />
       <RecentActivityCard activities={dashboard.recentActivity} />
     </div>
   );

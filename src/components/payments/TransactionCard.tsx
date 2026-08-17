@@ -6,7 +6,7 @@ export interface Transaction {
   date: string;
   amount: number;
   method: "UPI" | "CASH";
-  status: "COMPLETED" | "PENDING" | "FAILED" | "CANCELLED";
+  status: "COMPLETED" | "PENDING" | "FAILED" | "CANCELLED" | "REFUNDED";
   receiptUrl?: string;
 }
 
@@ -29,12 +29,12 @@ export function TransactionCard({ transaction }: TransactionCardProps) {
         <div className="flex flex-col">
           <span className="font-bold text-slate-900 text-lg dark:text-slate-50">₹{transaction.amount}</span>
           <span className="text-xs text-slate-500 font-medium dark:text-slate-400">
-            {transaction.date} • {transaction.method === "UPI" ? "Online Transfer" : "Handover"}
+            {transaction.date} • {transaction.method === "UPI" ? "UPI Payment" : "Cash Handover"}
           </span>
           {/* Status Badge (if not completed) */}
           {transaction.status !== "COMPLETED" && (
             <span className={`text-[10px] uppercase tracking-wider font-bold mt-1 w-max px-2 py-0.5 rounded-full ${
-              transaction.status === "PENDING" ? "bg-amber-100 text-amber-700" : "bg-red-100 text-red-700"
+              transaction.status === "PENDING" ? "bg-amber-100 text-amber-700" : transaction.status === "REFUNDED" ? "bg-slate-100 text-slate-700" : "bg-red-100 text-red-700"
             }`}>
               {transaction.status}
             </span>

@@ -16,6 +16,17 @@ export class SupabaseReceiptRepository implements ReceiptRepository {
     
     const { data: payment, error: payError } = await supabase.from("payments").select("*").eq("id", paymentId).single();
     if (payError || !payment) throw new Error("Payment not found");
+
+    // Webhooks and client retries are intentionally idempotent. Never issue a
+    // second receipt for the same confirmed payment.
+    const { data: existingReceipt } = await supabase
+      .from("payment_receipts")
+      .select("*")
+      .eq("payment_id", paymentId)
+      .maybeSingle();
+    if (existingReceipt) {
+      return { receipt: mapRowToReceiptDTO(existingReceipt, payment), rawToken: "" };
+    }
     
     let receiptId = payment.receipt_id;
 
@@ -95,7 +106,7 @@ export class SupabaseReceiptRepository implements ReceiptRepository {
 
   async findForMember(paymentId: string, memberId: string): Promise<ReceiptDTO | null> {
     const supabase = createSupabaseBackendClient();
-    const { data: payment } = await supabase.from("payments").select("*").eq("id", paymentId).eq("member_id", memberId).single();
+    const { data: payment } = await supabase.from("payments").select("*").eq("id", paymentId).eq("member_id", memberId).is("voided_at", null).single();
     if (!payment) return null;
     
     const { data, error } = await supabase.from("payment_receipts").select("*").eq("payment_id", paymentId).single();

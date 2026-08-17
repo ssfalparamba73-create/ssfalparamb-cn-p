@@ -1,5 +1,5 @@
 import type { ActorContext, PaginatedResult, PaginationInput } from "../../../contracts/common.contract";
-import type { CreatePaymentIntentInput, PaymentRepository, PaymentStatusTransitionInput, RecordCashEntryInput } from "../../../contracts/payment.contract";
+import type { CreatePaymentIntentInput, PaymentRepository, RecordCashEntryInput } from "../../../contracts/payment.contract";
 import type { CashEntryDTO, MemberPaymentHistoryItemDTO, PaymentDTO, PaymentFilters } from "../../../dto/payment.dto";
 import { createSupabaseBackendClient } from "../client";
 import { mapRowToCashEntryDTO, mapRowToMemberPaymentHistoryItemDTO, mapRowToPaymentDTO } from "../mappers/payment.mapper";
@@ -42,7 +42,7 @@ export class SupabasePaymentRepository implements PaymentRepository {
 
   async listByMember(memberId: string, pagination: PaginationInput): Promise<PaginatedResult<MemberPaymentHistoryItemDTO>> {
     const supabase = createSupabaseBackendClient();
-    const query = supabase.from("payments").select("*", { count: "exact" }).eq("member_id", memberId);
+    const query = supabase.from("payments").select("*", { count: "exact" }).eq("member_id", memberId).is("voided_at", null);
 
     const page = pagination.page || 1;
     const pageSize = pagination.pageSize || 20;
@@ -132,6 +132,24 @@ export class SupabasePaymentRepository implements PaymentRepository {
   async createPendingPayment(input: CreatePaymentIntentInput, actor: ActorContext): Promise<PaymentDTO> {
     const supabase = createSupabaseBackendClient();
     const memberId = await this.resolveMemberId(supabase, input.memberQuery);
+    // Reuse an active intent when checkout is retried. The partial unique
+    // indexes in migration 054 provide the database-level race protection.
+    let existingQuery = supabase
+      .from("payments")
+      .select("*, payment_months(*)")
+      .eq("status", "pending")
+      .eq("category", input.category)
+      .is("voided_at", null)
+      .limit(1);
+    existingQuery = memberId
+      ? existingQuery.eq("member_id", memberId)
+      : existingQuery.eq("payer_phone", input.payerPhone).is("member_id", null);
+    if (input.category === "special_event" && input.eventId) {
+      existingQuery = existingQuery.eq("event_id", input.eventId);
+    }
+    const { data: existing } = await existingQuery.maybeSingle();
+    if (existing) return mapRowToPaymentDTO(existing, existing.payment_months || []);
+
     const amount = await this.resolvePaymentAmount(supabase, input, memberId);
 
     const { data: receiptId, error: receiptIdError } = await supabase.rpc("generate_receipt_id");
@@ -266,6 +284,17 @@ export class SupabasePaymentRepository implements PaymentRepository {
     return mapRowToPaymentDTO(data);
   }
 
+  async voidPayment(paymentId: string, actor: ActorContext, reason: string): Promise<PaymentDTO> {
+    const supabase = createSupabaseBackendClient();
+    const { data, error } = await supabase.from("payments").update({
+      voided_at: new Date().toISOString(),
+      voided_by_admin_id: actor.adminId,
+      void_reason: reason,
+    }).eq("id", paymentId).is("voided_at", null).select("*").single();
+    if (error) throw error;
+    return mapRowToPaymentDTO(data);
+  }
+
   async findByGatewayOrderId(gatewayOrderId: string): Promise<PaymentDTO | null> {
     const supabase = createSupabaseBackendClient();
     const { data, error } = await supabase.from("payments").select("*, payment_months(*)").eq("gateway_order_id", gatewayOrderId).single();
@@ -285,12 +314,20 @@ export class SupabasePaymentRepository implements PaymentRepository {
 
   async confirmPayment(paymentId: string, gatewayPaymentId: string, gatewaySignature: string): Promise<PaymentDTO> {
     const supabase = createSupabaseBackendClient();
+    const { data: current, error: currentError } = await supabase
+      .from("payments")
+      .select("*")
+      .eq("id", paymentId)
+      .single();
+    if (currentError || !current) throw currentError || new Error("Payment not found");
+    if (current.status === "confirmed") return mapRowToPaymentDTO(current);
+    if (current.status !== "pending") throw new Error("Only pending payments can be confirmed.");
     const { data, error } = await supabase.from("payments").update({
       status: "confirmed",
       gateway_payment_id: gatewayPaymentId,
       gateway_signature: gatewaySignature,
       paid_at: new Date().toISOString(),
-    }).eq("id", paymentId).select("*").single();
+    }).eq("id", paymentId).eq("status", "pending").select("*").single();
 
     if (error) throw error;
     return mapRowToPaymentDTO(data);

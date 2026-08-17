@@ -70,20 +70,9 @@ function PayNowContent() {
   const [customAmount, setCustomAmount] = useState<string>("");
   const [checkoutHint, setCheckoutHint] = useState<string | null>(null);
 
-  // Admin toggle for Special Event
+  // Special events remain available only through configured event support.
   const isSpecialEventActive = true;
-
-  const mockPendingMonths = [
-    { id: "current", label: "July 2026 (Current Month)" },
-    { id: "arrear_1", label: "June 2026 (Arrears)" },
-    { id: "arrear_2", label: "May 2026 (Arrears)" },
-  ];
-
-  const handleMonthToggle = (id: string) => {
-    setSelectedMonths(prev =>
-      prev.includes(id) ? prev.filter(m => m !== id) : [...prev, id]
-    );
-  };
+  const currentContributionPeriod = new Intl.DateTimeFormat("en-IN", { month: "long", year: "numeric" }).format(new Date());
 
   let finalAmount = 0;
   if (activeTab === "dues") {
@@ -117,7 +106,7 @@ function PayNowContent() {
     }
     setCheckoutHint(null);
 
-    const intent = await requestBackend<{ paymentId: string }>("/api/v1/payments/intent", {
+    const intent = await requestBackend<{ paymentId: string; amount: number }>("/api/v1/payments/intent", {
       method: "POST",
       body: JSON.stringify({
         memberQuery,
@@ -133,12 +122,12 @@ function PayNowContent() {
 
     await initiateCheckout({
       paymentId: intent.paymentId,
-      amount: finalAmount,
+      amount: intent.amount,
       memberName: memberQuery,
       memberPhone: memberQuery,
       onSuccess: (paymentId) => {
         // Redirect to success page with payment details
-        window.location.href = `/success?method=upi&admin=${encodeURIComponent(selectedAdminName)}&phone=${encodeURIComponent(memberQuery)}&amount=${finalAmount}${activeTab === 'event' ? '&category=special_event' : ''}${source === 'member' ? '&source=member' : ''}&paymentId=${paymentId}`;
+        window.location.href = `/success?method=upi&admin=${encodeURIComponent(selectedAdminName)}&phone=${encodeURIComponent(memberQuery)}&amount=${intent.amount}${activeTab === 'event' ? '&category=special_event' : ''}${source === 'member' ? '&source=member' : ''}&paymentId=${paymentId}`;
       },
       onError: (error) => {
         console.error("Payment failed:", error);
@@ -157,7 +146,7 @@ function PayNowContent() {
 
     setCheckoutHint(null);
     try {
-      const intent = await requestBackend<{ paymentId: string }>("/api/v1/payments/intent", {
+      const intent = await requestBackend<{ paymentId: string; amount: number }>("/api/v1/payments/intent", {
         method: "POST",
         body: JSON.stringify({
           memberQuery,
@@ -172,7 +161,7 @@ function PayNowContent() {
         }),
       });
 
-      window.location.href = `/success?method=cash_handover&admin=${encodeURIComponent(selectedAdminName)}&phone=${encodeURIComponent(memberQuery)}&amount=${finalAmount}${activeTab === 'event' ? '&category=special_event' : ''}${source === 'member' ? '&source=member' : ''}&paymentId=${intent.paymentId}`;
+      window.location.href = `/success?method=cash_handover&admin=${encodeURIComponent(selectedAdminName)}&phone=${encodeURIComponent(memberQuery)}&amount=${intent.amount}${activeTab === 'event' ? '&category=special_event' : ''}${source === 'member' ? '&source=member' : ''}&paymentId=${intent.paymentId}`;
     } catch (error) {
       setCheckoutHint(error instanceof Error ? error.message : "Unable to record the cash handover.");
     }
@@ -241,16 +230,10 @@ function PayNowContent() {
               {activeTab === "dues" ? (
                 <div className="rounded-xl border bg-accent/30 p-4 space-y-4 dark:bg-slate-800/50 dark:border-slate-700">
                   <div className="space-y-3">
-                    <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Select Pending Months</Label>
-                    <div className="space-y-2">
-                      {mockPendingMonths.map((month) => (
-                        <label key={month.id} className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all ${selectedMonths.includes(month.id) ? "bg-white border-primary shadow-sm dark:bg-blue-500/10 dark:border-blue-500/50" : "bg-white/50 border-border/50 hover:bg-white dark:bg-slate-800 dark:border-slate-700 dark:hover:bg-slate-700"}`}>
-                          <div className={`size-5 rounded-md border flex items-center justify-center transition-colors ${selectedMonths.includes(month.id) ? "bg-primary border-primary text-white dark:bg-blue-600 dark:border-blue-600" : "border-slate-300 bg-white dark:bg-slate-700 dark:border-slate-600"}`}>
-                            {selectedMonths.includes(month.id) && <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="size-3.5"><polyline points="20 6 9 17 4 12"></polyline></svg>}
-                          </div>
-                          <span className={`text-sm font-medium ${selectedMonths.includes(month.id) ? "text-slate-900 dark:text-slate-50" : "text-slate-600 dark:text-slate-300"}`}>{month.label}</span>
-                        </label>
-                      ))}
+                    <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Contribution Period</Label>
+                    <div className="rounded-lg border border-primary/30 bg-white p-3 text-sm font-medium text-slate-900 dark:border-blue-500/50 dark:bg-slate-800 dark:text-slate-50">
+                      {currentContributionPeriod} contribution
+                      <p className="mt-1 text-xs font-normal text-muted-foreground">The final amount is resolved from the member record on the server.</p>
                     </div>
                   </div>
 
