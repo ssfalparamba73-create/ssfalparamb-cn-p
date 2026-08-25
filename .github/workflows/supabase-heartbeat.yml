@@ -14,8 +14,9 @@
 #   GitHub Actions → Supabase REST API (direct, no application dependency)
 #
 # Operation:
-#   Read-only SELECT on support_contacts (existing public RLS policy)
+#   Calls heartbeat_ping() RPC — executes SELECT now() in PostgreSQL
 #   Uses the anon/public key — minimum privilege necessary
+#   Zero table access, zero business data exposure
 #
 # Required GitHub Secrets:
 #   SUPABASE_URL      — Supabase project URL (e.g. https://<ref>.supabase.co)
@@ -55,14 +56,17 @@ jobs:
           echo "Performing read-only database activity query..."
           echo "Timestamp: $(date -u '+%Y-%m-%dT%H:%M:%SZ')"
 
-          # Execute a lightweight read-only query via Supabase REST API (PostgREST)
-          # Query: SELECT id FROM support_contacts WHERE is_active = true LIMIT 1
-          # This uses the existing public RLS policy on support_contacts
+          # Call heartbeat_ping() RPC via Supabase PostgREST
+          # This executes SELECT now() — a real SQL query that generates
+          # database activity without accessing any tables or business data
           HTTP_STATUS=$(curl -s -o /tmp/response.json -w "%{http_code}" \
             --max-time 30 \
-            "${SUPABASE_URL}/rest/v1/support_contacts?is_active=eq.true&select=id&limit=1" \
+            -X POST \
+            "${SUPABASE_URL}/rest/v1/rpc/heartbeat_ping" \
             -H "apikey: ${SUPABASE_ANON_KEY}" \
-            -H "Authorization: Bearer ${SUPABASE_ANON_KEY}")
+            -H "Authorization: Bearer ${SUPABASE_ANON_KEY}" \
+            -H "Content-Type: application/json" \
+            -d '{}')
 
           echo "HTTP Status: ${HTTP_STATUS}"
 
