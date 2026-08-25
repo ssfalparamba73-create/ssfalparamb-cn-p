@@ -1,0 +1,76 @@
+# Supabase Database Activity — Automated Heartbeat
+#
+# This workflow performs a lightweight, read-only database query against the
+# Supabase REST API on a daily schedule. It is intended to generate legitimate
+# database activity so that the Supabase Free Plan project is less likely to
+# be automatically paused due to inactivity.
+#
+# IMPORTANT: This performs a legitimate lightweight database read through the
+# Supabase Data API and is intended to generate database activity. Supabase
+# does not guarantee that any particular request permanently prevents automatic
+# pausing, and its policies may change.
+#
+# Architecture:
+#   GitHub Actions → Supabase REST API (direct, no application dependency)
+#
+# Operation:
+#   Read-only SELECT on support_contacts (existing public RLS policy)
+#   Uses the anon/public key — minimum privilege necessary
+#
+# Required GitHub Secrets:
+#   SUPABASE_URL      — Supabase project URL (e.g. https://<ref>.supabase.co)
+#   SUPABASE_ANON_KEY — Supabase anon/public API key
+
+name: Supabase Heartbeat
+
+on:
+  schedule:
+    # Daily at 06:00 UTC
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+    # Allow manual trigger for testing
+
+jobs:
+  heartbeat:
+    name: Database Activity Ping
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+
+    steps:
+      - name: Perform read-only Supabase query
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          # Validate that required secrets are configured
+          if [ -z "$SUPABASE_URL" ]; then
+            echo "::error::SUPABASE_URL secret is not configured"
+            exit 1
+          fi
+          if [ -z "$SUPABASE_ANON_KEY" ]; then
+            echo "::error::SUPABASE_ANON_KEY secret is not configured"
+            exit 1
+          fi
+
+          echo "Performing read-only database activity query..."
+          echo "Timestamp: $(date -u '+%Y-%m-%dT%H:%M:%SZ')"
+
+          # Execute a lightweight read-only query via Supabase REST API (PostgREST)
+          # Query: SELECT id FROM support_contacts WHERE is_active = true LIMIT 1
+          # This uses the existing public RLS policy on support_contacts
+          HTTP_STATUS=$(curl -s -o /tmp/response.json -w "%{http_code}" \
+            --max-time 30 \
+            "${SUPABASE_URL}/rest/v1/support_contacts?is_active=eq.true&select=id&limit=1" \
+            -H "apikey: ${SUPABASE_ANON_KEY}" \
+            -H "Authorization: Bearer ${SUPABASE_ANON_KEY}")
+
+          echo "HTTP Status: ${HTTP_STATUS}"
+
+          if [ "$HTTP_STATUS" -ge 200 ] && [ "$HTTP_STATUS" -lt 300 ]; then
+            echo "Database activity query completed successfully."
+          else
+            echo "::error::Database activity query failed with HTTP status ${HTTP_STATUS}"
+            # Print response body for diagnostics (contains no secrets)
+            cat /tmp/response.json
+            exit 1
+          fi
