@@ -44,31 +44,24 @@ export function PremiumReceiptCard({
   const receiptRef = useRef<HTMLDivElement>(null);
 
   // Core canvas generation function used by both download and share
-  const generateCanvas = async () => {
-    const html2canvas = (await import("html2canvas")).default;
+  const generateDataUrl = async () => {
+    const { toJpeg } = await import("html-to-image");
     const element = receiptRef.current;
     if (!element) throw new Error("Receipt element not found");
 
-    const canvasPromise = html2canvas(element, {
-      scale: 2, // Reduced from 3 to 2 for better performance and less memory
-      useCORS: true,
-      allowTaint: true,
-      backgroundColor: null,
-      logging: false,
-    });
-
+    const imagePromise = toJpeg(element, { quality: 0.9, pixelRatio: 2 });
+    
     const timeoutPromise = new Promise<never>((_, reject) => {
-      setTimeout(() => reject(new Error("Canvas generation timed out")), 10000);
+      setTimeout(() => reject(new Error("Image generation timed out")), 10000);
     });
 
-    return await Promise.race([canvasPromise, timeoutPromise]);
+    return await Promise.race([imagePromise, timeoutPromise]);
   };
 
   const handleDownload = async () => {
     setIsDownloading(true);
     try {
-      const canvas = await generateCanvas();
-      const dataUrl = canvas.toDataURL("image/jpeg", 0.9);
+      const dataUrl = await generateDataUrl();
       const link = document.createElement("a");
       link.download = `SSF_Receipt_${receiptId}.jpg`;
       link.href = dataUrl;
@@ -85,32 +78,25 @@ export function PremiumReceiptCard({
   const handleShare = async () => {
     setIsSharing(true);
     try {
-      const canvas = await generateCanvas();
+      const dataUrl = await generateDataUrl();
+      const response = await fetch(dataUrl);
+      const blob = await response.blob();
       
-      canvas.toBlob(async (blob) => {
-        if (!blob) {
-          setIsSharing(false);
-          toast.error("Failed to generate image for sharing.");
-          return;
-        }
-        
-        const file = new File([blob], `SSF_Receipt_${receiptId}.jpg`, { type: 'image/jpeg' });
-        
-        if (navigator.canShare && navigator.canShare({ files: [file] })) {
-          try {
-            await navigator.share({
-              files: [file],
-              title: 'SSF Receipt',
-            });
-          } catch (shareError) {
-            console.log("User cancelled share or share failed", shareError);
-          }
-        } else {
-          toast.info("Direct sharing is not supported on this device. Please download instead.");
-        }
-        setIsSharing(false);
-      }, 'image/jpeg', 0.9);
+      const file = new File([blob], `SSF_Receipt_${receiptId}.jpg`, { type: 'image/jpeg' });
       
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        try {
+          await navigator.share({
+            files: [file],
+            title: 'SSF Receipt',
+          });
+        } catch (shareError) {
+          console.log("User cancelled share or share failed", shareError);
+        }
+      } else {
+        toast.info("Direct sharing is not supported on this device. Please download instead.");
+      }
+      setIsSharing(false);
     } catch (error) {
       console.error("Failed to share receipt", error);
       toast.error("Failed to share receipt.");
