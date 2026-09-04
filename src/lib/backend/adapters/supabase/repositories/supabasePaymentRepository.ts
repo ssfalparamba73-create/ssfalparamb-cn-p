@@ -74,10 +74,11 @@ export class SupabasePaymentRepository implements PaymentRepository {
       .select("id, full_name, phone")
       .eq("phone", memberQuery)
       .neq("status", "left")
+      .limit(1)
       .maybeSingle();
     if (byPhone) return { id: byPhone.id, name: byPhone.full_name, phone: byPhone.phone };
 
-    const { data: byCode } = await supabase.from("members").select("id, full_name, phone").eq("member_code", memberQuery).maybeSingle();
+    const { data: byCode } = await supabase.from("members").select("id, full_name, phone").eq("member_code", memberQuery).limit(1).maybeSingle();
     if (byCode) return { id: byCode.id, name: byCode.full_name, phone: byCode.phone };
 
     return null;
