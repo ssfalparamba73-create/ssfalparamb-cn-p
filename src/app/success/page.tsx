@@ -7,11 +7,14 @@ import { ArrowLeft } from "lucide-react";
 import { PremiumReceiptCard } from "@/components/receipt/PremiumReceiptCard";
 import { requestBackend } from "@/lib/api/backendClient";
 import type { PaymentDTO } from "@/lib/backend/dto/payment.dto";
+import { useQueryClient } from "@tanstack/react-query";
+import { memberQueryKeys } from "@/lib/client/memberQueries";
 
 import Image from 'next/image';
 
 function SuccessPageContent() {
   const searchParams = useSearchParams();
+  const queryClient = useQueryClient();
   const source = searchParams.get("source");
   const paymentId = searchParams.get("paymentId") || searchParams.get("order_id");
   const [payment, setPayment] = React.useState<PaymentDTO | null>(null);
@@ -20,9 +23,17 @@ function SuccessPageContent() {
   React.useEffect(() => {
     if (!paymentId) { setError("Payment record is missing."); return; }
     
+    const handleSuccess = (payment: PaymentDTO) => {
+      setPayment(payment);
+      if (source === "member") {
+        void queryClient.invalidateQueries({ queryKey: memberQueryKeys.dashboard });
+        void queryClient.invalidateQueries({ queryKey: memberQueryKeys.payments });
+      }
+    };
+
     const fetchReceipt = () => {
       requestBackend<PaymentDTO>(`/api/v1/payments/${encodeURIComponent(paymentId)}/receipt`)
-        .then(setPayment)
+        .then(handleSuccess)
         .catch((reason) => setError(reason instanceof Error ? reason.message : "Receipt not found."));
     };
 
@@ -31,7 +42,7 @@ function SuccessPageContent() {
         method: "POST",
         body: JSON.stringify({ cfOrderId: paymentId }),
       })
-      .then((payment) => setPayment(payment))
+      .then(handleSuccess)
       .catch((err) => {
          const msg = err instanceof Error ? err.message : "Verification failed";
          if (msg.includes("not successful yet")) {
@@ -43,7 +54,7 @@ function SuccessPageContent() {
     } else {
       fetchReceipt();
     }
-  }, [paymentId, searchParams]);
+  }, [paymentId, searchParams, source, queryClient]);
 
 
   return (
