@@ -95,28 +95,30 @@ export class SupabasePaymentRepository implements PaymentRepository {
     }
 
     if (input.category === "monthly_dues") {
-      if (!memberId) {
-        throw new Error("A valid member is required to resolve monthly dues amount.");
-      }
-
+      let monthlyAmount = 0;
+      
       if (input.tier === "base" || input.tier === "premium") {
         const { data: settings } = await supabase.from("settings").select("key, value").in("key", ["monthly_due_base_amount", "monthly_due_premium_amount"]);
         const baseAmount = Number(settings?.find(s => s.key === "monthly_due_base_amount")?.value || 50);
         const premiumAmount = Number(settings?.find(s => s.key === "monthly_due_premium_amount")?.value || 100);
-        return input.tier === "base" ? baseAmount : premiumAmount;
+        monthlyAmount = input.tier === "base" ? baseAmount : premiumAmount;
+      } else {
+        if (!memberId) {
+          throw new Error("A valid member is required to resolve custom monthly dues amount.");
+        }
+        const { data, error } = await supabase.rpc("resolve_payment_amount", {
+          p_member_id: memberId,
+          p_category: input.category
+        });
+        if (!error && data !== null) {
+          monthlyAmount = Number(data);
+        } else {
+          throw new Error("Failed to resolve monthly dues amount.");
+        }
       }
-
-      const { data, error } = await supabase.rpc("resolve_payment_amount", {
-        p_member_id: memberId,
-        p_category: input.category,
-        p_event_id: input.eventId ?? null,
-      });
-
-      if (error || data === null || Number(data) <= 0) {
-        throw new Error("Failed to resolve monthly dues payment amount.");
-      }
-
-      return Number(data);
+      
+      const monthsCount = input.selectedMonthIds && input.selectedMonthIds.length > 0 ? input.selectedMonthIds.length : 1;
+      return monthlyAmount * monthsCount;
     }
 
     if (input.category === "special_event" && input.eventId) {
@@ -198,7 +200,22 @@ export class SupabasePaymentRepository implements PaymentRepository {
     }]).select("*").single();
 
     if (error) throw error;
-    return mapRowToPaymentDTO(data);
+    
+    if (input.category === "monthly_dues" && input.selectedMonthIds && input.selectedMonthIds.length > 0) {
+      // Calculate amount per month (divide total amount by number of months)
+      const amountPerMonth = amount / input.selectedMonthIds.length;
+      const monthsData = input.selectedMonthIds.map(monthKey => ({
+        payment_id: data.id,
+        month_key: monthKey,
+        amount: amountPerMonth
+      }));
+      
+      await supabase.from("payment_months").insert(monthsData);
+    }
+    
+    const paymentWithMonths = await supabase.from("payments").select("*, payment_months(*)").eq("id", data.id).single();
+
+    return mapRowToPaymentDTO(paymentWithMonths.data, paymentWithMonths.data?.payment_months || []);
   }
 
   async recordCashEntry(input: RecordCashEntryInput, actor: ActorContext): Promise<CashEntryDTO> {
