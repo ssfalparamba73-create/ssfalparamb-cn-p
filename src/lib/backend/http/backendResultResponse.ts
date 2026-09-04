@@ -71,7 +71,7 @@ export function createBackendResponse<T>(
       });
 
       result = fail<T>(
-        serverError("An internal server error occurred. Please try again later."),
+        serverError(`Debug Error: ${result.error?.message} | Code: ${result.error?.code}`),
         { requestId }
       );
     }
