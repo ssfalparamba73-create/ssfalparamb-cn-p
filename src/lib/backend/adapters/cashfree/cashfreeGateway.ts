@@ -48,7 +48,7 @@ export class CashfreeGatewayImpl implements CashfreePaymentGateway {
       };
 
       // Ensure API version matrix is strictly "2023-08-01" as per compliance
-      const response = await cashfreeClient.PGCreateOrder(request as any, "2023-08-01");
+      const response = await cashfreeClient.PGCreateOrder(request as any);
       
       return {
         cfOrderId: response.data.cf_order_id?.toString() || "",
@@ -62,7 +62,7 @@ export class CashfreeGatewayImpl implements CashfreePaymentGateway {
 
   async verifyPayment(orderId: string): Promise<any> {
     try {
-      const response = await cashfreeClient.PGOrderFetchPayments("2023-08-01", orderId);
+      const response = await cashfreeClient.PGOrderFetchPayments(orderId);
       return response.data;
     } catch (error: any) {
       console.error("Cashfree verifyPayment failed:", error?.response?.data || error);
