@@ -4,8 +4,8 @@ import { AvailableContactsSection } from "@/components/public/AvailableContactsS
 import { PolicySection, PublicPolicyShell } from "@/components/public/PublicPolicyShell";
 
 export const metadata: Metadata = {
-  title: "Contact | SSF Alparamba",
-  description: "Official support contacts for the SSF Alparamba Membership Portal.",
+  title: "Contact | Atiyya Groop",
+  description: "Official support contacts for the Atiyya Groop Membership Portal.",
 };
 
 const officeBearers = [
@@ -17,7 +17,7 @@ export default function ContactPage() {
   return (
     <PublicPolicyShell
       eyebrow="Official Support"
-      title="Contact SSF Alparamba Unit"
+      title="Contact Atiyya Groop"
       description="Use an active channel listed below for payment, receipt, account, privacy, or refund-related questions."
     >
       <PolicySection title="Office Bearers">
@@ -34,11 +34,14 @@ export default function ContactPage() {
         </div>
       </PolicySection>
 
-      <PolicySection title="Unit Office & Correspondence">
+      <PolicySection title="Get in Touch">
         <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-4 space-y-3">
           <div>
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Email</p>
-            <a href="mailto:ssf.alparamba.73@gmail.com" className="font-medium text-blue-700 hover:underline">ssf.alparamba.73@gmail.com</a>
+            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Email Support</p>
+            <p className="text-sm text-slate-600 mb-2">For general inquiries, support, or documentation requests, please write to us at:</p>
+            <a href="mailto:ssf.alparamba.73@gmail.com" className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring bg-blue-600 text-white shadow hover:bg-blue-600/90 h-9 px-4 py-2">
+              Email Us
+            </a>
           </div>
           <div>
             <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Postal Address</p>
