@@ -55,8 +55,9 @@ export class CashfreeGatewayImpl implements CashfreePaymentGateway {
         paymentSessionId: response.data.payment_session_id || ""
       };
     } catch (error: any) {
+      const msg = error?.response?.data?.message || error.message || "Failed to create Cashfree order";
       console.error("Cashfree createOrder failed:", error?.response?.data || error);
-      throw new Error("Failed to create Cashfree order");
+      throw new Error(`Cashfree: ${msg}`);
     }
   }
 

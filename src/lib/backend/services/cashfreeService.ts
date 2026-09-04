@@ -108,7 +108,8 @@ export function createCashfreeService(deps: {
           paymentSessionId: gatewayResult.paymentSessionId,
         });
       } catch (err: any) {
-        return fail(paymentError("Failed to create Cashfree order", ERROR_CODES.PAYMENT_GATEWAY_ERROR));
+        const msg = err instanceof Error ? err.message : "Failed to create Cashfree order";
+        return fail(paymentError(msg, ERROR_CODES.PAYMENT_GATEWAY_ERROR));
       }
     },
 
