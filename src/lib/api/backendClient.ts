@@ -38,14 +38,16 @@ export async function requestBackend<T>(
       ? 30_000
       : path.includes("/settings/")
         ? 15 * 60_000
-        : 60_000;
+        : path.includes("/payments") 
+          ? 0 
+          : 60_000;
     return fetchQuery(
       cacheKey,
       () => requestBackend<T>(path, {
         ...init,
         headers: new Headers({ ...Object.fromEntries(headers.entries()), "x-ssf-admin-cache-bypass": "1" }),
       }),
-      { staleTime, staleWhileRevalidate: true }
+      { staleTime, staleWhileRevalidate: staleTime > 0 }
     );
   }
 

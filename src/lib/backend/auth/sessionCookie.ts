@@ -11,6 +11,7 @@ function cookieOptions() {
     secure: process.env.NODE_ENV === "production",
     path: "/",
     maxAge: SESSION_COOKIE_MAX_AGE_SECONDS,
+    expires: new Date(Date.now() + SESSION_COOKIE_MAX_AGE_SECONDS * 1000),
   };
 }
 
