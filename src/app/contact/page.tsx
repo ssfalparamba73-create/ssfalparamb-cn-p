@@ -4,8 +4,8 @@ import { AvailableContactsSection } from "@/components/public/AvailableContactsS
 import { PolicySection, PublicPolicyShell } from "@/components/public/PublicPolicyShell";
 
 export const metadata: Metadata = {
-  title: "Contact | Atiyya Groop",
-  description: "Official support contacts for the Atiyya Groop Membership Portal.",
+  title: "Contact | Atiyya Group",
+  description: "Official support contacts for the Atiyya Group Membership Portal.",
 };
 
 const officeBearers = [
@@ -17,7 +17,7 @@ export default function ContactPage() {
   return (
     <PublicPolicyShell
       eyebrow="Official Support"
-      title="Contact Atiyya Groop"
+      title="Contact Atiyya Group"
       description="Use an active channel listed below for payment, receipt, account, privacy, or refund-related questions."
     >
       <PolicySection title="Office Bearers">
