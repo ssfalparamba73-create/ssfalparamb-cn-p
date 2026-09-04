@@ -71,7 +71,7 @@ export function createBackendResponse<T>(
       });
 
       result = fail<T>(
-        serverError(`Debug Error: ${result.error?.message} | Code: ${result.error?.code}`),
+        serverError(`${result.error?.message} | Code: ${result.error?.code}`),
         { requestId }
       );
     }

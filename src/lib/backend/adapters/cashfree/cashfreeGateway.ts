@@ -33,12 +33,16 @@ export interface CashfreePaymentGateway {
 export class CashfreeGatewayImpl implements CashfreePaymentGateway {
   async createOrder(input: CreateOrderInput): Promise<CreateOrderResult> {
     try {
+      const sanitizedCustomerId = input.customerPhone 
+        ? input.customerPhone.replace(/[^a-zA-Z0-9_-]/g, "") 
+        : "guest";
+
       const request = {
         order_amount: input.amount,
         order_currency: input.currency || "INR",
         order_id: input.orderId,
         customer_details: {
-          customer_id: input.customerPhone || "guest",
+          customer_id: sanitizedCustomerId,
           customer_phone: input.customerPhone,
           customer_name: input.customerName || "Guest User"
         },

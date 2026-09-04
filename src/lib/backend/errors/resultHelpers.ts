@@ -49,10 +49,12 @@ export function fromThrowable(error: unknown): BackendError {
     return error as BackendError;
   }
 
+  const realMessage = error instanceof Error ? error.message : "Unknown error";
+
   return {
     code: ERROR_CODES.INTERNAL_ERROR,
     type: "server",
-    message: "Something went wrong. Please try again later.",
+    message: `Debug Error: ${realMessage}`,
     retryable: true,
   };
 }

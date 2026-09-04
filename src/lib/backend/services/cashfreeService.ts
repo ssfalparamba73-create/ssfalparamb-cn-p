@@ -169,8 +169,11 @@ export function createCashfreeService(deps: {
             paymentError(`Cashfree payment not successful yet. Current statuses: ${statuses}`, ERROR_CODES.PAYMENT_VERIFICATION_FAILED)
           );
         }
-      } catch (err: any) {
-        return fail(serverError("Payment verification failed due to internal error"));
+      } catch (error: any) {
+        if (error.message && error.message.startsWith("Cashfree: ")) {
+          return fail(paymentError(error.message, ERROR_CODES.PAYMENT_GATEWAY_ERROR));
+        }
+        return fail(fromThrowable(error));
       }
     },
 
