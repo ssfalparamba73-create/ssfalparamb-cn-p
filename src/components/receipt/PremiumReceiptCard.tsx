@@ -49,13 +49,19 @@ export function PremiumReceiptCard({
     const element = receiptRef.current;
     if (!element) throw new Error("Receipt element not found");
 
-    return await html2canvas(element, {
-      scale: 3,
+    const canvasPromise = html2canvas(element, {
+      scale: 2, // Reduced from 3 to 2 for better performance and less memory
       useCORS: true,
       allowTaint: true,
       backgroundColor: null,
       logging: false,
     });
+
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      setTimeout(() => reject(new Error("Canvas generation timed out")), 10000);
+    });
+
+    return await Promise.race([canvasPromise, timeoutPromise]);
   };
 
   const handleDownload = async () => {
@@ -122,10 +128,13 @@ export function PremiumReceiptCard({
   const timeStr = today.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
 
   // Use phone as donor name if it's the only identifier
-  const donorName = payerName || (phone === "Guest Member" ? "Valuable Contributor" : phone);
+  const donorName = (payerName === phone || !payerName) ? "Valuable Contributor" : payerName;
 
   // Amount formatting
   const formattedAmount = Number(amount).toLocaleString("en-IN");
+
+  // Shorten receipt ID for display (e.g. REC-20260904-32133D98 -> 32133D98)
+  const displayReceiptId = receiptId.includes("-") ? receiptId.split("-").pop() : receiptId;
 
   return (
     <div className="w-full flex flex-col items-center gap-3 sm:gap-6">
@@ -140,7 +149,6 @@ export function PremiumReceiptCard({
           src={customBg || "/recept.svg"} 
           alt="SSF Receipt Background" 
           className="absolute inset-0 w-full h-full object-cover z-0 pointer-events-none"
-          crossOrigin="anonymous"
         />
 
         {/* Overlay Data Container */}
@@ -151,7 +159,7 @@ export function PremiumReceiptCard({
           {/* Receipt No */}
           <div className="absolute top-[27%] left-[67.5%] w-[32%] -translate-y-1/2 text-left">
             <div className="text-[#1f1f1f] text-[12px] font-semibold tracking-tight whitespace-nowrap leading-none">
-              {receiptId}
+              {displayReceiptId}
             </div>
           </div>
 
