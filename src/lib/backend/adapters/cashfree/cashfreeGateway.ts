@@ -56,6 +56,20 @@ export class CashfreeGatewayImpl implements CashfreePaymentGateway {
       };
     } catch (error: any) {
       const msg = error?.response?.data?.message || error.message || "Failed to create Cashfree order";
+      
+      // If Cashfree says the order already exists, fetch the existing order session
+      if (msg.toLowerCase().includes("already present") || msg.toLowerCase().includes("already exists")) {
+        try {
+          const existingOrder = await cashfreeClient.PGFetchOrder(input.orderId);
+          return {
+            cfOrderId: existingOrder.data.cf_order_id?.toString() || "",
+            paymentSessionId: existingOrder.data.payment_session_id || ""
+          };
+        } catch (fetchError) {
+          console.error("Cashfree PGFetchOrder failed during recovery:", fetchError);
+        }
+      }
+
       console.error("Cashfree createOrder failed:", error?.response?.data || error);
       throw new Error(`Cashfree: ${msg}`);
     }
