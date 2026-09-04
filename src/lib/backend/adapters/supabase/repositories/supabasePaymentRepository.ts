@@ -57,28 +57,28 @@ export class SupabasePaymentRepository implements PaymentRepository {
     };
   }
 
-  private async resolveMemberId(
+  private async resolveMemberDetails(
     supabase: ReturnType<typeof createSupabaseBackendClient>,
     memberQuery?: string
-  ): Promise<string | null> {
+  ): Promise<{ id: string, name: string, phone: string } | null> {
     if (!memberQuery) return null;
 
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
     if (uuidRegex.test(memberQuery)) {
-      const { data } = await supabase.from("members").select("id").eq("id", memberQuery).single();
-      if (data) return data.id;
+      const { data } = await supabase.from("members").select("id, full_name, phone").eq("id", memberQuery).single();
+      if (data) return { id: data.id, name: data.full_name, phone: data.phone };
     }
 
     const { data: byPhone } = await supabase
       .from("members")
-      .select("id")
+      .select("id, full_name, phone")
       .eq("phone", memberQuery)
       .neq("status", "left")
       .maybeSingle();
-    if (byPhone) return byPhone.id;
+    if (byPhone) return { id: byPhone.id, name: byPhone.full_name, phone: byPhone.phone };
 
-    const { data: byCode } = await supabase.from("members").select("id").eq("member_code", memberQuery).single();
-    if (byCode) return byCode.id;
+    const { data: byCode } = await supabase.from("members").select("id, full_name, phone").eq("member_code", memberQuery).single();
+    if (byCode) return { id: byCode.id, name: byCode.full_name, phone: byCode.phone };
 
     return null;
   }
@@ -138,7 +138,13 @@ export class SupabasePaymentRepository implements PaymentRepository {
 
   async createPendingPayment(input: CreatePaymentIntentInput, actor: ActorContext): Promise<PaymentDTO> {
     const supabase = createSupabaseBackendClient();
-    const memberId = await this.resolveMemberId(supabase, input.memberQuery);
+    const memberDetails = await this.resolveMemberDetails(supabase, input.memberQuery);
+    const memberId = memberDetails?.id || null;
+    
+    // Override payer details if member was found
+    const finalPayerName = memberDetails?.name || input.payerName;
+    const finalPayerPhone = memberDetails?.phone || input.payerPhone;
+
     // Reuse an active intent when checkout is retried. The partial unique
     // indexes in migration 054 provide the database-level race protection.
     let existingQuery = supabase
@@ -150,7 +156,7 @@ export class SupabasePaymentRepository implements PaymentRepository {
       .limit(1);
     existingQuery = memberId
       ? existingQuery.eq("member_id", memberId)
-      : existingQuery.eq("payer_phone", input.payerPhone).is("member_id", null);
+      : existingQuery.eq("payer_phone", finalPayerPhone).is("member_id", null);
       if (input.category === "special_event" && input.eventId) {
         existingQuery = existingQuery.eq("event_id", input.eventId);
       }
@@ -178,8 +184,8 @@ export class SupabasePaymentRepository implements PaymentRepository {
     const { data, error } = await supabase.from("payments").insert([{
       member_id: memberId,
       receipt_id: receiptId,
-      payer_phone: input.payerPhone,
-      payer_name: input.payerName,
+      payer_phone: finalPayerPhone,
+      payer_name: finalPayerName,
       category: input.category,
       method: input.method,
       amount: amount,
