@@ -130,9 +130,16 @@ export function createCashfreeService(deps: {
           return fail(validationError("cfOrderId is required", "cfOrderId", ERROR_CODES.VALIDATION_FAILED));
         }
 
-        const payment = await paymentRepository.findByGatewayOrderId(input.cfOrderId);
+        // The input.cfOrderId is actually the order_id (payment.id) passed back by Cashfree redirect
+        let payment = await paymentRepository.findById(input.cfOrderId);
+        
         if (!payment) {
-          return fail(notFoundError("Payment record not found for this Cashfree order ID", ERROR_CODES.PAYMENT_NOT_FOUND));
+          // Fallback to checking gatewayOrderId just in case it was passed
+          const fallbackPayment = await paymentRepository.findByGatewayOrderId(input.cfOrderId);
+          if (!fallbackPayment) {
+            return fail(notFoundError("Payment record not found for this Cashfree order ID", ERROR_CODES.PAYMENT_NOT_FOUND));
+          }
+          payment = fallbackPayment;
         }
 
         if (payment.status === "confirmed") {
