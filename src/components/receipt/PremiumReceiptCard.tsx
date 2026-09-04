@@ -149,15 +149,15 @@ export function PremiumReceiptCard({
           style={{ fontFamily: "var(--font-quicksand), sans-serif" }}
         >
           {/* Receipt No */}
-          <div className="absolute top-[27%] left-[67.5%] w-[26%] -translate-y-1/2 text-left">
-            <div className="text-[#1f1f1f] text-[13px] font-semibold tracking-wide leading-none">
+          <div className="absolute top-[27%] left-[67.5%] w-[32%] -translate-y-1/2 text-left">
+            <div className="text-[#1f1f1f] text-[12px] font-semibold tracking-tight whitespace-nowrap leading-none">
               {receiptId}
             </div>
           </div>
 
           {/* Date */}
-          <div className="absolute top-[30.1%] left-[67.5%] w-[26%] -translate-y-1/2 text-left">
-            <div className="text-[#1f1f1f] text-[13px] font-semibold tracking-wide leading-none">
+          <div className="absolute top-[30.1%] left-[67.5%] w-[32%] -translate-y-1/2 text-left">
+            <div className="text-[#1f1f1f] text-[13px] font-semibold tracking-wide whitespace-nowrap leading-none">
               {dateStr}
             </div>
           </div>
