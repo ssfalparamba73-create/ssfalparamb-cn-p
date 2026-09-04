@@ -127,8 +127,8 @@ export function PremiumReceiptCard({
   // Format time to HH:MM AM/PM
   const timeStr = today.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
 
-  // Use phone as donor name if it's the only identifier
-  const donorName = (payerName === phone || !payerName) ? "Valuable Contributor" : payerName;
+  // User requested: if there is no name, show the phone number
+  const donorName = (payerName === "Guest User" || !payerName) ? phone : payerName;
 
   // Amount formatting
   const formattedAmount = Number(amount).toLocaleString("en-IN");
