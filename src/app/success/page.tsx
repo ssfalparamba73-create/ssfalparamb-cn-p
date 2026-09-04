@@ -13,7 +13,7 @@ import Image from 'next/image';
 function SuccessPageContent() {
   const searchParams = useSearchParams();
   const source = searchParams.get("source");
-  const paymentId = searchParams.get("paymentId");
+  const paymentId = searchParams.get("paymentId") || searchParams.get("order_id");
   const [payment, setPayment] = React.useState<PaymentDTO | null>(null);
   const [error, setError] = React.useState<string | null>(null);
 
