@@ -98,6 +98,13 @@ export class SupabasePaymentRepository implements PaymentRepository {
         throw new Error("A valid member is required to resolve monthly dues amount.");
       }
 
+      if (input.tier === "base" || input.tier === "premium") {
+        const { data: settings } = await supabase.from("settings").select("key, value").in("key", ["monthly_due_base_amount", "monthly_due_premium_amount"]);
+        const baseAmount = Number(settings?.find(s => s.key === "monthly_due_base_amount")?.value || 50);
+        const premiumAmount = Number(settings?.find(s => s.key === "monthly_due_premium_amount")?.value || 100);
+        return input.tier === "base" ? baseAmount : premiumAmount;
+      }
+
       const { data, error } = await supabase.rpc("resolve_payment_amount", {
         p_member_id: memberId,
         p_category: input.category,
