@@ -151,13 +151,26 @@ export class SupabasePaymentRepository implements PaymentRepository {
     existingQuery = memberId
       ? existingQuery.eq("member_id", memberId)
       : existingQuery.eq("payer_phone", input.payerPhone).is("member_id", null);
-    if (input.category === "special_event" && input.eventId) {
-      existingQuery = existingQuery.eq("event_id", input.eventId);
-    }
-    const { data: existing } = await existingQuery.maybeSingle();
-    if (existing) return mapRowToPaymentDTO(existing, existing.payment_months || []);
+      if (input.category === "special_event" && input.eventId) {
+        existingQuery = existingQuery.eq("event_id", input.eventId);
+      }
+      const { data: existing } = await existingQuery.maybeSingle();
+      
+      const amount = await this.resolvePaymentAmount(supabase, input, memberId);
 
-    const amount = await this.resolvePaymentAmount(supabase, input, memberId);
+      if (existing) {
+        if (existing.amount !== amount || existing.tier !== input.tier) {
+          // Update the existing pending payment to reflect the new tier/amount
+          const { data: updated, error: updateError } = await supabase.from("payments")
+            .update({ amount: amount, tier: input.tier })
+            .eq("id", existing.id)
+            .select("*, payment_months(*)")
+            .single();
+          if (updateError) throw updateError;
+          return mapRowToPaymentDTO(updated, updated.payment_months || []);
+        }
+        return mapRowToPaymentDTO(existing, existing.payment_months || []);
+      }
 
     const { data: receiptId, error: receiptIdError } = await supabase.rpc("generate_receipt_id");
     if (receiptIdError || !receiptId) throw new Error("Failed to generate receipt ID");
