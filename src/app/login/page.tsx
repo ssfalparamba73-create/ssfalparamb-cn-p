@@ -30,7 +30,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
       <div className="w-full max-w-[440px] flex flex-col items-center relative z-10">
         {/* Logo Section */}
         <div className="text-center mb-8 flex flex-col items-center">
-          <TransparentLogo src="/logo/logo-transparent.svg" alt="SSF Logo" className="h-16 w-auto object-contain mb-3 drop-shadow-sm" />
+          <TransparentLogo src="/logo/atiyya-logo-icon.png" alt="SSF Logo" className="h-16 w-auto object-contain mb-3 drop-shadow-sm" />
           <h1 className="font-cooper text-4xl font-bold text-slate-900 tracking-tight">SSF</h1>
           <p className="text-slate-900 font-bold text-lg mt-1">Alparamba Unit</p>
         </div>

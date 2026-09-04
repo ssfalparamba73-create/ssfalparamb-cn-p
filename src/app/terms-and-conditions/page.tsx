@@ -21,6 +21,11 @@ export default function TermsAndConditionsPage() {
           It must not be used to access another person&apos;s records or disrupt the service.
         </p>
       </PolicySection>
+      <PolicySection title="Operational Independence & Entity Status">
+        <p>
+          SSF Alparamba Unit operates strictly as an independent, self-managed local community initiative. While we share the ideological framework of the broader SSF organization, this digital portal, its administrative operations, and all associated financial collections are entirely independent. This platform has no financial, operational, or legal connection to the parent registered organization or its official payment gateways. All support collected through this portal is exclusively utilized for localized skill development and educational activities within the Alparamba locality under independent local management.
+        </p>
+      </PolicySection>
 
       <PolicySection title="Account responsibility">
         <PolicyList items={[

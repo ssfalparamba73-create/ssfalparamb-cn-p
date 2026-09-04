@@ -66,11 +66,11 @@ export function Header() {
       <div className="container flex items-center justify-between px-4 md:px-8">
         <div className="flex items-center gap-2 md:gap-3 font-semibold">
           <TransparentLogo
-            src="/logo/logo-transparent.svg"
+            src="/logo/atiyya-logo-icon.png"
             alt="SSF Logo"
-            className={`w-auto object-contain drop-shadow-sm transition-all duration-300 ${isScrolled ? "h-8 md:h-10" : "h-10 md:h-14"}`}
+            className={`w-auto object-contain drop-shadow-sm transition-all duration-300 ${isScrolled ? "h-6 md:h-8" : "h-8 md:h-11"}`}
           />
-          <span className={`inline-block font-extrabold tracking-[-0.02em] text-slate-950 transition-all duration-300 ${isScrolled ? "text-base md:text-xl" : "text-lg md:text-2xl"}`}>
+          <span className={`inline-block font-extrabold tracking-[-0.02em] text-slate-950 transition-all duration-300 pt-1 ${isScrolled ? "text-base md:text-lg" : "text-lg md:text-xl"}`}>
             <span className="font-cooper font-normal">SSF</span> Alparamba Unit
           </span>
         </div>

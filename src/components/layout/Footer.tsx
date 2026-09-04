@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { TransparentLogo } from "@/components/TransparentLogo";
 
 export function Footer() {
   return (
@@ -6,7 +7,8 @@ export function Footer() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
           <div className="flex items-center gap-2 font-medium text-slate-900">
-            <span className="font-cooper tracking-tight">SSF</span> Alparamba Unit
+            <TransparentLogo src="/logo/atiyya-logo-icon.png" alt="Atiyya Logo" className="h-6 w-auto object-contain" />
+            <span className="font-extrabold tracking-tight text-base pt-0.5">Atiyya</span>
           </div>
           <nav aria-label="Footer Navigation" className="flex flex-wrap justify-center gap-x-6 gap-y-2 font-medium">
             <Link href="/pricing" className="hover:text-blue-600 transition-colors">
@@ -30,7 +32,7 @@ export function Footer() {
           </nav>
         </div>
         <div className="mt-4 text-center text-xs text-slate-400 md:text-left">
-          &copy; {new Date().getFullYear()} SSF Alparamba Unit. All rights reserved.
+          &copy; {new Date().getFullYear()} Atiyya. All rights reserved.
         </div>
       </div>
     </footer>

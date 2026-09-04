@@ -1,3 +1,4 @@
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import {
@@ -41,18 +42,20 @@ export default function LandingPage() {
           {/* Left Column: Brand & Value */}
           <div className="relative z-10 flex flex-col justify-center overflow-hidden px-4 py-6 md:px-12 lg:px-20 md:py-16 text-center md:text-left items-center md:items-start">
             <div 
-              className="relative z-10 w-full max-w-xl space-y-6 md:space-y-8 p-2 sm:p-8 mt-2 md:mt-0 flex flex-col items-center md:items-start animate-in fade-in slide-in-from-bottom-8 duration-700 ease-out fill-mode-both"
+              className="relative z-10 w-full max-w-xl space-y-4 md:space-y-5 p-2 sm:p-8 mt-2 md:mt-0 flex flex-col items-center md:items-start animate-in fade-in slide-in-from-bottom-8 duration-700 ease-out fill-mode-both"
             >
               
-              <h1 className="font-spartan text-[2.5rem] leading-[1.1] font-black tracking-[-0.04em] text-slate-950 sm:text-6xl lg:text-[4.25rem]">
-                <span className="bg-gradient-to-r from-blue-500 via-cyan-500 to-emerald-500 bg-clip-text text-transparent drop-shadow-sm">Membership Management</span> <br className="hidden md:block" />
-                Portal.
-              </h1>
-
-              <div className="h-1 w-16 md:w-20 rounded-full bg-gradient-to-r from-blue-500 via-cyan-400 to-emerald-400" />
+              <Image 
+                src="/logo/atiyya-hero.png" 
+                alt="Atiyya Logo" 
+                width={600} 
+                height={200} 
+                className="w-full max-w-[320px] sm:max-w-[450px] md:max-w-[550px] object-contain drop-shadow-sm -ml-2" 
+                priority 
+              />
 
               <p className="max-w-md text-base md:text-lg font-medium leading-relaxed text-slate-600">
-                The official SSF Alparamba Unit portal for registered members to manage monthly support, access payment records, and stay connected with the committee.
+                An independent community portal for registered members of the SSF Alparamba Unit to manage monthly support, access payment records, and stay connected with local initiatives.
               </p>
 
               {/* Mobile CTA (Hidden on desktop) */}

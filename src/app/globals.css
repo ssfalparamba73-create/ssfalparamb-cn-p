@@ -53,6 +53,10 @@
   font-family: var(--font-league-spartan), sans-serif;
 }
 
+@utility font-barabara {
+  font-family: var(--font-barabara), sans-serif;
+}
+
 :root {
   --bg-primary: #EEF2F6;
   --bg-secondary: #F1F5F9;
@@ -140,3 +144,4 @@
     scroll-behavior: auto !important;
   }
 }
+

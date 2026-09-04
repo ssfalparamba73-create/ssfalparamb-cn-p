@@ -25,6 +25,9 @@ export default function ContributionDetailsPage() {
         <p>
           This portal is used exclusively for collecting monthly membership support from registered SSF Alparamba Unit members. Payments are linked to the member's profile and applicable period. This portal does not sell physical products or commercial services.
         </p>
+        <p className="mt-4 text-sm text-slate-500 font-medium">
+          <strong>Entity Disclaimer:</strong> All funds are collected and managed independently by the local Alparamba committee for local initiatives. This is not an official collection channel for the state or national registered parent organization.
+        </p>
       </PolicySection>
 
       <PolicySection title="Who Can Provide Support?">

@@ -76,7 +76,7 @@ export default function AdminLoginPage() {
       <Card className="w-full max-w-[440px] shadow-xl border-0 bg-white/90 backdrop-blur-xl rounded-[2.5rem] p-2 relative z-10">
         <CardHeader className="text-center space-y-2 pb-6">
           <div className="flex flex-col items-center mb-2">
-            <TransparentLogo src="/logo/logo-transparent.svg" alt="SSF Logo" className="h-16 w-auto object-contain mb-3 drop-shadow-sm" />
+            <TransparentLogo src="/logo/atiyya-logo-icon.png" alt="SSF Logo" className="h-16 w-auto object-contain mb-3 drop-shadow-sm" />
           </div>
           <CardTitle className="text-3xl font-bold">
             <span className="font-cooper text-slate-900">SSF</span> Admin

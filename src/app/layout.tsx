@@ -32,9 +32,15 @@ const leagueSpartan = League_Spartan({
 });
 
 const cooper = localFont({
-  src: "../../public/font/COOPBL.ttf",
-  variable: "--font-cooper-next",
-  display: "swap",
+  src: '../../public/font/COOPBL.ttf',
+  variable: '--font-cooper-next',
+  display: 'swap',
+});
+
+const barabara = localFont({
+  src: '../../public/font/BARABARA-final.otf',
+  variable: '--font-barabara',
+  display: 'swap',
 });
 
 export const metadata: Metadata = {
@@ -81,7 +87,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.variable} ${notoMalayalam.variable} ${cooper.variable} ${quicksand.variable} ${leagueSpartan.variable} antialiased transition-colors duration-300`} suppressHydrationWarning>
+      <body className={`${inter.variable} ${notoMalayalam.variable} ${cooper.variable} ${quicksand.variable} ${leagueSpartan.variable} ${barabara.variable} antialiased transition-colors duration-300`} suppressHydrationWarning>
         <ThemeProvider>
           <AppQueryProvider>
             {children}
@@ -92,4 +98,5 @@ export default function RootLayout({
     </html>
   );
 }
+
 
