@@ -5,7 +5,7 @@ export default function manifest(): MetadataRoute.Manifest {
     id: "/",
     name: "Atiyya",
     short_name: "Atiyya",
-    description: "Digital Support Portal for SSF Alparamba Unit",
+    description: "Digital Support Portal for Atiyya Group",
     start_url: "/",
     scope: "/",
     display: "standalone",

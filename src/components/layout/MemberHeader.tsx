@@ -59,9 +59,9 @@ export function MemberHeader() {
       <div className="flex h-16 items-center justify-between px-4 md:px-8 w-full relative">
         {/* Left Side: Brand Logo */}
         <div className="flex items-center gap-2 md:gap-3">
-          <Image src="/logo/logo-transparent.svg" alt="SSF Logo" width={40} height={40} className="h-8 md:h-10 w-auto object-contain" />
+          <Image src="/logo/atiyya-logo-icon.png" alt="Atiyya Logo" width={40} height={40} className="h-8 md:h-10 w-auto object-contain" />
           <span className="text-sm md:text-lg font-bold text-slate-900 tracking-tight transition-colors duration-300 dark:text-slate-50">
-            <span className="font-cooper font-normal text-base md:text-[22px] mr-1">SSF</span>
+            <span className="font-cooper font-normal text-base md:text-[22px] mr-1">Atiyya</span>
             <span className="hidden sm:inline">Alparamba Unit</span>
             <span className="inline sm:hidden">Alparamba</span>
           </span>

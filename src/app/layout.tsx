@@ -50,27 +50,27 @@ export const metadata: Metadata = {
     default: 'Centers of Excellence',
     template: '%s | Centers of Excellence',
   },
-  description: "Digital Support Portal for SSF Alparamba Unit",
+  description: "Digital Support Portal for Atiyya Group",
   manifest: "/manifest.webmanifest",
   openGraph: {
     type: "website",
     locale: "en_IN",
     siteName: "Atiyya",
     title: "Atiyya - Centers of Excellence",
-    description: "Secure and transparent Digital Support Portal for SSF Alparamba Unit",
+    description: "Secure and transparent Digital Support Portal for Atiyya Group",
     images: [
       {
         url: "/social/ssf-alparamba-share.png",
         width: 1200,
         height: 630,
-        alt: "SSF Alparamba Unit - Digital Support Portal",
+        alt: "Atiyya Group - Digital Support Portal",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
     title: "Atiyya - Centers of Excellence",
-    description: "Secure and transparent Digital Support Portal for SSF Alparamba Unit",
+    description: "Secure and transparent Digital Support Portal for Atiyya Group",
     images: ["/social/ssf-alparamba-share.png"],
   },
   appleWebApp: {

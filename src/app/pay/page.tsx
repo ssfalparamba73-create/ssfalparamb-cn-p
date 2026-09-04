@@ -48,7 +48,7 @@ function PayNowContent() {
     if (typeof window === "undefined") return;
 
     const preloadImages = () => {
-      const images = ["/recept.svg", "/logo/logo-transparent.svg"];
+      const images = ["/recept.svg", "/logo/atiyya-logo-icon.png"];
       images.forEach((src) => {
         const img = new window.Image();
         img.src = src;
@@ -173,9 +173,9 @@ function PayNowContent() {
         </Link>
 
         <div className="text-center space-y-2 flex flex-col items-center">
-          <img src="/logo/logo-transparent.svg" alt="SSF Logo" className="h-14 w-auto object-contain mb-1" />
+          <img src="/logo/atiyya-logo-icon.png" alt="Atiyya Logo" className="h-14 w-auto object-contain mb-1" />
           <h1 className="text-2xl font-bold tracking-tight text-foreground dark:text-slate-50">
-            <span className="font-cooper font-normal">SSF</span> Alparamba Unit
+            <span className="font-cooper font-normal">Atiyya</span> Alparamba Unit
           </h1>
           <p className="text-sm text-muted-foreground">Guest Checkout / One-time Payment</p>
         </div>
@@ -509,9 +509,9 @@ function PayNowContent() {
             {/* Modal Header */}
             <div className="bg-[#F6F8FC] border-b border-[#E5EAF3] p-4 flex items-center justify-between dark:bg-slate-800 dark:border-slate-700">
               <div className="flex items-center gap-2">
-                <img src="/logo/logo-transparent.svg" alt="SSF Logo" className="h-7 w-auto object-contain" />
+                <img src="/logo/atiyya-logo-icon.png" alt="Atiyya Logo" className="h-7 w-auto object-contain" />
                 <span className="text-sm font-semibold text-slate-900 dark:text-slate-50">
-                  <span className="font-cooper font-normal">SSF</span> Alparamba Unit
+                  <span className="font-cooper font-normal">Atiyya</span> Alparamba Unit
                 </span>
               </div>
               <button
@@ -543,7 +543,7 @@ function PayNowContent() {
                 </div>
                 <div className="flex justify-between text-xs">
                   <span className="text-slate-400 font-medium">Merchant Account</span>
-                  <span className="text-slate-700 font-semibold">SSF Alparamba Unit</span>
+                  <span className="text-slate-700 font-semibold">Atiyya Group</span>
                 </div>
                 <div className="border-t border-[#E5EAF3] pt-2.5 flex justify-between items-baseline">
                   <span className="text-xs text-slate-500 font-bold">Amount to Pay</span>

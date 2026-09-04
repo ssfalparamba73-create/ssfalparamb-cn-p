@@ -96,7 +96,7 @@ export function UnitSettingsManager() {
           <div className="space-y-3 pt-2 border-t border-slate-100 dark:border-slate-800">
             <Label>Unit Logo</Label>
             <div className="flex items-center gap-6">
-              <div className="w-20 h-20 bg-slate-100 dark:bg-slate-800 rounded-2xl flex items-center justify-center border border-slate-200 dark:border-slate-700 overflow-hidden relative"><Image src="/logo/logo-transparent.svg" alt="Unit Logo" fill className="object-contain p-2" /></div>
+              <div className="w-20 h-20 bg-slate-100 dark:bg-slate-800 rounded-2xl flex items-center justify-center border border-slate-200 dark:border-slate-700 overflow-hidden relative"><Image src="/logo/atiyya-logo-icon.png" alt="Unit Logo" fill className="object-contain p-2" /></div>
               <div className="space-y-2">
                 <Input type="file" accept="image/*" className="hidden" id="logo-upload" disabled />
                 <Label htmlFor="logo-upload" title="Logo storage is not connected yet" className="cursor-not-allowed opacity-50 inline-flex items-center justify-center rounded-md text-sm font-medium border border-slate-200 bg-white h-9 px-4 py-2"><UploadCloud className="w-4 h-4 mr-2" /> Change Logo</Label>

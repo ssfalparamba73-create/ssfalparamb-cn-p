@@ -12,7 +12,7 @@ import { getPaymentSettings, updatePaymentSettings, type PaymentSettings, type D
 
 const defaults: PaymentSettings = {
   upiId: "ssfalparamba@okaxis",
-  merchantName: "SSF Alparamba Unit",
+  merchantName: "Atiyya Group",
   qrCodeUrl: "",
   duesFrequency: "monthly",
   baseTier: 50,

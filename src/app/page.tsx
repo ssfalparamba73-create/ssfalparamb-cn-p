@@ -55,7 +55,7 @@ export default function LandingPage() {
               />
 
               <p className="max-w-md text-base md:text-lg font-medium leading-relaxed text-slate-600">
-                An independent community portal for registered members of the SSF Alparamba Unit to manage monthly support, access payment records, and stay connected with local initiatives.
+                An independent community portal for registered members of the Atiyya Group to manage monthly support, access payment records, and stay connected with local initiatives.
               </p>
 
               {/* Mobile CTA (Hidden on desktop) */}
@@ -117,7 +117,7 @@ export default function LandingPage() {
               </div>
               <h2 className="text-2xl font-bold tracking-tight text-slate-950 md:text-3xl">Purpose of Collection</h2>
               <p className="mt-4 text-base leading-7 text-slate-600">
-                This portal is used exclusively for collecting monthly membership support from registered SSF Alparamba Unit members. <strong>The funds collected are dedicated strictly to Skill Development and Education initiatives within the community.</strong> Payments are linked to the respective member profile. No physical products or commercial services are sold here.
+                This portal is used exclusively for collecting monthly membership support from registered Atiyya Group members. <strong>The funds collected are dedicated strictly to Skill Development and Education initiatives within the community.</strong> Payments are linked to the respective member profile. No physical products or commercial services are sold here.
               </p>
             </div>
             <div className="rounded-3xl border border-emerald-100 bg-emerald-50/55 p-6 shadow-[0_12px_35px_rgba(16,185,129,0.07)] md:p-8">
@@ -126,7 +126,7 @@ export default function LandingPage() {
               </div>
               <h2 className="text-2xl font-bold tracking-tight text-slate-950 md:text-3xl">Who Can Pay?</h2>
               <p className="mt-4 text-base leading-7 text-slate-600">
-                Only registered members of SSF Alparamba Unit whose mobile number has been enrolled by an authorised administrator can access this portal and provide their support.
+                Only registered members of Atiyya Group whose mobile number has been enrolled by an authorised administrator can access this portal and provide their support.
               </p>
               <Link href="/contribution-details" className="mt-5 inline-flex items-center gap-2 text-sm font-bold text-blue-700 hover:text-blue-800 hover:underline">
                 View support details <ArrowRight className="size-4" aria-hidden="true" />
@@ -147,7 +147,7 @@ export default function LandingPage() {
                 Member Portal Features
               </div>
               <h2 className="text-3xl font-black tracking-[-0.04em] text-slate-950 md:text-4xl">Everything you need as a member</h2>
-              <p className="text-base font-medium text-slate-500 md:text-lg">Designed exclusively for registered SSF Alparamba Unit members to manage support, view records, and access support.</p>
+              <p className="text-base font-medium text-slate-500 md:text-lg">Designed exclusively for registered Atiyya Group members to manage support, view records, and access support.</p>
             </div>
 
             <InteractiveBenefits />

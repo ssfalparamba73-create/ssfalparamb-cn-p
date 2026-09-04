@@ -25,7 +25,7 @@ const assurances = [
   {
     icon: ShieldCheck,
     title: "Official unit portal",
-    description: "A dedicated portal for SSF Alparamba Unit registered members to manage membership dues and records.",
+    description: "A dedicated portal for Atiyya Group registered members to manage membership dues and records.",
   },
   {
     icon: FileCheck2,
@@ -42,11 +42,11 @@ const assurances = [
 const faqs = [
   {
     question: "Who can use the member portal?",
-    answer: "Only registered SSF Alparamba Unit members whose mobile number has been enrolled by an authorised administrator. New members cannot self-register.",
+    answer: "Only registered Atiyya Group members whose mobile number has been enrolled by an authorised administrator. New members cannot self-register.",
   },
   {
     question: "What are the monthly dues for?",
-    answer: "Monthly dues cover the member's active membership in the SSF Alparamba Unit for the applicable period. The exact amount and rules are published before payment.",
+    answer: "Monthly dues cover the member's active membership in the Atiyya Group for the applicable period. The exact amount and rules are published before payment.",
   },
   {
     question: "Are physical goods delivered?",

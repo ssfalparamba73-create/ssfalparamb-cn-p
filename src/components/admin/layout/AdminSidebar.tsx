@@ -72,12 +72,12 @@ export function AdminSidebar({ isCollapsed, onToggle }: AdminSidebarProps) {
         <Link
           href="/admin/dashboard"
           className={cn("flex min-w-0 items-center gap-3", isCollapsed && "justify-center")}
-          title="SSF Alparamba Unit"
+          title="Atiyya Group"
         >
           <span className="flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-[#E2E8F0] dark:bg-slate-900 dark:ring-slate-800">
             <Image
-              src="/logo/logo-transparent.svg"
-              alt="SSF Logo"
+              src="/logo/atiyya-logo-icon.png"
+              alt="Atiyya Logo"
               width={28}
               height={28}
               className="size-7 object-contain"
@@ -87,7 +87,7 @@ export function AdminSidebar({ isCollapsed, onToggle }: AdminSidebarProps) {
           {!isCollapsed && (
             <span className="min-w-0">
               <span className="block truncate text-sm font-bold leading-tight text-slate-950 dark:text-slate-50">
-                <span className="font-cooper">SSF</span> Alparamba
+                <span className="font-cooper">Atiyya</span> Alparamba
               </span>
               <span className="block truncate text-xs font-medium leading-tight text-slate-500 dark:text-slate-400">
                 Admin Panel

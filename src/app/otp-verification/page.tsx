@@ -100,8 +100,8 @@ export default function OtpVerificationPage() {
     <div className="min-h-screen bg-secondary flex flex-col justify-center items-center p-4">
       <div className="w-full max-w-[420px]">
         <div className="text-center mb-8 flex flex-col items-center">
-          <Image src="/logo/logo-transparent.svg" alt="SSF Logo" width={120} height={80} className="h-20 w-auto object-contain mb-3" style={{ mixBlendMode: "multiply", filter: "contrast(1.05)" }} />
-          <h1 className="font-cooper text-4xl font-bold text-slate-900 tracking-tight">SSF</h1>
+          <Image src="/logo/atiyya-logo-icon.png" alt="Atiyya Logo" width={120} height={80} className="h-20 w-auto object-contain mb-3" style={{ mixBlendMode: "multiply", filter: "contrast(1.05)" }} />
+          <h1 className="font-cooper text-4xl font-bold text-slate-900 tracking-tight">Atiyya</h1>
           <p className="text-slate-600 font-medium text-lg mt-1">Alparamba Unit</p>
         </div>
         <Suspense fallback={<div className="h-64 flex items-center justify-center">Loading...</div>}>

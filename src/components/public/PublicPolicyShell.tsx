@@ -32,10 +32,10 @@ export function PublicPolicyShell({
         <div className="container flex min-h-16 items-center justify-between gap-4 px-4 md:px-8">
           <Link href="/" className="flex min-w-0 items-center gap-3" aria-label="SSF Alparamba home">
             <span className="flex size-10 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white shadow-sm">
-              <Image src="/logo/logo-transparent.svg" alt="SSF Logo" width={30} height={30} className="size-8 object-contain" />
+              <Image src="/logo/atiyya-logo-icon.png" alt="Atiyya Logo" width={30} height={30} className="size-8 object-contain" />
             </span>
             <span className="truncate text-base font-bold text-slate-900">
-              <span className="font-cooper font-normal">SSF</span> Alparamba Unit
+              <span className="font-cooper font-normal">Atiyya</span> Alparamba Unit
             </span>
           </Link>
           <Button asChild variant="outline" size="sm" className="rounded-xl border-slate-200 bg-white/80">
@@ -109,7 +109,7 @@ export function PublicPolicyFooter() {
           ))}
         </nav>
         <p className="text-center text-xs font-semibold text-slate-400">
-          © {new Date().getFullYear()} SSF Alparamba Unit. All rights reserved.
+          © {new Date().getFullYear()} Atiyya Group. All rights reserved.
         </p>
       </div>
     </footer>

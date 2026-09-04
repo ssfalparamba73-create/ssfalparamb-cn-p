@@ -30,8 +30,8 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
       <div className="w-full max-w-[440px] flex flex-col items-center relative z-10">
         {/* Logo Section */}
         <div className="text-center mb-8 flex flex-col items-center">
-          <TransparentLogo src="/logo/atiyya-logo-icon.png" alt="SSF Logo" className="h-16 w-auto object-contain mb-3 drop-shadow-sm" />
-          <h1 className="font-cooper text-4xl font-bold text-slate-900 tracking-tight">SSF</h1>
+          <TransparentLogo src="/logo/atiyya-logo-icon.png" alt="Atiyya Logo" className="h-16 w-auto object-contain mb-3 drop-shadow-sm" />
+          <h1 className="font-cooper text-4xl font-bold text-slate-900 tracking-tight">Atiyya</h1>
           <p className="text-slate-900 font-bold text-lg mt-1">Alparamba Unit</p>
         </div>
 
@@ -60,7 +60,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
         {/* Footer */}
         <div className="mt-8 flex flex-col items-center space-y-4">
           <p className="text-[13px] text-slate-500">
-            © 2025 SSF Alparamba Unit. All rights reserved.
+            © 2025 Atiyya Group. All rights reserved.
           </p>
           <div className="bg-[#EEF3FA] px-4 py-1.5 rounded-full flex items-center gap-2 border border-[#E5EAF3]">
             <ShieldCheck className="h-4 w-4 text-[#2563EB]" strokeWidth={2} />

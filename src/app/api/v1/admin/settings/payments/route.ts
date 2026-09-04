@@ -8,7 +8,7 @@ import { buildPublicActorContext } from "@/lib/backend/http/requestContext";
 
 const DEFAULTS = {
   upiId: "ssfalparamba@okaxis",
-  merchantName: "SSF Alparamba Unit",
+  merchantName: "Atiyya Group",
   qrCodeUrl: "",
   duesFrequency: "monthly",
   baseTier: 50,
