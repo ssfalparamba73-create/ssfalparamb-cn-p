@@ -45,37 +45,37 @@ const barabara = localFont({
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.APP_BASE_URL || "http://localhost:3000"),
-  applicationName: "SSF Alparamba",
+  applicationName: "Atiyya",
   title: {
     default: 'Centers of Excellence',
     template: '%s | Centers of Excellence',
   },
-  description: "Digital Varisankhya Collection Portal for SSF Alparamba Unit",
+  description: "Digital Support Portal for SSF Alparamba Unit",
   manifest: "/manifest.webmanifest",
   openGraph: {
     type: "website",
     locale: "en_IN",
-    siteName: "SSF Alparamba Unit",
-    title: "SSF Alparamba - Digital Varisankhya",
-    description: "Secure and transparent Digital Varisankhya Collection Portal for SSF Alparamba Unit",
+    siteName: "Atiyya",
+    title: "Atiyya - Centers of Excellence",
+    description: "Secure and transparent Digital Support Portal for SSF Alparamba Unit",
     images: [
       {
         url: "/social/ssf-alparamba-share.png",
         width: 1200,
         height: 630,
-        alt: "SSF Alparamba Unit - Digital Varisankhya Collection Portal",
+        alt: "SSF Alparamba Unit - Digital Support Portal",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "SSF Alparamba - Digital Varisankhya",
-    description: "Secure and transparent Digital Varisankhya Collection Portal for SSF Alparamba Unit",
+    title: "Atiyya - Centers of Excellence",
+    description: "Secure and transparent Digital Support Portal for SSF Alparamba Unit",
     images: ["/social/ssf-alparamba-share.png"],
   },
   appleWebApp: {
     capable: true,
-    title: "SSF Alparamba",
+    title: "Atiyya",
     statusBarStyle: "default",
   },
 };
@@ -98,5 +98,6 @@ export default function RootLayout({
     </html>
   );
 }
+
 
 

@@ -3,9 +3,9 @@ import type { MetadataRoute } from "next";
 export default function manifest(): MetadataRoute.Manifest {
   return {
     id: "/",
-    name: "SSF Alparamba Unit - Digital Varisankhya",
-    short_name: "SSF Alparamba",
-    description: "Digital Varisankhya Collection Portal for SSF Alparamba Unit",
+    name: "Atiyya",
+    short_name: "Atiyya",
+    description: "Digital Support Portal for SSF Alparamba Unit",
     start_url: "/",
     scope: "/",
     display: "standalone",
