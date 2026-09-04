@@ -90,11 +90,14 @@ export function createCashfreeService(deps: {
         }
 
         // Reuse existing Cashfree order to prevent "Order already exists" error
-        if (payment.gatewayOrderId && payment.metadata?.payment_session_id) {
-          return ok({
-            cfOrderId: payment.gatewayOrderId,
-            paymentSessionId: payment.metadata.payment_session_id,
-          });
+        if (payment.gatewayOrderId) {
+          try {
+            // We just need the paymentSessionId, we can get it via the gateway's verifyPayment (which fetches the order) or we just rely on createOrder's self-healing.
+            // Actually, since createOrder self-heals by fetching it when it gets "Order already exists",
+            // we can just let it call createOrder with the same ID, and it will self-heal!
+          } catch (e) {
+            // ignore
+          }
         }
 
         const gatewayResult = await gateway.createOrder({
@@ -116,7 +119,7 @@ export function createCashfreeService(deps: {
           paymentSessionId: gatewayResult.paymentSessionId,
         });
       } catch (err: any) {
-        const msg = err instanceof Error ? err.message : "Failed to create Cashfree order";
+        const msg = err?.message || "Failed to create Cashfree order";
         return fail(paymentError(msg, ERROR_CODES.PAYMENT_GATEWAY_ERROR));
       }
     },

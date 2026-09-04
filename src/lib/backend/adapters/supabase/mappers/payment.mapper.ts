@@ -42,7 +42,6 @@ export function mapRowToPaymentDTO(row: any, monthsRows: any[] = []): PaymentDTO
     gatewayProvider: row.gateway_provider,
     gatewayOrderId: row.gateway_order_id,
     gatewayPaymentId: row.gateway_payment_id,
-    metadata: row.metadata,
   };
 }
 
