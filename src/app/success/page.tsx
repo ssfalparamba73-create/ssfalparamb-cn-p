@@ -19,10 +19,31 @@ function SuccessPageContent() {
 
   React.useEffect(() => {
     if (!paymentId) { setError("Payment record is missing."); return; }
-    requestBackend<PaymentDTO>(`/api/v1/payments/${encodeURIComponent(paymentId)}/receipt`)
-      .then(setPayment)
-      .catch((reason) => setError(reason instanceof Error ? reason.message : "Receipt not found."));
-  }, [paymentId]);
+    
+    const fetchReceipt = () => {
+      requestBackend<PaymentDTO>(`/api/v1/payments/${encodeURIComponent(paymentId)}/receipt`)
+        .then(setPayment)
+        .catch((reason) => setError(reason instanceof Error ? reason.message : "Receipt not found."));
+    };
+
+    if (searchParams.has("order_id")) {
+      requestBackend<PaymentDTO>("/api/v1/payments/cashfree/verify", {
+        method: "POST",
+        body: JSON.stringify({ cfOrderId: paymentId }),
+      })
+      .then(() => fetchReceipt())
+      .catch((err) => {
+         const msg = err instanceof Error ? err.message : "Verification failed";
+         if (msg.includes("not successful yet")) {
+           setError("Your payment is still being processed by the bank. Please check your dashboard in a few minutes.");
+         } else {
+           setError(msg);
+         }
+      });
+    } else {
+      fetchReceipt();
+    }
+  }, [paymentId, searchParams]);
 
 
   return (

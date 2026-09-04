@@ -163,8 +163,10 @@ export function createCashfreeService(deps: {
           await receiptService.createForPayment(payment.id, actor);
           return ok(confirmedPayment);
         } else {
+          // Find if there are any payments at all
+          const statuses = Array.isArray(cfPayments) ? cfPayments.map(p => p.payment_status).join(", ") : "none";
           return fail(
-            paymentError("Cashfree payment not successful or not found", ERROR_CODES.PAYMENT_VERIFICATION_FAILED)
+            paymentError(`Cashfree payment not successful yet. Current statuses: ${statuses}`, ERROR_CODES.PAYMENT_VERIFICATION_FAILED)
           );
         }
       } catch (err: any) {
