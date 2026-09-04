@@ -65,21 +65,21 @@ export class SupabasePaymentRepository implements PaymentRepository {
 
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
     if (uuidRegex.test(memberQuery)) {
-      const { data } = await supabase.from("members").select("id, full_name, phone").eq("id", memberQuery).maybeSingle();
-      if (data) return { id: data.id, name: data.full_name, phone: data.phone };
+      const { data } = await supabase.from("members").select("id, name, phone").eq("id", memberQuery).maybeSingle();
+      if (data) return { id: data.id, name: data.name, phone: data.phone };
     }
 
     const { data: byPhone } = await supabase
       .from("members")
-      .select("id, full_name, phone")
+      .select("id, name, phone")
       .eq("phone", memberQuery)
       .neq("status", "left")
       .limit(1)
       .maybeSingle();
-    if (byPhone) return { id: byPhone.id, name: byPhone.full_name, phone: byPhone.phone };
+    if (byPhone) return { id: byPhone.id, name: byPhone.name, phone: byPhone.phone };
 
-    const { data: byCode } = await supabase.from("members").select("id, full_name, phone").eq("member_code", memberQuery).limit(1).maybeSingle();
-    if (byCode) return { id: byCode.id, name: byCode.full_name, phone: byCode.phone };
+    const { data: byCode } = await supabase.from("members").select("id, name, phone").eq("member_code", memberQuery).limit(1).maybeSingle();
+    if (byCode) return { id: byCode.id, name: byCode.name, phone: byCode.phone };
 
     return null;
   }
