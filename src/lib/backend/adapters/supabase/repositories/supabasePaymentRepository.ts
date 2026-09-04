@@ -65,7 +65,7 @@ export class SupabasePaymentRepository implements PaymentRepository {
 
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
     if (uuidRegex.test(memberQuery)) {
-      const { data } = await supabase.from("members").select("id, full_name, phone").eq("id", memberQuery).single();
+      const { data } = await supabase.from("members").select("id, full_name, phone").eq("id", memberQuery).maybeSingle();
       if (data) return { id: data.id, name: data.full_name, phone: data.phone };
     }
 
@@ -77,7 +77,7 @@ export class SupabasePaymentRepository implements PaymentRepository {
       .maybeSingle();
     if (byPhone) return { id: byPhone.id, name: byPhone.full_name, phone: byPhone.phone };
 
-    const { data: byCode } = await supabase.from("members").select("id, full_name, phone").eq("member_code", memberQuery).single();
+    const { data: byCode } = await supabase.from("members").select("id, full_name, phone").eq("member_code", memberQuery).maybeSingle();
     if (byCode) return { id: byCode.id, name: byCode.full_name, phone: byCode.phone };
 
     return null;
