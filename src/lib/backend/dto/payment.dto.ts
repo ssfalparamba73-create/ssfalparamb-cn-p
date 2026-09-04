@@ -43,6 +43,7 @@ export interface PaymentDTO {
   gatewayProvider?: string;
   gatewayOrderId?: string;
   gatewayPaymentId?: string;
+  metadata?: Record<string, any>;
 }
 
 export interface PaymentIntentDTO {

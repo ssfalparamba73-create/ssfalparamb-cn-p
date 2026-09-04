@@ -89,6 +89,14 @@ export function createCashfreeService(deps: {
           );
         }
 
+        // Reuse existing Cashfree order to prevent "Order already exists" error
+        if (payment.gatewayOrderId && payment.metadata?.payment_session_id) {
+          return ok({
+            cfOrderId: payment.gatewayOrderId,
+            paymentSessionId: payment.metadata.payment_session_id,
+          });
+        }
+
         const gatewayResult = await gateway.createOrder({
           orderId: payment.id,
           amount: payment.amount,

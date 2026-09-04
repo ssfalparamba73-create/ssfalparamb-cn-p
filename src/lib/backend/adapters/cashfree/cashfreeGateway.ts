@@ -43,7 +43,7 @@ export class CashfreeGatewayImpl implements CashfreePaymentGateway {
           customer_name: input.customerName || "Guest User"
         },
         order_meta: {
-          return_url: `${process.env.APP_BASE_URL || "http://localhost:3000"}/success?order_id={order_id}`
+          return_url: `${process.env.APP_BASE_URL || "https://atiyya.in"}/success?order_id={order_id}`
         }
       };
 
