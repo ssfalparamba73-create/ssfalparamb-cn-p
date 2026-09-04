@@ -31,7 +31,7 @@ function SuccessPageContent() {
         method: "POST",
         body: JSON.stringify({ cfOrderId: paymentId }),
       })
-      .then(() => fetchReceipt())
+      .then((payment) => setPayment(payment))
       .catch((err) => {
          const msg = err instanceof Error ? err.message : "Verification failed";
          if (msg.includes("not successful yet")) {
@@ -79,12 +79,12 @@ function SuccessPageContent() {
           {error ? <div className="rounded-2xl border border-red-200 bg-red-50 p-6 text-center text-sm text-red-700">{error}</div> : payment ? <PremiumReceiptCard
             receiptId={payment.receiptId}
             method={payment.method}
-            admin={payment.collectedByAdminName || "Atiyya Group"}
+            admin={payment.collectedByAdminName || (payment as any).receivedBy || "Atiyya Group"}
             payerName={payment.payerName}
             phone={payment.payerPhone}
             amount={payment.amount}
             category={payment.category}
-            paidAt={payment.paidAt || payment.recordedAt}
+            paidAt={payment.paidAt || payment.recordedAt || (payment as any).issuedAt}
           /> : <div className="rounded-2xl border border-slate-200 bg-white p-6 text-center text-sm text-slate-500">Loading receipt…</div>}
         </div>
 

@@ -68,6 +68,7 @@ export interface ReceiptRepository {
   createForPayment(paymentId: string, actor: ActorContext): Promise<ReceiptDTO>;
   findByReceiptIdAndToken(receiptId: string, token: string): Promise<ReceiptDTO | null>;
   findForMember(paymentId: string, memberId: string): Promise<ReceiptDTO | null>;
+  findByPaymentId(paymentId: string): Promise<ReceiptDTO | null>;
   incrementViewCount(receiptId: string): Promise<void>;
 }
 

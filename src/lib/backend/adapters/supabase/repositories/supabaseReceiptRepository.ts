@@ -106,7 +106,17 @@ export class SupabaseReceiptRepository implements ReceiptRepository {
 
   async findForMember(paymentId: string, memberId: string): Promise<ReceiptDTO | null> {
     const supabase = createSupabaseBackendClient();
-    const { data: payment } = await supabase.from("payments").select("*").eq("id", paymentId).eq("member_id", memberId).is("voided_at", null).single();
+    const { data: payment } = await supabase.from("payments").select("*, payment_months(*)").eq("id", paymentId).eq("member_id", memberId).is("voided_at", null).single();
+    if (!payment) return null;
+    
+    const { data, error } = await supabase.from("payment_receipts").select("*").eq("payment_id", paymentId).single();
+    if (error || !data) return null;
+    return mapRowToReceiptDTO(data, payment);
+  }
+
+  async findByPaymentId(paymentId: string): Promise<ReceiptDTO | null> {
+    const supabase = createSupabaseBackendClient();
+    const { data: payment } = await supabase.from("payments").select("*, payment_months(*)").eq("id", paymentId).is("voided_at", null).single();
     if (!payment) return null;
     
     const { data, error } = await supabase.from("payment_receipts").select("*").eq("payment_id", paymentId).single();

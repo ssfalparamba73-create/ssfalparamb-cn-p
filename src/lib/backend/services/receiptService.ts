@@ -49,6 +49,11 @@ export function createReceiptService(deps: {
 
     async getReceiptForMember(paymentId: string, actor: ActorContext): Promise<BackendResult<ReceiptDTO>> {
       try {
+        if (actor.actorType === "admin") {
+          const receipt = await receiptRepository.findByPaymentId(paymentId);
+          return receipt ? ok(receipt) : fail(notFoundError("Receipt not found.", "RECEIPT_NOT_FOUND"));
+        }
+        
         if (actor.actorType !== "member" || !actor.memberId) return fail(notFoundError("Receipt not found.", "RECEIPT_NOT_FOUND"));
         const receipt = await receiptRepository.findForMember(paymentId, actor.memberId);
         return receipt ? ok(receipt) : fail(notFoundError("Receipt not found.", "RECEIPT_NOT_FOUND"));
