@@ -182,8 +182,8 @@ function PayNowContent() {
 
         <Card className="shadow-lg border-primary/10">
           <CardHeader>
-                  <CardTitle>Contribution Details</CardTitle>
-                  <CardDescription>Confirm the member and contribution information before continuing.</CardDescription>
+                  <CardTitle>Payment Details</CardTitle>
+                  <CardDescription>Confirm the member and dues information before continuing.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-5">
             <div className="space-y-2">
@@ -226,15 +226,15 @@ function PayNowContent() {
               {activeTab === "dues" ? (
                 <div className="rounded-xl border bg-accent/30 p-4 space-y-4 dark:bg-slate-800/50 dark:border-slate-700">
                   <div className="space-y-3">
-                    <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Contribution Period</Label>
+                    <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Dues Period</Label>
                     <div className="rounded-lg border border-primary/30 bg-white p-3 text-sm font-medium text-slate-900 dark:border-blue-500/50 dark:bg-slate-800 dark:text-slate-50">
-                      {currentContributionPeriod} contribution
+                      {currentContributionPeriod} dues
                       <p className="mt-1 text-xs font-normal text-muted-foreground">The final amount is resolved from the member record on the server.</p>
                     </div>
                   </div>
 
                   <div className="pt-2">
-                    <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 block">Contribution Tier</Label>
+                    <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 block">Membership Tier</Label>
                     <div className="grid grid-cols-2 gap-2">
                       <button type="button" onClick={() => setDuesTier(50)} className={`p-3 rounded-xl border flex flex-col items-center justify-center gap-0.5 transition-all ${duesTier === 50 ? "bg-primary/5 border-primary text-primary dark:bg-blue-500/10 dark:border-blue-500/50 dark:text-blue-400" : "bg-white border-slate-200 text-slate-500 hover:border-primary/40 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-400 dark:hover:border-blue-500/40"}`}>
                         <span className="font-bold text-lg leading-none">₹50</span>
@@ -259,7 +259,7 @@ function PayNowContent() {
                       <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
                     </div>
                     <div>
-                      <h4 className="text-sm font-bold text-amber-900 dark:text-amber-300">Special Event Contribution</h4>
+                      <h4 className="text-sm font-bold text-amber-900 dark:text-amber-300">Special Event Payment</h4>
                       <p className="text-xs text-amber-700/80 mt-0.5 leading-snug dark:text-amber-200/70">Review the approved event details and applicable amount before continuing.</p>
                     </div>
                   </div>
@@ -288,11 +288,11 @@ function PayNowContent() {
             </div>
 
             <div className="rounded-xl border border-blue-100 bg-blue-50/50 p-4 dark:border-blue-500/20 dark:bg-blue-500/10">
-              <p className="mb-3 text-xs font-bold uppercase tracking-wider text-blue-700 dark:text-blue-300">Contribution Summary</p>
+              <p className="mb-3 text-xs font-bold uppercase tracking-wider text-blue-700 dark:text-blue-300">Payment Summary</p>
               <dl className="space-y-2 text-sm">
                 <div className="flex items-center justify-between gap-4"><dt className="text-muted-foreground">Member</dt><dd className="max-w-[62%] truncate text-right font-semibold text-slate-900 dark:text-slate-50">{memberQuery.trim() || "Enter member details"}</dd></div>
-                <div className="flex items-center justify-between gap-4"><dt className="text-muted-foreground">Contribution Period</dt><dd className="text-right font-semibold text-slate-900 dark:text-slate-50">{activeTab === "dues" ? currentContributionPeriod : "Approved event"}</dd></div>
-                <div className="flex items-center justify-between gap-4"><dt className="text-muted-foreground">Payment Purpose</dt><dd className="text-right font-semibold text-slate-900 dark:text-slate-50">Member contribution</dd></div>
+                <div className="flex items-center justify-between gap-4"><dt className="text-muted-foreground">Dues Period</dt><dd className="text-right font-semibold text-slate-900 dark:text-slate-50">{activeTab === "dues" ? currentContributionPeriod : "Approved event"}</dd></div>
+                <div className="flex items-center justify-between gap-4"><dt className="text-muted-foreground">Payment Purpose</dt><dd className="text-right font-semibold text-slate-900 dark:text-slate-50">Membership dues</dd></div>
                 <div className="flex items-center justify-between gap-4 border-t border-blue-100 pt-2 dark:border-blue-500/20"><dt className="font-semibold text-slate-700 dark:text-slate-300">Amount</dt><dd className="text-right text-lg font-bold text-slate-950 dark:text-slate-50">₹{finalAmount || 0}</dd></div>
               </dl>
             </div>
@@ -479,7 +479,7 @@ function PayNowContent() {
                     Processing...
                   </>
                 ) : (
-                  `Make Contribution ₹${finalAmount || 0} via UPI`
+                  `Make Payment ₹${finalAmount || 0} via UPI`
                 )}
               </Button>
             ) : (
@@ -489,7 +489,7 @@ function PayNowContent() {
                 disabled={isButtonDisabled}
                 onClick={handleCashHandover}
               >
-                Record ₹{finalAmount || 0} Cash Contribution
+                Record ₹{finalAmount || 0} Cash Payment
               </Button>
             )}
             <p className="text-xs text-muted-foreground flex items-center justify-center gap-1 font-medium">

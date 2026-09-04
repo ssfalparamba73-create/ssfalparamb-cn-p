@@ -47,7 +47,7 @@ export function DueStatusCard({ amountDue, paymentStatus }: DueStatusCardProps) 
             </Button>
           </Link>
           <p className="text-center text-xs text-slate-400 mt-3 font-medium dark:text-slate-500">
-            {isClear ? "Make a contribution or pay upcoming dues" : isPending ? "Your payment is being verified" : isFailed ? "Retry the contribution or contact support" : "Complete your contribution"}
+            {isClear ? "Make a payment or pay upcoming dues" : isPending ? "Your payment is being verified" : isFailed ? "Retry the payment or contact support" : "Complete your payment"}
           </p>
         </div>
       )}

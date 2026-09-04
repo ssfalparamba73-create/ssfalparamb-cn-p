@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
 const policyLinks = [
-  { href: "/contribution-details", label: "Contribution Details" },
+  { href: "/contribution-details", label: "Dues & Payment Details" },
   { href: "/shipping-policy", label: "Shipping Policy" },
   { href: "/cancellation-and-refund-policy", label: "Cancellation & Refunds" },
   { href: "/privacy-policy", label: "Privacy Policy" },

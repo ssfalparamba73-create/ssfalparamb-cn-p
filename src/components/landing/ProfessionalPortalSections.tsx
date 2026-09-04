@@ -30,7 +30,7 @@ const assurances = [
   {
     icon: FileCheck2,
     title: "Published policies",
-    description: "Contribution, privacy, terms, cancellation, refund, and non-shipping information are publicly available.",
+    description: "Payment, privacy, terms, cancellation, refund, and non-shipping information are publicly available.",
   },
   {
     icon: Headphones,
@@ -119,7 +119,7 @@ export function ProfessionalPortalSections() {
           <div className="space-y-3">
             <span className="inline-flex items-center gap-2 rounded-full border border-blue-100 bg-white px-3 py-1.5 text-xs font-bold uppercase tracking-[0.12em] text-blue-700 shadow-sm"><CircleHelp className="size-4" /> Common questions</span>
             <h2 className="text-2xl font-black tracking-tight text-slate-950 md:text-3xl">Before you continue</h2>
-            <p className="text-sm font-medium leading-6 text-slate-600 md:text-base">Straightforward answers about access, contributions, delivery, and support.</p>
+            <p className="text-sm font-medium leading-6 text-slate-600 md:text-base">Straightforward answers about access, payments, delivery, and support.</p>
           </div>
           <div className="space-y-3">
             {faqs.map((faq) => (

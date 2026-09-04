@@ -5,7 +5,7 @@ import { PolicySection, PublicPolicyShell } from "@/components/public/PublicPoli
 
 export const metadata: Metadata = {
   title: "Contact | SSF Alparamba",
-  description: "Official support contacts for the SSF Alparamba Contribution Portal.",
+  description: "Official support contacts for the SSF Alparamba Membership Portal.",
 };
 
 const officeBearers = [
@@ -18,7 +18,7 @@ export default function ContactPage() {
     <PublicPolicyShell
       eyebrow="Official Support"
       title="Contact SSF Alparamba Unit"
-      description="Use an active channel listed below for contribution, receipt, account, privacy, or refund-related questions."
+      description="Use an active channel listed below for payment, receipt, account, privacy, or refund-related questions."
     >
       <PolicySection title="Office Bearers">
         <div className="grid gap-3 sm:grid-cols-2">

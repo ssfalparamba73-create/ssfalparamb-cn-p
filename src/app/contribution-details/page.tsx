@@ -41,7 +41,7 @@ export default function ContributionDetailsPage() {
 
       <PolicySection title="Amount and currency">
         <p>
-          Contribution amounts are based on the member category, applicable period, or approved event configuration maintained by SSF Alparamba Unit.
+          Dues amounts are based on the member category, applicable period, or approved event configuration maintained by SSF Alparamba Unit.
           The final payable amount is shown for review before a payment is initiated.
         </p>
         <p>All amounts displayed by this portal are in Indian Rupees (INR), unless clearly stated otherwise.</p>
@@ -49,21 +49,21 @@ export default function ContributionDetailsPage() {
 
       <PolicySection title="How confirmation works">
         <PolicyList items={[
-          "The member reviews the applicable period or contribution before continuing.",
+          "The member reviews the applicable period or dues amount before continuing.",
           "When online payment is enabled, checkout is handled through the approved payment provider.",
-          "A contribution is treated as confirmed only after the portal verifies the payment with the provider.",
+          "A payment is treated as confirmed only after the portal verifies the transaction with the provider.",
           "A digital receipt becomes available after successful confirmation and recording.",
         ]} />
       </PolicySection>
 
       <PolicySection title="No physical delivery">
         <p>
-          Contributions do not involve the sale or shipment of physical goods. Confirmation, account updates, and available receipts are delivered digitally.
+          Membership dues do not involve the sale or shipment of physical goods. Confirmation, account updates, and available receipts are delivered digitally.
         </p>
       </PolicySection>
 
       <PolicySection title="Need clarification?">
-        <p>If an amount or contribution period appears incorrect, contact the unit before completing payment.</p>
+        <p>If an amount or dues period appears incorrect, contact the unit before completing payment.</p>
         <Button asChild variant="outline" className="mt-2 rounded-xl">
           <Link href="/contact">Contact the unit</Link>
         </Button>
