@@ -59,7 +59,7 @@ export interface PaymentRepository {
   reject(paymentId: string, actor: ActorContext, reason?: string): Promise<PaymentDTO>;
   cancel(paymentId: string, actor: ActorContext, reason?: string): Promise<PaymentDTO>;
   voidPayment(paymentId: string, actor: ActorContext, reason: string): Promise<PaymentDTO>;
-  updateGatewayOrderId(paymentId: string, gatewayOrderId: string): Promise<void>;
+  updateGatewayOrderId(paymentId: string, gatewayOrderId: string, paymentSessionId?: string): Promise<void>;
   confirmPayment(paymentId: string, gatewayPaymentId: string, gatewaySignature: string): Promise<PaymentDTO>;
   failPayment(paymentId: string, reason?: string): Promise<PaymentDTO>;
 }

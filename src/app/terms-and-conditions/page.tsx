@@ -5,7 +5,7 @@ import { PolicyList, PolicySection, PublicPolicyShell } from "@/components/publi
 
 export const metadata: Metadata = {
   title: "Terms and Conditions | SSF Alparamba",
-  description: "Terms for access to and use of the SSF Alparamba Contribution Portal.",
+  description: "Terms for access to and use of the SSF Alparamba Membership Portal.",
 };
 
 export default function TermsAndConditionsPage() {
@@ -13,11 +13,11 @@ export default function TermsAndConditionsPage() {
     <PublicPolicyShell
       eyebrow="Portal Terms"
       title="Terms and Conditions"
-      description="These terms apply when a member, administrator, or visitor accesses the SSF Alparamba Contribution Portal."
+      description="These terms apply when a member, administrator, or visitor accesses the SSF Alparamba Membership Portal."
     >
       <PolicySection title="Purpose and permitted use">
         <p>
-          The portal is provided for authorised member access, contribution records, approved unit administration, receipts, and related support.
+          The portal is provided for authorised member access, dues payment records, approved unit administration, receipts, and related support.
           It must not be used to access another person&apos;s records or disrupt the service.
         </p>
       </PolicySection>
@@ -31,9 +31,9 @@ export default function TermsAndConditionsPage() {
         ]} />
       </PolicySection>
 
-      <PolicySection title="Contribution and payment records">
+      <PolicySection title="Dues and payment records">
         <p>
-          Review the contribution period and amount before continuing. A browser message or checkout response alone does not create a final confirmed record.
+          Review the dues period and amount before continuing. A browser message or checkout response alone does not create a final confirmed record.
           Confirmation occurs only after server-side verification and recording.
         </p>
       </PolicySection>

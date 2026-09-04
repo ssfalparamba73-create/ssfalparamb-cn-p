@@ -302,11 +302,18 @@ export class SupabasePaymentRepository implements PaymentRepository {
     return mapRowToPaymentDTO(data, data.payment_months || []);
   }
 
-  async updateGatewayOrderId(paymentId: string, gatewayOrderId: string): Promise<void> {
+  async updateGatewayOrderId(paymentId: string, gatewayOrderId: string, paymentSessionId?: string): Promise<void> {
     const supabase = createSupabaseBackendClient();
+    
+    const metadata = {
+      cf_order_id: gatewayOrderId,
+      payment_session_id: paymentSessionId || null
+    };
+
     const { error } = await supabase.from("payments").update({
       gateway_order_id: gatewayOrderId,
-      gateway_provider: "razorpay",
+      gateway_provider: "cashfree",
+      metadata: metadata
     }).eq("id", paymentId);
 
     if (error) throw error;
@@ -322,11 +329,19 @@ export class SupabasePaymentRepository implements PaymentRepository {
     if (currentError || !current) throw currentError || new Error("Payment not found");
     if (current.status === "confirmed") return mapRowToPaymentDTO(current);
     if (current.status !== "pending") throw new Error("Only pending payments can be confirmed.");
+    
+    const existingMetadata = current.metadata || {};
+    const updatedMetadata = {
+      ...existingMetadata,
+      reference_id: gatewayPaymentId
+    };
+
     const { data, error } = await supabase.from("payments").update({
       status: "confirmed",
       gateway_payment_id: gatewayPaymentId,
       gateway_signature: gatewaySignature,
       paid_at: new Date().toISOString(),
+      metadata: updatedMetadata
     }).eq("id", paymentId).eq("status", "pending").select("*").single();
 
     if (error) throw error;

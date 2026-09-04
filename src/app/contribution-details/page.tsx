@@ -4,31 +4,37 @@ import { Button } from "@/components/ui/button";
 import { PolicyList, PolicySection, PublicPolicyShell } from "@/components/public/PublicPolicyShell";
 
 export const metadata: Metadata = {
-  title: "Contribution Details | SSF Alparamba",
-  description: "How member contributions are reviewed, recorded, and confirmed through the SSF Alparamba portal.",
+  title: "Support & Payment Details | SSF Alparamba",
+  description: "How Member Support are reviewed, recorded, and confirmed through the SSF Alparamba portal.",
 };
 
 export default function ContributionDetailsPage() {
   return (
     <PublicPolicyShell
-      eyebrow="Contribution Information"
-      title="Member Contribution Details"
-      description="A clear overview of how monthly and approved event contributions are presented and recorded in the portal."
+      eyebrow="Support & Payment Information"
+      title="Member Support & Payment Details"
+      description="A clear overview of how Monthly Support and approved event payments are presented and recorded in the portal."
     >
-      <PolicySection title="Member Contribution">
+      <PolicySection title="Purpose of Funds">
         <p>
-          This portal is used exclusively for collecting member contributions for SSF Alparamba Unit. Contributions are associated with the respective member and contribution period. This portal does not sell physical products or commercial services.
+          The funds collected through this portal are dedicated strictly to <strong>Skill Development and Education</strong> initiatives within the community. This ensures transparent usage of member support towards our core mission.
         </p>
       </PolicySection>
 
-      <PolicySection title="Who Can Make a Contribution?">
-        <p>Registered members/contributors of SSF Alparamba Unit can use this portal to make their applicable contributions.</p>
+      <PolicySection title="Monthly Membership Support">
+        <p>
+          This portal is used exclusively for collecting monthly membership support from registered SSF Alparamba Unit members. Payments are linked to the member's profile and applicable period. This portal does not sell physical products or commercial services.
+        </p>
+      </PolicySection>
+
+      <PolicySection title="Who Can Provide Support?">
+        <p>Only registered members of SSF Alparamba Unit, whose mobile number has been enrolled by an authorised committee administrator, can access this portal and provide their support.</p>
       </PolicySection>
 
       <PolicySection title="What the portal supports">
         <PolicyList items={[
-          "Monthly member contributions associated with an eligible member profile.",
-          "Approved special-event contributions when an event is enabled by the unit.",
+          "Monthly membership support associated with a registered and eligible member profile.",
+          "Approved special-event support payments when an event is enabled by the unit.",
           "Digital payment status, collection history, and receipts after server-side confirmation.",
         ]} />
       </PolicySection>

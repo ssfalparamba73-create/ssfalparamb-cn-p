@@ -11,13 +11,13 @@ const steps = [
   },
   {
     icon: BadgeIndianRupee,
-    title: "Review contribution details",
-    description: "Check the applicable monthly contribution and selected period before continuing.",
+    title: "Review your dues",
+    description: "Check your applicable monthly dues, selected payment period, and total amount before proceeding to payment.",
   },
   {
     icon: ReceiptText,
-    title: "Keep a clear record",
-    description: "Confirmed contributions and receipts are shown in the member portal when payment services are enabled.",
+    title: "Get your receipt",
+    description: "Digital receipts are issued instantly after dues payment is confirmed. All records are available in your member profile.",
   },
 ];
 
@@ -25,7 +25,7 @@ const assurances = [
   {
     icon: ShieldCheck,
     title: "Official unit portal",
-    description: "A dedicated portal for SSF Alparamba Unit membership and contribution administration.",
+    description: "A dedicated portal for SSF Alparamba Unit registered members to manage membership dues and records.",
   },
   {
     icon: FileCheck2,
@@ -42,11 +42,11 @@ const assurances = [
 const faqs = [
   {
     question: "Who can use the member portal?",
-    answer: "Registered SSF Alparamba Unit members whose mobile number has been added by an authorised administrator.",
+    answer: "Only registered SSF Alparamba Unit members whose mobile number has been enrolled by an authorised administrator. New members cannot self-register.",
   },
   {
-    question: "What does the contribution cover?",
-    answer: "The applicable amount and contribution rules are published on the Contribution Details page before payment.",
+    question: "What are the monthly dues for?",
+    answer: "Monthly dues cover the member's active membership in the SSF Alparamba Unit for the applicable period. The exact amount and rules are published before payment.",
   },
   {
     question: "Are physical goods delivered?",
@@ -67,8 +67,8 @@ export function ProfessionalPortalSections() {
             <span className="inline-flex items-center gap-2 rounded-full border border-blue-100 bg-white px-3 py-1.5 text-xs font-bold uppercase tracking-[0.12em] text-blue-700 shadow-sm">
               <BookOpenCheck className="size-4" /> About the portal
             </span>
-            <h2 className="text-2xl font-black tracking-tight text-slate-950 md:text-3xl">Contribution management with clear steps</h2>
-            <p className="text-sm font-medium leading-6 text-slate-600 md:text-base">Members can review their details, follow contribution information, and access committee support from one official portal.</p>
+            <h2 className="text-2xl font-black tracking-tight text-slate-950 md:text-3xl">Membership dues management in 3 clear steps</h2>
+            <p className="text-sm font-medium leading-6 text-slate-600 md:text-base">Registered members can review their dues, pay online or track cash payments, and access committee support from one official portal.</p>
           </div>
 
           <div className="grid grid-cols-1 gap-3 md:grid-cols-3 md:gap-4">
@@ -96,10 +96,10 @@ export function ProfessionalPortalSections() {
             <div className="inline-flex items-center gap-2 rounded-full border border-emerald-100 bg-emerald-50 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.12em] text-emerald-700">
               <ShieldCheck className="size-4" /> Trust & clarity
             </div>
-            <h2 className="text-2xl font-black tracking-tight text-slate-950 md:text-3xl">Information reviewers and members can verify</h2>
-            <p className="text-sm font-medium leading-6 text-slate-600 md:text-base">The public pages explain the portal purpose, contribution rules, service policies, and available support without requiring a login.</p>
+            <h2 className="text-2xl font-black tracking-tight text-slate-950 md:text-3xl">Transparent information for members and reviewers</h2>
+            <p className="text-sm font-medium leading-6 text-slate-600 md:text-base">Our public pages clearly explain the portal's purpose, dues rules, payment policies, and available support — no login required to review.</p>
             <div className="flex flex-col gap-3 sm:flex-row">
-              <Button asChild className="h-11 bg-blue-600 text-white hover:bg-blue-700"><Link href="/contribution-details">Contribution details <ArrowRight className="ml-2 size-4" /></Link></Button>
+              <Button asChild className="h-11 bg-blue-600 text-white hover:bg-blue-700"><Link href="/contribution-details">Dues & payment details <ArrowRight className="ml-2 size-4" /></Link></Button>
               <Button asChild variant="outline" className="h-11"><Link href="/contact">Contact committee</Link></Button>
             </div>
           </div>

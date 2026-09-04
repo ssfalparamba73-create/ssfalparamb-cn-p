@@ -49,6 +49,10 @@
   font-family: var(--font-quicksand), sans-serif;
 }
 
+@utility font-spartan {
+  font-family: var(--font-league-spartan), sans-serif;
+}
+
 :root {
   --bg-primary: #EEF2F6;
   --bg-secondary: #F1F5F9;

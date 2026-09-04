@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils"
 const tabs = [
   {
     id: "payments",
-    title: "Clear Contribution Information",
+    title: "Manage Monthly Dues",
     shortTitle: "Payments",
     icon: CreditCard,
     color: "violet",
@@ -16,8 +16,8 @@ const tabs = [
     borderClass: "border-violet-100",
     activeBg: "bg-violet-600",
     shadowClass: "shadow-[0_20px_60px_rgba(124,58,237,0.15)]",
-    description: "Review monthly contribution details, applicable periods, and your available records from one member portal. Online payment and receipts appear when the payment service is enabled.",
-    highlight: "Clear Records"
+    description: "Review your monthly dues, applicable payment periods, and your payment history from one secure portal. Pay online and access digital receipts instantly after payment confirmation.",
+    highlight: "Dues & Records"
   },
   {
     id: "blood",
@@ -58,7 +58,7 @@ const tabs = [
     borderClass: "border-blue-100",
     activeBg: "bg-blue-600",
     shadowClass: "shadow-[0_20px_60px_rgba(37,99,235,0.15)]",
-    description: "Use your registered mobile number and committee-issued access code to open the portal and review the member information available to you.",
+    description: "Use your registered mobile number and committee-issued PIN to securely log in and manage your membership dues and records.",
     highlight: "Registered Access"
   },
 ]

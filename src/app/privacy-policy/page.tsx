@@ -5,7 +5,7 @@ import { PolicyList, PolicySection, PublicPolicyShell } from "@/components/publi
 
 export const metadata: Metadata = {
   title: "Privacy Policy | SSF Alparamba",
-  description: "Privacy information for members and visitors using the SSF Alparamba Contribution Portal.",
+  description: "Privacy information for members and visitors using the SSF Alparamba Membership Portal.",
 };
 
 export default function PrivacyPolicyPage() {
@@ -13,13 +13,13 @@ export default function PrivacyPolicyPage() {
     <PublicPolicyShell
       eyebrow="Privacy & Data"
       title="Privacy Policy"
-      description="This policy explains the information used to operate the member contribution portal and protect member access."
+      description="This policy explains the information used to operate the membership portal and protect member access."
     >
       <PolicySection title="Information handled by the portal">
         <PolicyList items={[
           "Member identity and contact details such as name, member code, and phone number.",
           "Profile information voluntarily provided for unit records, including family or blood-donor details where applicable.",
-          "Contribution, payment-status, receipt, and transaction-reference information.",
+          "Membership dues, payment-status, receipt, and transaction-reference information.",
           "Authentication, session, device, request, and audit information needed to secure the portal.",
           "Support messages and contact details submitted when assistance is requested.",
         ]} />
@@ -28,8 +28,8 @@ export default function PrivacyPolicyPage() {
       <PolicySection title="How information is used">
         <PolicyList items={[
           "To authenticate members and authorised administrators.",
-          "To maintain member records and display relevant contribution information.",
-          "To verify, record, reconcile, and report contributions.",
+          "To maintain member records and display relevant dues information.",
+          "To verify, record, reconcile, and report payments.",
           "To provide receipts, support, security monitoring, and an accountable audit history.",
           "To prevent duplicate, unauthorised, or fraudulent activity.",
         ]} />
@@ -44,7 +44,7 @@ export default function PrivacyPolicyPage() {
 
       <PolicySection title="Storage, access, and retention">
         <p>
-          Access is limited according to member and administrator permissions. Records may be retained where needed for contribution history, audit, security,
+          Access is limited according to member and administrator permissions. Records may be retained where needed for payment history, audit, security,
           dispute resolution, and applicable organisational or legal requirements.
         </p>
       </PolicySection>

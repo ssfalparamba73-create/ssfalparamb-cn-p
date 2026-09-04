@@ -3,39 +3,34 @@ import { createBackendResponse } from "../../../../../../lib/backend/http/backen
 import { buildPublicActorContext } from "../../../../../../lib/backend/http/requestContext";
 import { fail } from "../../../../../../lib/backend/errors/resultHelpers";
 import { validationError, serverError } from "../../../../../../lib/backend/errors/createBackendError";
-import { getRazorpayService } from "../../../../../../lib/backend/composition/razorpayService.server";
+import { getCashfreeService } from "../../../../../../lib/backend/composition/cashfreeService.server";
 
-interface CreateOrderRequest {
-  paymentId: string;
-  amount?: number;
-  currency?: string;
+interface VerifyPaymentRequest {
+  cfOrderId: string;
 }
 
 export async function POST(request: NextRequest) {
   const actor = buildPublicActorContext(request);
   
   try {
-    const body: CreateOrderRequest = await request.json();
+    const body: VerifyPaymentRequest = await request.json();
 
-    // Validate required fields
-    if (!body.paymentId) {
-      const errResult = fail(validationError("Payment ID is required.", "paymentId"));
+    if (!body.cfOrderId) {
+      const errResult = fail(validationError("Cashfree Order ID is required.", "cfOrderId"));
       return createBackendResponse(errResult, actor.requestId);
     }
 
-    const razorpayService = getRazorpayService();
-    const result = await razorpayService.createOrder(
+    const cashfreeService = getCashfreeService();
+    const result = await cashfreeService.verifyPayment(
       {
-        paymentId: body.paymentId,
-        amount: body.amount,
-        currency: body.currency,
+        cfOrderId: body.cfOrderId
       },
       actor
     );
 
     return createBackendResponse(result, actor.requestId);
   } catch (err) {
-    console.error(`[${actor.requestId}] Unhandled Razorpay order route error:`, err instanceof Error ? err.message : err);
+    console.error(`[${actor.requestId}] Unhandled Cashfree verify route error:`, err instanceof Error ? err.message : err);
     const errResult = fail(serverError("An internal server error occurred."));
     return createBackendResponse(errResult, actor.requestId);
   }

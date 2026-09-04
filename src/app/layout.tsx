@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
-import { Inter, Noto_Sans_Malayalam, Quicksand } from "next/font/google";
+import { Inter, Noto_Sans_Malayalam, Quicksand, League_Spartan } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "sonner";
 import { ThemeProvider } from "@/components/theme/ThemeProvider";
@@ -20,9 +20,15 @@ const notoMalayalam = Noto_Sans_Malayalam({
 });
 
 const quicksand = Quicksand({
-  variable: "--font-quicksand",
-  subsets: ["latin"],
-  display: "swap",
+  variable: '--font-quicksand',
+  subsets: ['latin'],
+  display: 'swap',
+});
+
+const leagueSpartan = League_Spartan({
+  variable: '--font-league-spartan',
+  subsets: ['latin'],
+  display: 'swap',
 });
 
 const cooper = localFont({
@@ -35,8 +41,8 @@ export const metadata: Metadata = {
   metadataBase: new URL(process.env.APP_BASE_URL || "http://localhost:3000"),
   applicationName: "SSF Alparamba",
   title: {
-    default: "SSF Alparamba - Digital Varisankhya",
-    template: "%s | SSF Alparamba",
+    default: 'Centers of Excellence',
+    template: '%s | Centers of Excellence',
   },
   description: "Digital Varisankhya Collection Portal for SSF Alparamba Unit",
   manifest: "/manifest.webmanifest",
@@ -75,7 +81,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.variable} ${notoMalayalam.variable} ${cooper.variable} ${quicksand.variable} antialiased transition-colors duration-300`} suppressHydrationWarning>
+      <body className={`${inter.variable} ${notoMalayalam.variable} ${cooper.variable} ${quicksand.variable} ${leagueSpartan.variable} antialiased transition-colors duration-300`} suppressHydrationWarning>
         <ThemeProvider>
           <AppQueryProvider>
             {children}
@@ -86,3 +92,4 @@ export default function RootLayout({
     </html>
   );
 }
+

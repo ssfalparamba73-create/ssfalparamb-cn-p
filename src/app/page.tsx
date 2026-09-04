@@ -13,6 +13,7 @@ import dynamic from "next/dynamic"
 
 const InteractiveBenefits = dynamic(() => import("@/components/landing/InteractiveBenefits").then(m => m.InteractiveBenefits))
 import { Header } from "@/components/layout/Header"
+import { Footer } from "@/components/layout/Footer"
 import { TransparentLogo } from "@/components/TransparentLogo"
 import { InlineLoginForm } from "@/components/auth/InlineLoginForm"
 import { ProfessionalPortalSections } from "@/components/landing/ProfessionalPortalSections"
@@ -43,16 +44,15 @@ export default function LandingPage() {
               className="relative z-10 w-full max-w-xl space-y-6 md:space-y-8 p-2 sm:p-8 mt-2 md:mt-0 flex flex-col items-center md:items-start animate-in fade-in slide-in-from-bottom-8 duration-700 ease-out fill-mode-both"
             >
               
-              <h1 className="text-[2.5rem] leading-[1.1] font-black tracking-[-0.04em] text-slate-950 sm:text-6xl lg:text-[4.25rem]">
-                <span className="hidden md:inline">Member <br /></span>
-                <span className="bg-gradient-to-r from-blue-500 via-cyan-500 to-emerald-500 bg-clip-text text-transparent drop-shadow-sm">Contribution</span> <br className="hidden md:block" />
+              <h1 className="font-spartan text-[2.5rem] leading-[1.1] font-black tracking-[-0.04em] text-slate-950 sm:text-6xl lg:text-[4.25rem]">
+                <span className="bg-gradient-to-r from-blue-500 via-cyan-500 to-emerald-500 bg-clip-text text-transparent drop-shadow-sm">Membership Management</span> <br className="hidden md:block" />
                 Portal.
               </h1>
 
               <div className="h-1 w-16 md:w-20 rounded-full bg-gradient-to-r from-blue-500 via-cyan-400 to-emerald-400" />
 
               <p className="max-w-md text-base md:text-lg font-medium leading-relaxed text-slate-600">
-                The official SSF Alparamba Unit portal for member access, contribution information, records, and committee support.
+                The official SSF Alparamba Unit portal for registered members to manage monthly support, access payment records, and stay connected with the committee.
               </p>
 
               {/* Mobile CTA (Hidden on desktop) */}
@@ -66,7 +66,7 @@ export default function LandingPage() {
                 <Link href="/pay" className="block w-full max-w-sm group">
                   <Button size="lg" variant="outline" className="h-14 w-full rounded-full border-2 border-blue-200 bg-white/60 text-base font-bold text-blue-700 shadow-[0_8px_24px_rgba(37,99,235,0.10)] backdrop-blur-xl transition-all hover:bg-blue-50 hover:border-blue-300 flex items-center justify-center gap-2">
                     <CreditCard className="size-4" />
-                    Make Contribution
+                    Make Support Payment
                     <ArrowRight className="size-4 opacity-80 transition-transform group-hover:translate-x-1" />
                   </Button>
                 </Link>
@@ -83,8 +83,8 @@ export default function LandingPage() {
               <div id="login-card" className="relative rounded-[2.5rem] border border-white/60 bg-white/40 p-6 shadow-[0_32px_80px_rgba(37,99,235,0.12)] backdrop-blur-3xl sm:p-8">
                 
                 <div className="space-y-3 text-center">
-                  <h2 className="text-3xl font-black tracking-[-0.03em] text-slate-950">Join SSF <br/> Alparamba Unit</h2>
-                  <p className="mx-auto max-w-xs text-sm font-medium leading-6 text-slate-500">Enter your 10-digit mobile number to sign up or log in to your account.</p>
+                  <h2 className="text-3xl font-black tracking-[-0.03em] text-slate-950">Member Login</h2>
+                  <p className="mx-auto max-w-xs text-sm font-medium leading-6 text-slate-500">Enter your registered mobile number to access your member account and support details.</p>
                 </div>
 
                 <div className="mt-7">
@@ -112,21 +112,21 @@ export default function LandingPage() {
               <div className="mb-5 flex size-11 items-center justify-center rounded-2xl bg-blue-50 text-blue-700">
                 <Info className="size-5" aria-hidden="true" />
               </div>
-              <h2 className="text-2xl font-bold tracking-tight text-slate-950 md:text-3xl">Member Contribution</h2>
-              <p className="mt-3 text-sm font-medium leading-7 text-slate-600 md:text-base">
-                This portal is used exclusively for collecting member contributions for SSF Alparamba Unit. Contributions are associated with the respective member and contribution period. This portal does not sell physical products or commercial services.
+              <h2 className="text-2xl font-bold tracking-tight text-slate-950 md:text-3xl">Purpose of Collection</h2>
+              <p className="mt-4 text-base leading-7 text-slate-600">
+                This portal is used exclusively for collecting monthly membership support from registered SSF Alparamba Unit members. <strong>The funds collected are dedicated strictly to Skill Development and Education initiatives within the community.</strong> Payments are linked to the respective member profile. No physical products or commercial services are sold here.
               </p>
             </div>
             <div className="rounded-3xl border border-emerald-100 bg-emerald-50/55 p-6 shadow-[0_12px_35px_rgba(16,185,129,0.07)] md:p-8">
               <div className="mb-5 flex size-11 items-center justify-center rounded-2xl bg-white text-emerald-700 shadow-sm">
                 <Users className="size-5" aria-hidden="true" />
               </div>
-              <h2 className="text-2xl font-bold tracking-tight text-slate-950 md:text-3xl">Who Can Make a Contribution?</h2>
-              <p className="mt-3 text-sm font-medium leading-7 text-slate-600 md:text-base">
-                Registered members/contributors of SSF Alparamba Unit can use this portal to make their applicable contributions.
+              <h2 className="text-2xl font-bold tracking-tight text-slate-950 md:text-3xl">Who Can Pay?</h2>
+              <p className="mt-4 text-base leading-7 text-slate-600">
+                Only registered members of SSF Alparamba Unit whose mobile number has been enrolled by an authorised administrator can access this portal and provide their support.
               </p>
               <Link href="/contribution-details" className="mt-5 inline-flex items-center gap-2 text-sm font-bold text-blue-700 hover:text-blue-800 hover:underline">
-                View contribution details <ArrowRight className="size-4" aria-hidden="true" />
+                View support details <ArrowRight className="size-4" aria-hidden="true" />
               </Link>
             </div>
           </div>
@@ -141,10 +141,10 @@ export default function LandingPage() {
             >
               <div className="mx-auto inline-flex items-center gap-2 rounded-full border border-cyan-200/80 bg-white/65 px-4 py-2 text-xs font-extrabold uppercase tracking-[0.14em] text-blue-700 shadow-sm backdrop-blur-xl">
                 <Sparkles className="size-4" />
-                Member Benefits
+                Member Portal Features
               </div>
-              <h2 className="text-3xl font-black tracking-[-0.04em] text-slate-950 md:text-4xl">Why use the portal?</h2>
-              <p className="text-base font-medium text-slate-500 md:text-lg">Designed exclusively for our members to stay connected and updated.</p>
+              <h2 className="text-3xl font-black tracking-[-0.04em] text-slate-950 md:text-4xl">Everything you need as a member</h2>
+              <p className="text-base font-medium text-slate-500 md:text-lg">Designed exclusively for registered SSF Alparamba Unit members to manage support, view records, and access support.</p>
             </div>
 
             <InteractiveBenefits />
@@ -153,31 +153,8 @@ export default function LandingPage() {
         <ProfessionalPortalSections />
       </main>
 
-      {/* Footer */}
-      <footer className="border-t border-white/70 bg-white/70 py-10 backdrop-blur-2xl">
-        <div className="container flex flex-col items-center justify-between gap-6 md:flex-row">
-          <div className="flex items-center gap-2 font-semibold">
-            <TransparentLogo src="/logo/logo-transparent.svg" alt="SSF Logo" className="h-8 w-auto object-contain opacity-90 drop-shadow-sm" />
-            <span className="text-sm font-bold text-slate-500">
-              <span className="font-cooper font-normal text-slate-700">SSF</span> Alparamba Unit
-            </span>
-          </div>
-          <div className="flex flex-col items-center gap-3 md:items-end">
-            <nav aria-label="Policies" className="flex max-w-2xl flex-wrap justify-center gap-x-4 gap-y-2 text-xs font-semibold text-slate-500 md:justify-end">
-              <Link href="/pay" className="text-blue-600 hover:text-blue-700">Make Contribution</Link>
-              <Link href="/contribution-details" className="hover:text-blue-600">Contribution Details</Link>
-              <Link href="/shipping-policy" className="hover:text-blue-600">Shipping</Link>
-              <Link href="/cancellation-and-refund-policy" className="hover:text-blue-600">Cancellation & Refunds</Link>
-              <Link href="/privacy-policy" className="hover:text-blue-600">Privacy</Link>
-              <Link href="/terms-and-conditions" className="hover:text-blue-600">Terms</Link>
-              <Link href="/contact" className="hover:text-blue-600">Contact</Link>
-            </nav>
-            <p className="text-sm font-semibold text-slate-400">
-              © {new Date().getFullYear()} SSF Alparamba. All rights reserved.
-            </p>
-          </div>
-        </div>
-      </footer>
+      {/* Global Footer */}
+      <Footer />
     </div>
   )
 }

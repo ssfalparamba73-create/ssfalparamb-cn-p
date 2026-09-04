@@ -33,6 +33,23 @@ export default function ContactPage() {
           ))}
         </div>
       </PolicySection>
+
+      <PolicySection title="Unit Office & Correspondence">
+        <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-4 space-y-3">
+          <div>
+            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Email</p>
+            <a href="mailto:ssf.alparamba.73@gmail.com" className="font-medium text-blue-700 hover:underline">ssf.alparamba.73@gmail.com</a>
+          </div>
+          <div>
+            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Postal Address</p>
+            <p className="font-medium text-slate-900">
+              Students Centre Alparamba<br/>
+              Alparamba, Andhiyoour Kunnu PO<br/>
+              Malappuram, Kerala - 673637
+            </p>
+          </div>
+        </div>
+      </PolicySection>
       <AvailableContactsSection />
       <PolicySection title="Payment safety">
         <p>

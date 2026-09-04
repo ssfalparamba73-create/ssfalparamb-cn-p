@@ -8,12 +8,12 @@ import { Label } from "@/components/ui/label"
 import { ArrowLeft, CreditCard, Banknote, ShieldCheck, Smartphone, QrCode, ChevronDown, AlertCircle, Loader2 } from "lucide-react"
 import Link from "next/link"
 import { useSearchParams } from "next/navigation"
-import { useRazorpayCheckout } from "@/lib/hooks/useRazorpayCheckout"
+import { useCashfreeCheckout } from "@/lib/hooks/useCashfreeCheckout"
 import { requestBackend } from "@/lib/api/backendClient"
 import { getCurrentMemberProfile } from "@/lib/api/memberClient"
 import { getCashReceivers, type CashReceiver } from "@/lib/api/cashReceiverClient"
 
-const isUpiAvailable = process.env.NEXT_PUBLIC_RAZORPAY_UPI_ENABLED === "true";
+const isUpiAvailable = true;
 
 function PayNowContent() {
   const searchParams = useSearchParams();
@@ -30,7 +30,7 @@ function PayNowContent() {
   const [admins, setAdmins] = useState<CashReceiver[]>([]);
   const [isAdminDropdownOpen, setIsAdminDropdownOpen] = useState(false);
   const [memberQuery, setMemberQuery] = useState("");
-  const { initiateCheckout, isProcessing, error: razorpayError, clearError } = useRazorpayCheckout();
+  const { initiateCheckout, isProcessing, error: cashfreeError, clearError } = useCashfreeCheckout();
 
   useEffect(() => {
     if (source !== "member") return;
@@ -63,7 +63,7 @@ function PayNowContent() {
     }
   }, []);
 
-  // New states for Dues & Events
+  // New states for Support & Events
   const [activeTab, setActiveTab] = useState<"dues" | "event">("dues");
   const [selectedMonths, setSelectedMonths] = useState<string[]>(["current"]);
   const [duesTier, setDuesTier] = useState<50 | 100>(50);
@@ -91,51 +91,47 @@ function PayNowContent() {
   const selectedAdminName = admins.find((admin) => admin.id === selectedAdmin)?.name || "";
 
   const handleQrClick = () => {
-    void handleRazorpayCheckout();
+    void handleCashfreeCheckout();
   };
 
-  const handleRazorpayCheckout = async () => {
-    if (!isUpiAvailable) {
-      setCheckoutHint("UPI payments will be available after Razorpay account verification is completed.");
-      return;
-    }
-
+  const handleCashfreeCheckout = async () => {
     if (isButtonDisabled) {
-      setCheckoutHint("Enter your phone number or member ID above to continue with Razorpay.");
+      setCheckoutHint("Enter your phone number or member ID above to continue with Digital Payment.");
       return;
     }
     setCheckoutHint(null);
 
-    const intent = await requestBackend<{ paymentId: string; amount: number }>("/api/v1/payments/intent", {
-      method: "POST",
-      body: JSON.stringify({
-        memberQuery,
-        payerName: memberQuery,
-        payerPhone: memberQuery,
-        category: activeTab === "event" ? "special_event" : "monthly_dues",
-        method: "upi",
-        selectedMonthIds: activeTab === "dues" ? selectedMonths : undefined,
-        tier: activeTab === "dues" ? (duesTier === 50 ? "base" : "premium") : "custom",
-        customAmount: activeTab === "event" ? finalAmount : undefined,
-      }),
-    });
+    try {
+      const intent = await requestBackend<{ paymentId: string; amount: number }>("/api/v1/payments/intent", {
+        method: "POST",
+        body: JSON.stringify({
+          memberQuery,
+          payerName: memberQuery,
+          payerPhone: memberQuery,
+          category: activeTab === "event" ? "special_event" : "monthly_dues",
+          method: "upi",
+          selectedMonthIds: activeTab === "dues" ? selectedMonths : undefined,
+          tier: activeTab === "dues" ? (duesTier === 50 ? "base" : "premium") : "custom",
+          customAmount: activeTab === "event" ? finalAmount : undefined,
+        }),
+      });
 
-    await initiateCheckout({
-      paymentId: intent.paymentId,
-      amount: intent.amount,
-      memberName: memberQuery,
-      memberPhone: memberQuery,
-      onSuccess: (paymentId) => {
-        // Redirect to success page with payment details
-        window.location.href = `/success?method=upi&admin=${encodeURIComponent(selectedAdminName)}&phone=${encodeURIComponent(memberQuery)}&amount=${intent.amount}${activeTab === 'event' ? '&category=special_event' : ''}${source === 'member' ? '&source=member' : ''}&paymentId=${paymentId}`;
-      },
-      onError: (error) => {
-        console.error("Payment failed:", error);
-      },
-      onDismiss: () => {
-        console.log("Payment modal dismissed");
-      },
-    });
+      const orderRes = await requestBackend<{ paymentSessionId: string }>("/api/v1/payments/cashfree/order", {
+        method: "POST",
+        body: JSON.stringify({
+          paymentId: intent.paymentId,
+          amount: intent.amount,
+          customerPhone: memberQuery,
+        }),
+      });
+
+      await initiateCheckout({
+        paymentSessionId: orderRes.paymentSessionId,
+      });
+    } catch (err: any) {
+      console.error("Payment initialization failed:", err);
+      setCheckoutHint(err.message || "Failed to initialize payment gateway");
+    }
   };
 
   const handleCashHandover = async () => {
@@ -212,7 +208,7 @@ function PayNowContent() {
                 onClick={() => setActiveTab("dues")}
                 className={`flex-1 text-sm font-medium py-2.5 rounded-lg transition-all ${activeTab === "dues" ? "bg-white text-primary shadow-sm dark:bg-slate-700 dark:text-blue-400" : "text-muted-foreground hover:text-foreground dark:hover:text-slate-200"}`}
               >
-                Monthly Dues
+                Monthly Support
               </button>
               {isSpecialEventActive && (
                 <button
@@ -252,7 +248,7 @@ function PayNowContent() {
                   </div>
 
                   <div className="pt-3 border-t border-border/50 flex justify-between items-baseline mt-2 dark:border-slate-700">
-                    <span className="text-slate-500 font-medium">Total Dues</span>
+                    <span className="text-slate-500 font-medium">Total Support</span>
                     <span className="font-bold text-2xl text-slate-900 dark:text-slate-50">₹{finalAmount}</span>
                   </div>
                 </div>
@@ -327,7 +323,7 @@ function PayNowContent() {
 
               {!isUpiAvailable && (
                 <div className="mt-3 rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs leading-5 text-amber-800 dark:border-amber-800/60 dark:bg-amber-950/30 dark:text-amber-200">
-                  UPI payments are temporarily unavailable while Razorpay verifies the account. Please use Cash Handover for now.
+                  Digital payments are temporarily unavailable. Please use Cash Handover for now.
                 </div>
               )}
 
@@ -370,7 +366,7 @@ function PayNowContent() {
                   {selectedUpiApp === "other" && (
                     <div className="pt-2 animate-in fade-in slide-in-from-top-2 duration-200 space-y-4">
                       <div>
-                        <p className="text-xs text-muted-foreground">Razorpay will securely show the available UPI apps and QR option after you continue.</p>
+                        <p className="text-xs text-muted-foreground">Cashfree will securely show the available payment options after you continue.</p>
                       </div>
 
                       <div className="relative flex items-center py-1">
@@ -387,7 +383,7 @@ function PayNowContent() {
                         onClick={handleQrClick}
                       >
                         <QrCode className="h-5 w-5 text-primary" />
-                        <span>Open Razorpay UPI / QR</span>
+                        <span>Open Digital Payment</span>
                       </Button>
 
                       {isQrInlineOpen && (
@@ -456,20 +452,14 @@ function PayNowContent() {
                 </div>
               )}
             </div>
-            {razorpayError && (
-              <div className="p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm flex items-center gap-2">
-                <AlertCircle className="size-4 flex-shrink-0" />
-                <span>{razorpayError}</span>
-                <button
-                  type="button"
-                  onClick={clearError}
-                  className="ml-auto text-red-500 hover:text-red-700"
-                >
-                  ×
-                </button>
+            {cashfreeError && (
+              <div className="flex items-center gap-2 text-sm text-destructive bg-destructive/10 p-3 rounded-lg border border-destructive/20">
+                <AlertCircle className="size-4 shrink-0" />
+                <span>{cashfreeError}</span>
               </div>
             )}
-            {checkoutHint && !razorpayError && (
+            
+            {checkoutHint && !cashfreeError && (
               <div className="p-3 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 text-sm">
                 {checkoutHint}
               </div>
@@ -481,7 +471,7 @@ function PayNowContent() {
                 size="lg"
                 className="w-full text-lg h-14 rounded-xl"
                 disabled={isButtonDisabled || isProcessing}
-                onClick={handleRazorpayCheckout}
+                onClick={handleCashfreeCheckout}
               >
                 {isProcessing ? (
                   <>
@@ -549,7 +539,7 @@ function PayNowContent() {
               <div className="w-full bg-[#F6F8FC] border border-[#E5EAF3] rounded-xl p-3.5 space-y-2 mb-6 text-left dark:bg-slate-800 dark:border-slate-700">
                 <div className="flex justify-between text-xs">
                   <span className="text-slate-400 font-medium">Payment Purpose</span>
-                  <span className="text-slate-700 font-semibold">Monthly Dues Collection</span>
+                  <span className="text-slate-700 font-semibold">Monthly Support Collection</span>
                 </div>
                 <div className="flex justify-between text-xs">
                   <span className="text-slate-400 font-medium">Merchant Account</span>
