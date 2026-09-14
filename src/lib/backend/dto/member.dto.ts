@@ -143,5 +143,5 @@ export interface MemberListFilters {
   donorAvailable?: boolean;
   occupationStatus?: OccupationStatus | "not_specified";
   workLocation?: WorkLocation | "not_specified";
-  sort?: "newest" | "name-asc" | "name-desc" | "dues-desc";
+  sort?: "newest" | "name-asc" | "name-desc" | "subscriptions-desc";
 }

@@ -285,7 +285,7 @@ export function CashEntryForm() {
                   <SelectValue placeholder="Select Category" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="monthly_dues">Monthly Dues</SelectItem>
+                  <SelectItem value="monthly_dues">Educational Subscriptions</SelectItem>
                   <SelectItem value="special_event">Special Event</SelectItem>
                 </SelectContent>
               </Select>
@@ -389,3 +389,4 @@ export function CashEntryForm() {
     </Card>
   );
 }
+

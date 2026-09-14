@@ -66,7 +66,7 @@ export default function ContributionDetailsPage() {
 
       <PolicySection title="Digital Delivery Only">
         <p>
-          Educational subscriptions do not involve the sale or shipment of physical goods. Confirmation, account updates, learning resources, and available receipts are delivered digitally.
+          Educational Subscriptions do not involve the sale or shipment of physical goods. Confirmation, account updates, learning resources, and available receipts are delivered digitally.
         </p>
       </PolicySection>
 

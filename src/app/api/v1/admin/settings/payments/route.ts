@@ -58,7 +58,7 @@ export async function PATCH(request: NextRequest) {
       includeYear: Boolean(body.includeYear),
     };
     if (!DUES_FREQUENCIES.has(settings.duesFrequency)) {
-      return createBackendResponse(fail(validationError("Invalid dues frequency.", "duesFrequency")), context.requestId);
+      return createBackendResponse(fail(validationError("Invalid subscriptions frequency.", "duesFrequency")), context.requestId);
     }
     if (!settings.upiId || !settings.merchantName || !settings.receiptPrefix || [settings.baseTier, settings.premiumTier, settings.customMinimum].some((value) => !Number.isFinite(value) || value <= 0)) {
       return createBackendResponse(fail(validationError("Please provide valid payment settings.")), context.requestId);
@@ -71,3 +71,4 @@ export async function PATCH(request: NextRequest) {
     return createBackendResponse(fail(serverError("Unable to save payment settings.")), context.requestId);
   }
 }
+

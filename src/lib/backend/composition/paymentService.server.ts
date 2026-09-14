@@ -7,8 +7,9 @@ export function getPaymentService() {
   return createPaymentService({
     paymentRepository: new SupabasePaymentRepository(),
     // Keep this value aligned with the public payment form until the admin
-    // dues settings are persisted in the backend.
+    // subscriptions settings are persisted in the backend.
     getSpecialEventMinimumAmount: async () => 30,
     getCashEntryMinimumAmount: async () => 1,
   });
 }
+

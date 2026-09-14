@@ -13,7 +13,7 @@ export default function ShippingPolicyPage() {
     <PublicPolicyShell
       eyebrow="Digital Service Policy"
       title="Shipping Policy"
-      description="The portal manages membership dues and digital records; it does not sell or ship physical products."
+      description="The portal manages membership subscriptions and digital records; it does not sell or ship physical products."
     >
       <PolicySection title="No physical goods are shipped">
         <p>
@@ -43,3 +43,4 @@ export default function ShippingPolicyPage() {
     </PublicPolicyShell>
   );
 }
+

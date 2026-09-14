@@ -17,7 +17,7 @@ export default function TermsAndConditionsPage() {
     >
       <PolicySection title="Purpose and permitted use">
         <p>
-          The portal is provided for authorised member access, dues payment records, approved unit administration, receipts, and related support.
+          The portal is provided for authorised member access, subscriptions payment records, approved unit administration, receipts, and related support.
           It must not be used to access another person&apos;s records or disrupt the service.
         </p>
       </PolicySection>
@@ -36,9 +36,9 @@ export default function TermsAndConditionsPage() {
         ]} />
       </PolicySection>
 
-      <PolicySection title="Dues and payment records">
+      <PolicySection title="subscriptions and payment records">
         <p>
-          Review the dues period and amount before continuing. A browser message or checkout response alone does not create a final confirmed record.
+          Review the subscriptions period and amount before continuing. A browser message or checkout response alone does not create a final confirmed record.
           Confirmation occurs only after server-side verification and recording.
         </p>
       </PolicySection>
@@ -59,3 +59,4 @@ export default function TermsAndConditionsPage() {
     </PublicPolicyShell>
   );
 }
+

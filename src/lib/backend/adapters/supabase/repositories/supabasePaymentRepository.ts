@@ -104,7 +104,7 @@ export class SupabasePaymentRepository implements PaymentRepository {
         monthlyAmount = input.tier === "base" ? baseAmount : premiumAmount;
       } else {
         if (!memberId) {
-          throw new Error("A valid member is required to resolve custom monthly dues amount.");
+          throw new Error("A valid member is required to resolve custom Educational Subscriptions amount.");
         }
         const { data, error } = await supabase.rpc("resolve_payment_amount", {
           p_member_id: memberId,
@@ -113,7 +113,7 @@ export class SupabasePaymentRepository implements PaymentRepository {
         if (!error && data !== null) {
           monthlyAmount = Number(data);
         } else {
-          throw new Error("Failed to resolve monthly dues amount.");
+          throw new Error("Failed to resolve Educational Subscriptions amount.");
         }
       }
       
@@ -390,3 +390,4 @@ export class SupabasePaymentRepository implements PaymentRepository {
     return mapRowToPaymentDTO(data);
   }
 }
+

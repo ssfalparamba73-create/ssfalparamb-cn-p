@@ -15,7 +15,7 @@ export default function PaymentsPage() {
         <div>
           <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50">Payments Ledger</h2>
           <p className="text-slate-500 dark:text-slate-400">
-            A unified view of all money movement across dues, events, and cash.
+            A unified view of all money movement across subscriptions, events, and cash.
           </p>
         </div>
         
@@ -28,3 +28,4 @@ export default function PaymentsPage() {
     </div>
   );
 }
+

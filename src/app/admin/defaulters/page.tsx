@@ -5,7 +5,7 @@ import { DefaultersExportButton } from "@/components/admin/exports/DefaultersExp
 
 export const metadata = {
   title: "Pending Payments | SSF Alparamba Admin",
-  description: "View and follow up with members who have pending dues.",
+  description: "View and follow up with members who have pending subscriptions.",
 };
 
 export default function DefaultersPage() {
@@ -15,7 +15,7 @@ export default function DefaultersPage() {
         <div>
           <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50">Pending Payments</h2>
           <p className="text-slate-500 dark:text-slate-400">
-            A polite overview of members who currently have pending dues, with options to send gentle reminders.
+            A polite overview of members who currently have pending subscriptions, with options to send gentle reminders.
           </p>
         </div>
         <DefaultersExportButton />
@@ -27,3 +27,4 @@ export default function DefaultersPage() {
     </div>
   );
 }
+

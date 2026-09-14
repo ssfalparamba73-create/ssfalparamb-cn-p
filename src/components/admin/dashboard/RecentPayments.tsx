@@ -56,7 +56,7 @@ export function RecentPayments({ payments }: RecentPaymentsProps) {
                         : "bg-blue-50 text-blue-700 border-blue-200"
                     }
                   >
-                    {payment.category === "special_event" ? "Event" : "Dues"}
+                    {payment.category === "special_event" ? "Event" : "subscriptions"}
                   </Badge>
                   <Badge
                     variant="outline"
@@ -77,3 +77,4 @@ export function RecentPayments({ payments }: RecentPaymentsProps) {
     </Card>
   );
 }
+

@@ -56,7 +56,7 @@ export function DefaultersManager() {
   const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
-    getAdminMembers({ page: 1, pageSize: 100, paymentStatus: "arrears", sort: "dues-desc" })
+    getAdminMembers({ page: 1, pageSize: 100, paymentStatus: "arrears", sort: "subscriptions-desc" })
       .then((result) => setMembers(result.items.map(toDefaulterRow)))
       .catch((error) => setLoadError(error instanceof Error ? error.message : "Unable to load pending payments."))
       .finally(() => setIsLoading(false));
@@ -148,7 +148,7 @@ export function DefaultersManager() {
         <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
         <div className="text-sm">
           <p className="font-semibold mb-1">Gentle Reminders</p>
-          <p className="opacity-90">Please ensure communication is polite and respectful when following up on pending dues.</p>
+          <p className="opacity-90">Please ensure communication is polite and respectful when following up on pending subscriptions.</p>
         </div>
       </div>
 
@@ -299,3 +299,4 @@ export function DefaultersManager() {
     </div>
   );
 }
+

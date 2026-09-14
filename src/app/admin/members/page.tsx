@@ -112,7 +112,7 @@ export default function AdminMembersPage() {
       monthlyTier: tierFilter === "all" ? undefined : tierFilter as MonthlyTier,
       paymentStatus: arrearsFilter === "all" ? undefined : arrearsFilter as "clear" | "arrears",
       workLocation: workLocationFilter === "all" ? undefined : workLocationFilter as "india" | "abroad" | "not_specified",
-      sort: sortOption as "newest" | "name-asc" | "name-desc" | "dues-desc",
+      sort: sortOption as "newest" | "name-asc" | "name-desc" | "subscriptions-desc",
     };
     const queryKey = `admin:members:${JSON.stringify(query)}`;
     const cached = getQuerySnapshot<Awaited<ReturnType<typeof getAdminMembers>>>(queryKey).data;
@@ -182,7 +182,7 @@ export default function AdminMembersPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold text-slate-900 tracking-tight dark:text-slate-50">Members</h2>
-          <p className="text-slate-500 mt-1 dark:text-slate-400">Manage directory, profiles, and dues.</p>
+          <p className="text-slate-500 mt-1 dark:text-slate-400">Manage directory, profiles, and subscriptions.</p>
         </div>
 
         <div className="flex items-center gap-3">
@@ -233,7 +233,7 @@ export default function AdminMembersPage() {
                 <th scope="col" className="px-3 py-3.5 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Contact</th>
                 <th scope="col" className="px-3 py-3.5 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Work / Study</th>
                 <th scope="col" className="px-3 py-3.5 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Blood</th>
-                <th scope="col" className="px-3 py-3.5 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Dues</th>
+                <th scope="col" className="px-3 py-3.5 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">subscriptions</th>
                 <th scope="col" className="px-3 py-3.5 text-left text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Status</th>
                 <th scope="col" className="relative py-3.5 pl-3 pr-4 sm:pr-6"><span className="sr-only">Actions</span></th>
               </tr>
@@ -267,3 +267,4 @@ export default function AdminMembersPage() {
     </div>
   );
 }
+

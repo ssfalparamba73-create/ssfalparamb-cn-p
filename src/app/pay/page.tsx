@@ -64,7 +64,7 @@ function PayNowContent() {
   }, []);
 
   // New states for Support & Events
-  const [activeTab, setActiveTab] = useState<"dues" | "event">("dues");
+  const [activeTab, setActiveTab] = useState<"subscriptions" | "event">("subscriptions");
   const [selectedMonths, setSelectedMonths] = useState<string[]>(["current"]);
   const [duesTier, setDuesTier] = useState<50 | 100>(50);
   const [customAmount, setCustomAmount] = useState<string>("");
@@ -75,7 +75,7 @@ function PayNowContent() {
   const currentContributionPeriod = new Intl.DateTimeFormat("en-IN", { month: "long", year: "numeric" }).format(new Date());
 
   let finalAmount = 0;
-  if (activeTab === "dues") {
+  if (activeTab === "subscriptions") {
     finalAmount = selectedMonths.length * duesTier;
   } else {
     finalAmount = parseInt(customAmount) || 0;
@@ -85,7 +85,7 @@ function PayNowContent() {
     !memberQuery.trim() ||
     (paymentMethod === "upi" && !isUpiAvailable) ||
     (paymentMethod === "cash" && !selectedAdmin) ||
-    (activeTab === "dues" && selectedMonths.length === 0) ||
+    (activeTab === "subscriptions" && selectedMonths.length === 0) ||
     (activeTab === "event" && finalAmount < 30);
 
   const selectedAdminName = admins.find((admin) => admin.id === selectedAdmin)?.name || "";
@@ -110,8 +110,8 @@ function PayNowContent() {
           payerPhone: memberQuery,
           category: activeTab === "event" ? "special_event" : "monthly_dues",
           method: "upi",
-          selectedMonthIds: activeTab === "dues" ? selectedMonths : undefined,
-          tier: activeTab === "dues" ? (duesTier === 50 ? "base" : "premium") : "custom",
+          selectedMonthIds: activeTab === "subscriptions" ? selectedMonths : undefined,
+          tier: activeTab === "subscriptions" ? (duesTier === 50 ? "base" : "premium") : "custom",
           customAmount: activeTab === "event" ? finalAmount : undefined,
         }),
       });
@@ -150,8 +150,8 @@ function PayNowContent() {
           payerPhone: memberQuery,
           category: activeTab === "event" ? "special_event" : "monthly_dues",
           method: "cash_handover",
-          selectedMonthIds: activeTab === "dues" ? selectedMonths : undefined,
-          tier: activeTab === "dues" ? (duesTier === 50 ? "base" : "premium") : "custom",
+          selectedMonthIds: activeTab === "subscriptions" ? selectedMonths : undefined,
+          tier: activeTab === "subscriptions" ? (duesTier === 50 ? "base" : "premium") : "custom",
           customAmount: activeTab === "event" ? finalAmount : undefined,
           receivedByAdminId: selectedAdmin,
         }),
@@ -183,7 +183,7 @@ function PayNowContent() {
         <Card className="shadow-lg border-primary/10">
           <CardHeader>
                   <CardTitle>Payment Details</CardTitle>
-                  <CardDescription>Confirm the member and dues information before continuing.</CardDescription>
+                  <CardDescription>Confirm the member and subscriptions information before continuing.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-5">
             <div className="space-y-2">
@@ -205,8 +205,8 @@ function PayNowContent() {
             <div className="bg-secondary/50 p-1 rounded-xl flex items-center mb-2 dark:bg-slate-800">
               <button
                 type="button"
-                onClick={() => setActiveTab("dues")}
-                className={`flex-1 text-sm font-medium py-2.5 rounded-lg transition-all ${activeTab === "dues" ? "bg-white text-primary shadow-sm dark:bg-slate-700 dark:text-blue-400" : "text-muted-foreground hover:text-foreground dark:hover:text-slate-200"}`}
+                onClick={() => setActiveTab("subscriptions")}
+                className={`flex-1 text-sm font-medium py-2.5 rounded-lg transition-all ${activeTab === "subscriptions" ? "bg-white text-primary shadow-sm dark:bg-slate-700 dark:text-blue-400" : "text-muted-foreground hover:text-foreground dark:hover:text-slate-200"}`}
               >
                 Monthly Support
               </button>
@@ -223,12 +223,12 @@ function PayNowContent() {
 
             {/* Tab Contents */}
             <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-              {activeTab === "dues" ? (
+              {activeTab === "subscriptions" ? (
                 <div className="rounded-xl border bg-accent/30 p-4 space-y-4 dark:bg-slate-800/50 dark:border-slate-700">
                   <div className="space-y-3">
-                    <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Dues Period</Label>
+                    <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">subscriptions Period</Label>
                     <div className="rounded-lg border border-primary/30 bg-white p-3 text-sm font-medium text-slate-900 dark:border-blue-500/50 dark:bg-slate-800 dark:text-slate-50">
-                      {currentContributionPeriod} dues
+                      {currentContributionPeriod} subscriptions
                       <p className="mt-1 text-xs font-normal text-muted-foreground">The final amount is resolved from the member record on the server.</p>
                     </div>
                   </div>
@@ -291,8 +291,8 @@ function PayNowContent() {
               <p className="mb-3 text-xs font-bold uppercase tracking-wider text-blue-700 dark:text-blue-300">Payment Summary</p>
               <dl className="space-y-2 text-sm">
                 <div className="flex items-center justify-between gap-4"><dt className="text-muted-foreground">Member</dt><dd className="max-w-[62%] truncate text-right font-semibold text-slate-900 dark:text-slate-50">{memberQuery.trim() || "Enter member details"}</dd></div>
-                <div className="flex items-center justify-between gap-4"><dt className="text-muted-foreground">Dues Period</dt><dd className="text-right font-semibold text-slate-900 dark:text-slate-50">{activeTab === "dues" ? currentContributionPeriod : "Approved event"}</dd></div>
-                <div className="flex items-center justify-between gap-4"><dt className="text-muted-foreground">Payment Purpose</dt><dd className="text-right font-semibold text-slate-900 dark:text-slate-50">Membership dues</dd></div>
+                <div className="flex items-center justify-between gap-4"><dt className="text-muted-foreground">subscriptions Period</dt><dd className="text-right font-semibold text-slate-900 dark:text-slate-50">{activeTab === "subscriptions" ? currentContributionPeriod : "Approved event"}</dd></div>
+                <div className="flex items-center justify-between gap-4"><dt className="text-muted-foreground">Payment Purpose</dt><dd className="text-right font-semibold text-slate-900 dark:text-slate-50">Membership subscriptions</dd></div>
                 <div className="flex items-center justify-between gap-4 border-t border-blue-100 pt-2 dark:border-blue-500/20"><dt className="font-semibold text-slate-700 dark:text-slate-300">Amount</dt><dd className="text-right text-lg font-bold text-slate-950 dark:text-slate-50">₹{finalAmount || 0}</dd></div>
               </dl>
             </div>
@@ -578,3 +578,4 @@ export default function PayNowPage() {
     </Suspense>
   )
 }
+

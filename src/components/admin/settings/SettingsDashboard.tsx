@@ -45,7 +45,7 @@ const SETTINGS_PAGES = [
   },
   {
     title: "Payment Configuration",
-    description: "Configure UPI, QR codes, monthly dues minimums, and receipt settings.",
+    description: "Configure UPI, QR codes, Educational Subscriptions minimums, and receipt settings.",
     icon: <Banknote className="w-6 h-6" />,
     href: "/admin/settings/payments",
     color: "text-green-600 bg-green-50 dark:text-green-400 dark:bg-green-900/20",
@@ -97,3 +97,4 @@ export function SettingsDashboard() {
     </div>
   );
 }
+

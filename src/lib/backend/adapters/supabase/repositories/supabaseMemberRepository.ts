@@ -137,7 +137,7 @@ export class SupabaseMemberRepository implements MemberRepository {
     const sort = filters.sort ?? "newest";
     const sortColumn = sort === "name-asc" || sort === "name-desc"
       ? "name"
-      : sort === "dues-desc"
+      : sort === "subscriptions-desc"
         ? "dues_pending"
         : "created_at";
     const ascending = sort === "name-asc";
@@ -347,3 +347,4 @@ export class SupabaseMemberRepository implements MemberRepository {
     return mapRowToMemberDTO(member);
   }
 }
+

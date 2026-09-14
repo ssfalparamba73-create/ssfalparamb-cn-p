@@ -193,7 +193,7 @@ export default function AdminDashboardPage() {
 
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
              <StatsCard
-              label="Monthly Dues"
+              label="Educational Subscriptions"
               metric={`₹${stats.monthlyDues.toLocaleString("en-IN")}`}
               icon={CreditCard}
             />
@@ -242,3 +242,4 @@ export default function AdminDashboardPage() {
     </div>
   );
 }
+

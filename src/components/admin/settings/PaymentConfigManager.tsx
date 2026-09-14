@@ -65,10 +65,10 @@ export function PaymentConfigManager() {
       </Card>
 
       <Card className="border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
-        <CardHeader><CardTitle>Dues Settings</CardTitle><CardDescription>Configure the contribution frequency and amounts used to resolve member dues.</CardDescription></CardHeader>
+        <CardHeader><CardTitle>subscriptions Settings</CardTitle><CardDescription>Configure the contribution frequency and amounts used to resolve member subscriptions.</CardDescription></CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="space-y-2"><Label>Dues Frequency</Label><Select value={settings.duesFrequency} onValueChange={(value) => update("duesFrequency", value as DuesFrequency)} disabled={isLoading || isSaving}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="monthly">Monthly (1 month)</SelectItem><SelectItem value="bimonthly">Bi-Monthly (2 months)</SelectItem><SelectItem value="quarterly">Quarterly (3 months)</SelectItem></SelectContent></Select></div>
+            <div className="space-y-2"><Label>subscriptions Frequency</Label><Select value={settings.duesFrequency} onValueChange={(value) => update("duesFrequency", value as DuesFrequency)} disabled={isLoading || isSaving}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="monthly">Monthly (1 month)</SelectItem><SelectItem value="bimonthly">Bi-Monthly (2 months)</SelectItem><SelectItem value="quarterly">Quarterly (3 months)</SelectItem></SelectContent></Select></div>
             <div className="space-y-2"><Label>Base Tier (₹)</Label><Input type="number" value={settings.baseTier} onChange={(e) => update("baseTier", Number(e.target.value))} disabled={isLoading || isSaving} /></div>
             <div className="space-y-2"><Label>Premium Tier (₹)</Label><Input type="number" value={settings.premiumTier} onChange={(e) => update("premiumTier", Number(e.target.value))} disabled={isLoading || isSaving} /></div>
             <div className="space-y-2"><Label>Custom Minimum (₹)</Label><Input type="number" value={settings.customMinimum} onChange={(e) => update("customMinimum", Number(e.target.value))} disabled={isLoading || isSaving} /></div>
@@ -89,3 +89,4 @@ export function PaymentConfigManager() {
     </div>
   );
 }
+

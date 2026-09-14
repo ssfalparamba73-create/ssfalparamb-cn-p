@@ -5,7 +5,7 @@ import { PolicyList, PolicySection, PublicPolicyShell } from "@/components/publi
 
 export const metadata: Metadata = {
   title: "Cancellation and Refund Policy | SSF Alparamba",
-  description: "How cancellation and refund enquiries are handled for portal dues and membership payments.",
+  description: "How cancellation and refund enquiries are handled for portal subscriptions and membership payments.",
 };
 
 export default function CancellationAndRefundPolicyPage() {
@@ -17,13 +17,13 @@ export default function CancellationAndRefundPolicyPage() {
     >
       <PolicySection title="General Policy (Non-Refundable)">
         <p>
-          Monthly membership dues and subscriptions are generally <strong>non-refundable</strong> once the payment is confirmed, as they are collected for a specific active membership period. 
+          Monthly membership subscriptions and subscriptions are generally <strong>non-refundable</strong> once the payment is confirmed, as they are collected for a specific active membership period. 
         </p>
       </PolicySection>
 
       <PolicySection title="Before payment completion">
         <p>
-          A checkout may be closed before payment is completed. No dues payment is treated as paid unless the payment provider and portal successfully verify it.
+          A checkout may be closed before payment is completed. No subscriptions payment is treated as paid unless the payment provider and portal successfully verify it.
         </p>
       </PolicySection>
 
@@ -36,7 +36,7 @@ export default function CancellationAndRefundPolicyPage() {
 
       <PolicySection title="Situations that may be reviewed">
         <PolicyList items={[
-          "A duplicate dues payment for the same member and period.",
+          "A duplicate subscriptions payment for the same member and period.",
           "An incorrect amount caused by a verified technical or recording error.",
           "A successful debit that was not correctly associated with the intended member's profile.",
           "Another exceptional case approved by the authorised unit committee and permitted by applicable rules.",
@@ -58,3 +58,4 @@ export default function CancellationAndRefundPolicyPage() {
     </PublicPolicyShell>
   );
 }
+

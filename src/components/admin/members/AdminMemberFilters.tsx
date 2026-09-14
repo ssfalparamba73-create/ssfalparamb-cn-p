@@ -70,7 +70,7 @@ export function AdminMemberFilters({
               <SelectItem value="newest">Newest First</SelectItem>
               <SelectItem value="name-asc">Name (A-Z)</SelectItem>
               <SelectItem value="name-desc">Name (Z-A)</SelectItem>
-              <SelectItem value="dues-desc">Highest Dues</SelectItem>
+              <SelectItem value="subscriptions-desc">Highest subscriptions</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -169,8 +169,8 @@ export function AdminMemberFilters({
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Status</SelectItem>
-                    <SelectItem value="arrears">Pending Dues (Arrears)</SelectItem>
-                    <SelectItem value="clear">Clear (No Dues)</SelectItem>
+                    <SelectItem value="arrears">Pending subscriptions (Arrears)</SelectItem>
+                    <SelectItem value="clear">Clear (No subscriptions)</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -198,3 +198,4 @@ export function AdminMemberFilters({
     </div>
   );
 }
+

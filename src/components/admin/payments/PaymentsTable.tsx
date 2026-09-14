@@ -116,7 +116,7 @@ export function PaymentsTable() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Categories</SelectItem>
-                <SelectItem value="monthly_dues">Monthly Dues</SelectItem>
+                <SelectItem value="monthly_dues">Educational Subscriptions</SelectItem>
                 <SelectItem value="special_event">Special Event</SelectItem>
               </SelectContent>
             </Select>
@@ -180,7 +180,7 @@ export function PaymentsTable() {
                     <div className="flex items-center gap-2">
                       {getCategoryIcon(payment.category)}
                       <span className="text-slate-700 dark:text-slate-300">
-                        {payment.category === "monthly_dues" ? "Monthly Dues" : payment.eventName}
+                        {payment.category === "monthly_dues" ? "Educational Subscriptions" : payment.eventName}
                       </span>
                     </div>
                   </td>
@@ -237,7 +237,7 @@ export function PaymentsTable() {
               <div className="flex items-center gap-1.5 text-slate-600 dark:text-slate-400">
                 {getCategoryIcon(payment.category)}
                 <span className="truncate max-w-[120px]">
-                  {payment.category === "monthly_dues" ? "Monthly Dues" : payment.eventName}
+                  {payment.category === "monthly_dues" ? "Educational Subscriptions" : payment.eventName}
                 </span>
               </div>
               <span className="text-xs text-slate-500">{formatMethod(payment.method)}</span>
@@ -264,3 +264,4 @@ export function PaymentsTable() {
     </div>
   );
 }
+

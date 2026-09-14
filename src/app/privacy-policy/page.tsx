@@ -19,7 +19,7 @@ export default function PrivacyPolicyPage() {
         <PolicyList items={[
           "Member identity and contact details such as name, member code, and phone number.",
           "Profile information voluntarily provided for unit records, including family or blood-donor details where applicable.",
-          "Membership dues, payment-status, receipt, and transaction-reference information.",
+          "Membership subscriptions, payment-status, receipt, and transaction-reference information.",
           "Authentication, session, device, request, and audit information needed to secure the portal.",
           "Support messages and contact details submitted when assistance is requested.",
         ]} />
@@ -28,7 +28,7 @@ export default function PrivacyPolicyPage() {
       <PolicySection title="How information is used">
         <PolicyList items={[
           "To authenticate members and authorised administrators.",
-          "To maintain member records and display relevant dues information.",
+          "To maintain member records and display relevant subscriptions information.",
           "To verify, record, reconcile, and report payments.",
           "To provide receipts, support, security monitoring, and an accountable audit history.",
           "To prevent duplicate, unauthorised, or fraudulent activity.",
@@ -60,3 +60,4 @@ export default function PrivacyPolicyPage() {
     </PublicPolicyShell>
   );
 }
+

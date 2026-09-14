@@ -52,7 +52,7 @@ export default function PaymentDetailPage() {
     amount: actualPayment.amount,
     memberName: actualPayment.payerName || "Guest payer",
     memberId: actualPayment.memberId || "Guest",
-    category: actualPayment.category === "monthly_dues" ? "Monthly Dues" : "Special Event",
+    category: actualPayment.category === "monthly_dues" ? "educational subscriptions" : "Special Event",
     date: new Date(actualPayment.paidAt || actualPayment.recordedAt).toLocaleDateString("en-GB", { day: '2-digit', month: 'short', year: 'numeric' }),
     method: actualPayment.method.toUpperCase().replaceAll("_", " "),
     recordedBy: actualPayment.collectedByAdminName || actualPayment.recordedByAdminId || "System",

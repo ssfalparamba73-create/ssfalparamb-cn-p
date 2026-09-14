@@ -19,7 +19,7 @@ export function DueStatusCard({ amountDue, paymentStatus }: DueStatusCardProps) 
       <div className="flex items-start justify-between">
         <div>
           <h2 className="text-sm font-semibold text-slate-500 mb-1 dark:text-slate-400">
-            {isClear || isPending || isFailed ? "Status" : "Outstanding Dues"}
+            {isClear || isPending || isFailed ? "Status" : "Outstanding subscriptions"}
           </h2>
           <div className="flex items-end gap-2">
             <span className={`text-3xl font-bold ${isClear ? 'text-green-600 dark:text-green-300' : 'text-slate-900 dark:text-slate-50'}`}>
@@ -47,10 +47,11 @@ export function DueStatusCard({ amountDue, paymentStatus }: DueStatusCardProps) 
             </Button>
           </Link>
           <p className="text-center text-xs text-slate-400 mt-3 font-medium dark:text-slate-500">
-            {isClear ? "Make a payment or pay upcoming dues" : isPending ? "Your payment is being verified" : isFailed ? "Retry the payment or contact support" : "Complete your payment"}
+            {isClear ? "Make a payment or pay upcoming subscriptions" : isPending ? "Your payment is being verified" : isFailed ? "Retry the payment or contact support" : "Complete your payment"}
           </p>
         </div>
       )}
     </div>
   );
 }
+

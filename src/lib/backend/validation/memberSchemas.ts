@@ -22,7 +22,7 @@ const bloodGroups = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"] as const;
 const paymentStatuses = ["clear", "arrears", "long_overdue"] as const;
 const occupationStatuses = ["student", "employed", "self_employed", "not_employed", "other"] as const;
 const workLocations = ["india", "abroad"] as const;
-const memberSortOptions = ["newest", "name-asc", "name-desc", "dues-desc"] as const;
+const memberSortOptions = ["newest", "name-asc", "name-desc", "subscriptions-desc"] as const;
 const MAX_FAMILY_MEMBERS = 25;
 
 export function validateCreateMemberInput(input: Partial<CreateMemberInput>): BackendResult<CreateMemberInput> {
@@ -486,3 +486,4 @@ function normalizeOptionalString(input: string | undefined): string | undefined 
 function hasOwn(value: object, key: PropertyKey): boolean {
   return Object.prototype.hasOwnProperty.call(value, key);
 }
+

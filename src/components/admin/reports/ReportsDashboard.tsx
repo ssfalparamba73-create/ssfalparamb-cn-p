@@ -74,7 +74,7 @@ export function ReportsDashboard() {
     {isLoading ? <Card className="p-8 text-center text-sm text-slate-500">Loading live payment report…</Card> : <>
       {(reportType === "monthly" || reportType === "method") && <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Stat icon={<Banknote />} label="Total Collected" value={money(total)} />
-        <Stat icon={<Calendar />} label="Monthly Dues" value={money(duesTotal)} />
+        <Stat icon={<Calendar />} label="Educational Subscriptions" value={money(duesTotal)} />
         <Stat icon={<TrendingUp />} label="Special Events" value={money(eventsTotal)} />
         <Stat icon={<Users />} label="Paid Members" value={String(paidMembers)} />
       </div>}
@@ -88,3 +88,4 @@ export function ReportsDashboard() {
 function Stat({ icon, label, value }: { icon: ReactNode; label: string; value: string }) {
   return <Card className="p-5"><div className="mb-2 flex items-center gap-3"><div className="rounded-lg bg-blue-50 p-2 text-blue-600">{icon}</div><h3 className="text-sm font-medium text-slate-500">{label}</h3></div><div className="font-mono text-2xl font-bold text-slate-900">{value}</div></Card>;
 }
+
