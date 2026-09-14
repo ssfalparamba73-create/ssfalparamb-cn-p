@@ -80,84 +80,12 @@ export function Header() {
     >
       <div className="container flex items-center justify-between px-4 md:px-8">
         
-        {/* MOBILE: Menu Toggle (Left) */}
-        <div className="md:hidden flex items-center relative" ref={mobileMenuRef}>
-          <button
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="flex h-10 w-10 items-center justify-center rounded-full border border-white/60 bg-white/40 shadow-sm backdrop-blur-md hover:bg-white/60 transition-colors"
-          >
-            {isMobileMenuOpen ? <X className="h-5 w-5 text-slate-700" /> : <Menu className="h-5 w-5 text-slate-700" />}
-          </button>
-          
-          <AnimatePresence>
-            {isMobileMenuOpen && (
-              <motion.div
-                initial={{ clipPath: "circle(0px at 20px 20px)", opacity: 0 }}
-                animate={{ clipPath: "circle(800px at 20px 20px)", opacity: 1 }}
-                exit={{ clipPath: "circle(0px at 20px 20px)", opacity: 0 }}
-                transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                className="absolute left-0 top-12 mt-3 w-64 rounded-2xl border border-white/60 bg-white/90 p-4 shadow-[0_32px_80px_rgba(37,99,235,0.12)] backdrop-blur-3xl flex flex-col gap-2"
-              >
-                <div className="px-2 pb-3 mb-2 border-b border-slate-200">
-                  <p className="text-[11px] uppercase tracking-wider text-slate-400 font-bold mb-1">{session ? "Welcome back," : "Not signed in"}</p>
-                  <p className="text-slate-800 font-bold text-base truncate">{session?.actorName ?? "Guest"}</p>
-                </div>
-                
-                <Link href="/about" onClick={() => setIsMobileMenuOpen(false)} className="px-3 py-2 text-sm font-bold text-slate-700 hover:text-blue-600 hover:bg-blue-50/50 rounded-xl transition-colors">
-                  About
-                </Link>
-                <Link href="/services" onClick={() => setIsMobileMenuOpen(false)} className="px-3 py-2 text-sm font-bold text-slate-700 hover:text-blue-600 hover:bg-blue-50/50 rounded-xl transition-colors">
-                  Services
-                </Link>
-                <Link href="/contribution-details" onClick={() => setIsMobileMenuOpen(false)} className="px-3 py-2 text-sm font-bold text-slate-700 hover:text-blue-600 hover:bg-blue-50/50 rounded-xl transition-colors">
-                  Pricing
-                </Link>
-                <Link href="/contact" onClick={() => setIsMobileMenuOpen(false)} className="px-3 py-2 text-sm font-bold text-slate-700 hover:text-blue-600 hover:bg-blue-50/50 rounded-xl transition-colors">
-                  Contact
-                </Link>
-
-                <div className="h-px bg-slate-200 my-2" />
-
-                {session ? (
-                  <>
-                    <button
-                      onClick={() => {
-                        setIsMobileMenuOpen(false);
-                        router.push(session.actorType === "admin" ? "/admin/settings" : "/member/profile");
-                      }}
-                      className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-100 transition-colors"
-                    >
-                      <Settings className="h-4 w-4" /> Settings
-                    </button>
-                    <button
-                      onClick={handleLogout}
-                      className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-red-600 hover:bg-red-50 transition-colors"
-                    >
-                      <LogOut className="h-4 w-4" /> Logout
-                    </button>
-                  </>
-                ) : (
-                  <button
-                    onClick={() => {
-                      setIsMobileMenuOpen(false);
-                      router.push("/");
-                    }}
-                    className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-blue-600 hover:bg-blue-50 transition-colors"
-                  >
-                    <LogIn className="h-4 w-4" /> Login
-                  </button>
-                )}
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-
-        {/* LOGO: (Right on Mobile, Left on Desktop) */}
-        <div className="flex items-center gap-2 md:gap-3 font-semibold ml-auto md:ml-0 md:mr-auto">
+        {/* LOGO: (Left on Mobile and Desktop) */}
+        <div className="flex items-center gap-2 md:gap-3 font-semibold mr-auto">
           <TransparentLogo
             src="/logo/atiyya-logo-icon.png"
             alt="Atiyya Logo"
-            className={w-auto object-contain drop-shadow-sm transition-all duration-300  + "$" + {isScrolled ? "h-6 md:h-8" : "h-8 md:h-11"}}
+            className={w-auto object-contain drop-shadow-sm transition-all duration-300 scale-125 origin-left  + "$" + {isScrolled ? "h-8 md:h-10" : "h-11 md:h-12"}}
           />
         </div>
 
@@ -226,6 +154,79 @@ export function Header() {
             </AnimatePresence>
           </div>
         </div>
+
+        {/* MOBILE: Menu Toggle (Right) */}
+        <div className="md:hidden flex items-center relative" ref={mobileMenuRef}>
+          <button
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            className="flex h-10 w-10 items-center justify-center rounded-full border border-white/60 bg-white/40 shadow-sm backdrop-blur-md hover:bg-white/60 transition-colors"
+          >
+            {isMobileMenuOpen ? <X className="h-5 w-5 text-slate-700" /> : <Menu className="h-5 w-5 text-slate-700" />}
+          </button>
+          
+          <AnimatePresence>
+            {isMobileMenuOpen && (
+              <motion.div
+                initial={{ clipPath: "circle(0px at calc(100% - 20px) 20px)", opacity: 0 }}
+                animate={{ clipPath: "circle(800px at calc(100% - 20px) 20px)", opacity: 1 }}
+                exit={{ clipPath: "circle(0px at calc(100% - 20px) 20px)", opacity: 0 }}
+                transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                className="absolute right-0 top-12 mt-3 w-64 rounded-2xl border border-white/60 bg-white/90 p-4 shadow-[0_32px_80px_rgba(37,99,235,0.12)] backdrop-blur-3xl flex flex-col gap-2"
+              >
+                <div className="px-2 pb-3 mb-2 border-b border-slate-200">
+                  <p className="text-[11px] uppercase tracking-wider text-slate-400 font-bold mb-1">{session ? "Welcome back," : "Not signed in"}</p>
+                  <p className="text-slate-800 font-bold text-base truncate">{session?.actorName ?? "Guest"}</p>
+                </div>
+                
+                <Link href="/about" onClick={() => setIsMobileMenuOpen(false)} className="px-3 py-2 text-sm font-bold text-slate-700 hover:text-blue-600 hover:bg-blue-50/50 rounded-xl transition-colors">
+                  About
+                </Link>
+                <Link href="/services" onClick={() => setIsMobileMenuOpen(false)} className="px-3 py-2 text-sm font-bold text-slate-700 hover:text-blue-600 hover:bg-blue-50/50 rounded-xl transition-colors">
+                  Services
+                </Link>
+                <Link href="/contribution-details" onClick={() => setIsMobileMenuOpen(false)} className="px-3 py-2 text-sm font-bold text-slate-700 hover:text-blue-600 hover:bg-blue-50/50 rounded-xl transition-colors">
+                  Pricing
+                </Link>
+                <Link href="/contact" onClick={() => setIsMobileMenuOpen(false)} className="px-3 py-2 text-sm font-bold text-slate-700 hover:text-blue-600 hover:bg-blue-50/50 rounded-xl transition-colors">
+                  Contact
+                </Link>
+
+                <div className="h-px bg-slate-200 my-2" />
+
+                {session ? (
+                  <>
+                    <button
+                      onClick={() => {
+                        setIsMobileMenuOpen(false);
+                        router.push(session.actorType === "admin" ? "/admin/settings" : "/member/profile");
+                      }}
+                      className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-100 transition-colors"
+                    >
+                      <Settings className="h-4 w-4" /> Settings
+                    </button>
+                    <button
+                      onClick={handleLogout}
+                      className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-red-600 hover:bg-red-50 transition-colors"
+                    >
+                      <LogOut className="h-4 w-4" /> Logout
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    onClick={() => {
+                      setIsMobileMenuOpen(false);
+                      router.push("/");
+                    }}
+                    className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-blue-600 hover:bg-blue-50 transition-colors"
+                  >
+                    <LogIn className="h-4 w-4" /> Login
+                  </button>
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
       </div>
     </header>
   );
