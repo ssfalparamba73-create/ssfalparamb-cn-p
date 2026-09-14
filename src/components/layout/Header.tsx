@@ -77,7 +77,7 @@ export function Header() {
         </div>
 
         {/* Navigation Links */}
-        <nav className="flex items-center gap-4 md:gap-8 text-sm md:text-sm font-bold text-slate-700 mx-auto">
+        <nav className="flex items-center gap-4 md:gap-6 text-sm font-bold text-slate-700 ml-auto mr-2 md:mr-6 overflow-x-auto whitespace-nowrap scrollbar-hide py-1">
           <Link href="/about" className="hover:text-blue-600 transition-colors">
             About
           </Link>
