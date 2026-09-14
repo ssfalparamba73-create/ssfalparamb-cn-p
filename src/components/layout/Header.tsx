@@ -72,11 +72,11 @@ export function Header() {
 
   return (
     <header
-      className={ixed top-0 z-50 w-full transition-all duration-300  + "$" + {
+      className={`fixed top-0 z-50 w-full transition-all duration-300 ${
         isScrolled
           ? "border-b border-white/45 bg-white/60 shadow-[0_8px_30px_rgba(15,23,42,0.12)] backdrop-blur-xl py-2"
           : "border-b border-transparent bg-transparent py-4"
-      }}
+      }`}
     >
       <div className="container flex items-center justify-between px-4 md:px-8">
         
@@ -85,7 +85,7 @@ export function Header() {
           <TransparentLogo
             src="/logo/atiyya-logo-icon.png"
             alt="Atiyya Logo"
-            className={w-auto object-contain drop-shadow-sm transition-all duration-300 scale-125 origin-left  + "$" + {isScrolled ? "h-8 md:h-10" : "h-11 md:h-12"}}
+            className={`w-auto object-contain drop-shadow-sm transition-all duration-300 scale-125 origin-left ${isScrolled ? "h-8 md:h-10" : "h-11 md:h-12"}`}
           />
         </div>
 
