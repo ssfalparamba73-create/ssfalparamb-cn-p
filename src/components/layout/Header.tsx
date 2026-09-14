@@ -72,7 +72,7 @@ export function Header() {
             className={`w-auto object-contain drop-shadow-sm transition-all duration-300 ${isScrolled ? "h-6 md:h-8" : "h-8 md:h-11"}`}
           />
           <span className={`hidden sm:inline-block font-extrabold tracking-[-0.02em] text-slate-950 transition-all duration-300 pt-1 ${isScrolled ? "text-base md:text-lg" : "text-lg md:text-xl"}`}>
-            <span className="font-cooper font-normal">Atiyya</span> Alparamba Unit
+            <span className="font-barabara font-normal tracking-wide">Atiyya</span> Alparamba Unit
           </span>
         </div>
 
