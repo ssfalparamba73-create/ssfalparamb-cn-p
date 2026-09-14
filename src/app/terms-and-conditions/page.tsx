@@ -36,9 +36,9 @@ export default function TermsAndConditionsPage() {
         ]} />
       </PolicySection>
 
-      <PolicySection title="subscriptions and payment records">
+      <PolicySection title="Subscriptions and payment records">
         <p>
-          Review the subscriptions period and amount before continuing. A browser message or checkout response alone does not create a final confirmed record.
+          Review the subscription period and amount before continuing. A browser message or checkout response alone does not create a final confirmed record.
           Confirmation occurs only after server-side verification and recording.
         </p>
       </PolicySection>

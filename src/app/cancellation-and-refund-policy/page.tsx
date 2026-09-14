@@ -5,7 +5,7 @@ import { PolicyList, PolicySection, PublicPolicyShell } from "@/components/publi
 
 export const metadata: Metadata = {
   title: "Cancellation and Refund Policy | SSF Alparamba",
-  description: "How cancellation and refund enquiries are handled for portal subscriptions and membership payments.",
+  description: "How cancellation and refund enquiries are handled for educational subscriptions and portal payments.",
 };
 
 export default function CancellationAndRefundPolicyPage() {
@@ -13,23 +13,23 @@ export default function CancellationAndRefundPolicyPage() {
     <PublicPolicyShell
       eyebrow="Payment Support"
       title="Cancellation and Refund Policy"
-      description="How to stop an incomplete checkout and request review of a membership payment that has already been processed."
+      description="How to stop an incomplete checkout and request review of an educational subscription payment that has already been processed."
     >
       <PolicySection title="General Policy (Non-Refundable)">
         <p>
-          Monthly membership subscriptions and subscriptions are generally <strong>non-refundable</strong> once the payment is confirmed, as they are collected for a specific active membership period. 
+          Educational subscriptions are generally <strong>non-refundable</strong> once the payment is confirmed, as they are collected for a specific active subscription period. 
         </p>
       </PolicySection>
 
       <PolicySection title="Before payment completion">
         <p>
-          A checkout may be closed before payment is completed. No subscriptions payment is treated as paid unless the payment provider and portal successfully verify it.
+          A checkout may be closed before payment is completed. No subscription payment is treated as paid unless the payment provider and portal successfully verify it.
         </p>
       </PolicySection>
 
       <PolicySection title="After payment confirmation">
         <p>
-          A captured membership payment cannot be automatically cancelled from the portal. A member may request a manual review through an official support channel only for exceptional cases.
+          A captured subscription payment cannot be automatically cancelled from the portal. A member may request a manual review through an official support channel only for exceptional cases.
           Do not share a PIN, login code, card number, CVV, or banking password with the unit.
         </p>
       </PolicySection>
