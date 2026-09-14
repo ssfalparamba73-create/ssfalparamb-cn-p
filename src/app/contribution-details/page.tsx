@@ -42,12 +42,17 @@ export default function ContributionDetailsPage() {
         ]} />
       </PolicySection>
 
-      <PolicySection title="Amount and currency">
+      <PolicySection title="Membership Tiers & Pricing">
         <p>
-          Dues amounts are based on the member category, applicable period, or approved event configuration maintained by Atiyya Group.
-          The final payable amount is shown for review before a payment is initiated.
+          Membership support amounts are categorized into two tiers based on the member's selected profile:
         </p>
-        <p>All amounts displayed by this portal are in Indian Rupees (INR), unless clearly stated otherwise.</p>
+        <PolicyList items={[
+          "Base Membership: ₹50 per month",
+          "Premium Membership: ₹100 per month"
+        ]} />
+        <p className="mt-4">
+          The final payable amount is calculated based on the selected number of months and is shown for review before a payment is initiated. All amounts displayed by this portal are in Indian Rupees (INR), unless clearly stated otherwise.
+        </p>
       </PolicySection>
 
       <PolicySection title="How confirmation works">
