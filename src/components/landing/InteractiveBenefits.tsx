@@ -7,8 +7,8 @@ import { cn } from "@/lib/utils"
 const tabs = [
   {
     id: "payments",
-    title: "Manage Monthly Dues",
-    shortTitle: "Payments",
+    title: "Educational Subscriptions",
+    shortTitle: "Subscriptions",
     icon: CreditCard,
     color: "violet",
     bgClass: "bg-violet-50",
@@ -16,13 +16,13 @@ const tabs = [
     borderClass: "border-violet-100",
     activeBg: "bg-violet-600",
     shadowClass: "shadow-[0_20px_60px_rgba(124,58,237,0.15)]",
-    description: "Review your monthly dues, applicable payment periods, and your payment history from one secure portal. Pay online and access digital receipts instantly after payment confirmation.",
-    highlight: "Dues & Records"
+    description: "Review your educational program subscriptions, applicable periods, and payment history. Pay online and access digital receipts instantly.",
+    highlight: "Program Fees"
   },
   {
     id: "blood",
-    title: "Emergency Blood Support",
-    shortTitle: "Blood Support",
+    title: "Skill Development Workshops",
+    shortTitle: "Workshops",
     icon: Droplet,
     color: "rose",
     bgClass: "bg-rose-50",
@@ -30,13 +30,13 @@ const tabs = [
     borderClass: "border-rose-100",
     activeBg: "bg-rose-500",
     shadowClass: "shadow-[0_20px_60px_rgba(225,29,72,0.15)]",
-    description: "Members can view blood donor information made available by the unit and keep their own availability details current for committee coordination.",
-    highlight: "Member Directory"
+    description: "Members can access information on upcoming skill development workshops and educational events organized by the committee.",
+    highlight: "Skill Training"
   },
   {
     id: "community",
-    title: "Community Connection",
-    shortTitle: "Community",
+    title: "Community Learning",
+    shortTitle: "Learning",
     icon: Users,
     color: "emerald",
     bgClass: "bg-emerald-50",
@@ -44,13 +44,13 @@ const tabs = [
     borderClass: "border-emerald-100",
     activeBg: "bg-emerald-500",
     shadowClass: "shadow-[0_20px_60px_rgba(16,185,129,0.15)]",
-    description: "Use the member portal for unit information and reach active committee contacts through the configured support options.",
-    highlight: "Committee Support"
+    description: "Connect with the educational committee, access community learning resources, and participate in local educational initiatives.",
+    highlight: "Education Support"
   },
   {
     id: "membership",
-    title: "Secure Membership",
-    shortTitle: "Membership",
+    title: "Secure Student Access",
+    shortTitle: "Student Access",
     icon: SmartphoneNfc,
     color: "blue",
     bgClass: "bg-blue-50",
@@ -58,7 +58,7 @@ const tabs = [
     borderClass: "border-blue-100",
     activeBg: "bg-blue-600",
     shadowClass: "shadow-[0_20px_60px_rgba(37,99,235,0.15)]",
-    description: "Use your registered mobile number and committee-issued PIN to securely log in and manage your membership dues and records.",
+    description: "Use your registered mobile number and PIN to securely log in and manage your educational program subscriptions and records.",
     highlight: "Registered Access"
   },
 ]

@@ -55,7 +55,7 @@ export default function LandingPage() {
               />
 
               <p className="max-w-md text-base md:text-lg font-medium leading-relaxed text-slate-600">
-                An independent community portal for registered members of the Atiyya Group to manage monthly support, access payment records, and stay connected with local initiatives.
+                A dedicated platform empowering our community through Skill Development and Educational Initiatives. Join our programs, access learning resources, and support our educational mission.
               </p>
 
               {/* Mobile CTA (Hidden on desktop) */}
@@ -69,7 +69,7 @@ export default function LandingPage() {
                 <Link href="/pay" className="block w-full max-w-sm group">
                   <Button size="lg" variant="outline" className="h-14 w-full rounded-full border-2 border-blue-200 bg-white/60 text-base font-bold text-blue-700 shadow-[0_8px_24px_rgba(37,99,235,0.10)] backdrop-blur-xl transition-all hover:bg-blue-50 hover:border-blue-300 flex items-center justify-center gap-2">
                     <CreditCard className="size-4" />
-                    Make Support Payment
+                    Subscribe to Programs
                     <ArrowRight className="size-4 opacity-80 transition-transform group-hover:translate-x-1" />
                   </Button>
                 </Link>
@@ -86,8 +86,8 @@ export default function LandingPage() {
               <div id="login-card" className="relative rounded-[2.5rem] border border-white/60 bg-white/40 p-6 shadow-[0_32px_80px_rgba(37,99,235,0.12)] backdrop-blur-3xl sm:p-8">
                 
                 <div className="space-y-3 text-center">
-                  <h2 className="text-3xl font-black tracking-[-0.03em] text-slate-950">Member Login</h2>
-                  <p className="mx-auto max-w-xs text-sm font-medium leading-6 text-slate-500">Enter your registered mobile number to access your member account and support details.</p>
+                  <h2 className="text-3xl font-black tracking-[-0.03em] text-slate-950">Student & Member Login</h2>
+                  <p className="mx-auto max-w-xs text-sm font-medium leading-6 text-slate-500">Enter your registered mobile number to access your educational resources and subscription details.</p>
                 </div>
 
                 <div className="mt-7">
@@ -115,21 +115,21 @@ export default function LandingPage() {
               <div className="mb-5 flex size-11 items-center justify-center rounded-2xl bg-blue-50 text-blue-700">
                 <Info className="size-5" aria-hidden="true" />
               </div>
-              <h2 className="text-2xl font-bold tracking-tight text-slate-950 md:text-3xl">Purpose of Collection</h2>
+              <h2 className="text-2xl font-bold tracking-tight text-slate-950 md:text-3xl">Our Mission: Education & Skill Development</h2>
               <p className="mt-4 text-base leading-7 text-slate-600">
-                This portal is used exclusively for collecting monthly membership support from registered Atiyya Group members. <strong>The funds collected are dedicated strictly to Skill Development and Education initiatives within the community.</strong> Payments are linked to the respective member profile. No physical products or commercial services are sold here.
+                This portal is dedicated to managing subscriptions for <strong>Community Skill Development and Educational Programs</strong>. Members gain access to skill workshops, educational events, and community learning resources. Your subscription directly funds these educational services.
               </p>
             </div>
             <div className="rounded-3xl border border-emerald-100 bg-emerald-50/55 p-6 shadow-[0_12px_35px_rgba(16,185,129,0.07)] md:p-8">
               <div className="mb-5 flex size-11 items-center justify-center rounded-2xl bg-white text-emerald-700 shadow-sm">
                 <Users className="size-5" aria-hidden="true" />
               </div>
-              <h2 className="text-2xl font-bold tracking-tight text-slate-950 md:text-3xl">Who Can Pay?</h2>
+              <h2 className="text-2xl font-bold tracking-tight text-slate-950 md:text-3xl">Who Can Subscribe?</h2>
               <p className="mt-4 text-base leading-7 text-slate-600">
-                Only registered members of Atiyya Group whose mobile number has been enrolled by an authorised administrator can access this portal and provide their support.
+                Only registered students and members of Atiyya Group whose mobile number has been enrolled by an authorised administrator can access this portal to subscribe to our educational programs.
               </p>
               <Link href="/contribution-details" className="mt-5 inline-flex items-center gap-2 text-sm font-bold text-blue-700 hover:text-blue-800 hover:underline">
-                View support details <ArrowRight className="size-4" aria-hidden="true" />
+                View subscription details <ArrowRight className="size-4" aria-hidden="true" />
               </Link>
             </div>
           </div>
@@ -144,10 +144,10 @@ export default function LandingPage() {
             >
               <div className="mx-auto inline-flex items-center gap-2 rounded-full border border-cyan-200/80 bg-white/65 px-4 py-2 text-xs font-extrabold uppercase tracking-[0.14em] text-blue-700 shadow-sm backdrop-blur-xl">
                 <Sparkles className="size-4" />
-                Member Portal Features
+                Educational Portal Features
               </div>
-              <h2 className="text-3xl font-black tracking-[-0.04em] text-slate-950 md:text-4xl">Everything you need as a member</h2>
-              <p className="text-base font-medium text-slate-500 md:text-lg">Designed exclusively for registered Atiyya Group members to manage support, view records, and access support.</p>
+              <h2 className="text-3xl font-black tracking-[-0.04em] text-slate-950 md:text-4xl">Educational Benefits & Features</h2>
+              <p className="text-base font-medium text-slate-500 md:text-lg">Designed exclusively for registered students and members to access skill development events, track educational subscriptions, and manage program enrollments.</p>
             </div>
 
             <InteractiveBenefits />
