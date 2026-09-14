@@ -11,6 +11,12 @@ export function Footer() {
             <span className="font-extrabold tracking-tight text-base pt-0.5">Atiyya</span>
           </div>
           <nav aria-label="Footer Navigation" className="flex flex-wrap justify-center gap-x-6 gap-y-2 font-medium">
+            <Link href="/about" className="hover:text-blue-600 transition-colors">
+              About Us
+            </Link>
+            <Link href="/services" className="hover:text-blue-600 transition-colors">
+              Services
+            </Link>
             <Link href="/pricing" className="hover:text-blue-600 transition-colors">
               Pricing
             </Link>
