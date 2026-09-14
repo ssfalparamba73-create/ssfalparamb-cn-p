@@ -50,7 +50,7 @@ export default function LandingPage() {
                 alt="Atiyya Logo" 
                 width={600} 
                 height={200} 
-                className="w-full max-w-[320px] sm:max-w-[450px] md:max-w-[550px] object-contain drop-shadow-sm -ml-2" 
+                className="w-full max-w-[220px] sm:max-w-[300px] md:max-w-[380px] object-contain drop-shadow-sm -ml-2" 
                 priority 
               />
 
@@ -86,7 +86,7 @@ export default function LandingPage() {
               <div id="login-card" className="relative rounded-[2.5rem] border border-white/60 bg-white/40 p-6 shadow-[0_32px_80px_rgba(37,99,235,0.12)] backdrop-blur-3xl sm:p-8">
                 
                 <div className="space-y-3 text-center">
-                  <h2 className="text-3xl font-black tracking-[-0.03em] text-slate-950">Student & Member Login</h2>
+                  <h2 className="text-3xl font-black tracking-[-0.03em] text-slate-950">Login</h2>
                   <p className="mx-auto max-w-xs text-sm font-medium leading-6 text-slate-500">Enter your registered mobile number to access your educational resources and subscription details.</p>
                 </div>
 
