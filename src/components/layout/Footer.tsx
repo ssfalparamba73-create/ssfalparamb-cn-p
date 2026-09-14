@@ -37,7 +37,7 @@ export function Footer() {
             </Link>
           </nav>
         </div>
-        <div className="mt-4 text-center text-xs text-slate-400 md:text-left">
+        <div className="mt-8 border-t border-slate-200/60 pt-6 text-center text-xs text-slate-500 w-full">
           &copy; {new Date().getFullYear()} Atiyya. All rights reserved.
         </div>
       </div>
