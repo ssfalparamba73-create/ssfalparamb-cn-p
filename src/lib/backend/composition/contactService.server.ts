@@ -1,10 +1,10 @@
 "use server";
 
-import { createServerClient } from "@/lib/backend/adapters/supabase/supabaseServer";
+import { createSupabaseBackendClient } from "@/lib/backend/adapters/supabase/client";
 
 export async function submitContactMessage(data: { name: string; email: string; phone: string; message: string }) {
   try {
-    const supabase = await createServerClient();
+    const supabase = createSupabaseBackendClient();
     
     const { error } = await supabase
       .from("contact_messages")
