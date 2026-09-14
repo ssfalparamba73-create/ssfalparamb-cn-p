@@ -5,6 +5,7 @@ import { TransparentLogo } from "@/components/TransparentLogo";
 import { User, Settings, LogOut } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { toast } from "sonner";
 import type { AuthSessionDTO } from "@/lib/backend/dto/auth.dto";
 import { getCurrentSession, logoutSession } from "@/lib/api/authClient";
@@ -70,10 +71,24 @@ export function Header() {
             alt="Atiyya Logo"
             className={`w-auto object-contain drop-shadow-sm transition-all duration-300 ${isScrolled ? "h-6 md:h-8" : "h-8 md:h-11"}`}
           />
-          <span className={`inline-block font-extrabold tracking-[-0.02em] text-slate-950 transition-all duration-300 pt-1 ${isScrolled ? "text-base md:text-lg" : "text-lg md:text-xl"}`}>
+          <span className={`hidden sm:inline-block font-extrabold tracking-[-0.02em] text-slate-950 transition-all duration-300 pt-1 ${isScrolled ? "text-base md:text-lg" : "text-lg md:text-xl"}`}>
             <span className="font-cooper font-normal">Atiyya</span> Alparamba Unit
           </span>
         </div>
+
+        {/* Navigation Links */}
+        <nav className="flex items-center gap-4 md:gap-8 text-sm md:text-sm font-bold text-slate-700 mx-auto">
+          <Link href="/about" className="hover:text-blue-600 transition-colors">
+            About
+          </Link>
+          <Link href="/contribution-details" className="hover:text-blue-600 transition-colors">
+            Pricing
+          </Link>
+          <Link href="/contact" className="hover:text-blue-600 transition-colors">
+            Contact
+          </Link>
+        </nav>
+
         <div className="flex items-center gap-4">
           {/* User Menu */}
           <div className="relative" ref={dropdownRef}>
