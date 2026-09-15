@@ -41,6 +41,21 @@ export default function ContactPage() {
         </div>
       </PolicySection>
       <AvailableContactsSection />
+      <PolicySection title="Registered Entity Details">
+        <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-5 space-y-2 text-sm text-slate-700">
+          <p><strong>Trade Name:</strong> Atiyya</p>
+          <p><strong>Registered Owner:</strong> Muhammed Ismail K C</p>
+          <div>
+            <strong>Registered Address:</strong>
+            <address className="not-italic mt-1">
+              S/O: Ahammed Kutty K C, Chakkittakandiyil House<br />
+              Pulikkal, Malappuram<br />
+              Kerala - 673637
+            </address>
+          </div>
+        </div>
+      </PolicySection>
+
       <PolicySection title="Payment safety">
         <p>
           Share only the payment reference, date, and amount needed to locate a transaction. Never share your PIN, login code, CVV, full card number, or banking password.

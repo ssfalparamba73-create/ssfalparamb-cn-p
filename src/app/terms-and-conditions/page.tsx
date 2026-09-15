@@ -17,7 +17,7 @@ export default function TermsAndConditionsPage() {
     >
       <PolicySection title="General Information">
         <p>
-          <strong>This website is operated by Atiyya Group.</strong> These terms govern the use of our services and portal.
+          <strong>This website is operated by Atiyya.</strong> These terms govern the use of our services and portal.
         </p>
       </PolicySection>
 
