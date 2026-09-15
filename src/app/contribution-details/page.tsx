@@ -47,8 +47,8 @@ export default function ContributionDetailsPage() {
           Educational subscription amounts are categorized into two tiers based on the enrolled program:
         </p>
         <PolicyList items={[
-          "Base Educational Program: ₹50 per month",
-          "Premium Educational Program: ₹100 per month"
+          "Base Educational Program: INR 50 per month",
+          "Premium Educational Program: INR 100 per month"
         ]} />
         <p className="mt-4">
           The final payable amount is calculated based on the selected number of months and is shown for review before a payment is initiated. All amounts displayed by this portal are in Indian Rupees (INR), unless clearly stated otherwise.

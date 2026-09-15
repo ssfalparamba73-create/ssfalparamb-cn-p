@@ -27,9 +27,9 @@ export default function CancellationAndRefundPolicyPage() {
         </p>
       </PolicySection>
 
-      <PolicySection title="After payment confirmation">
+      <PolicySection title="Cancellation Duration (After payment confirmation)">
         <p>
-          A captured subscription payment cannot be automatically cancelled from the portal. A member may request a manual review through an official support channel only for exceptional cases.
+          A captured subscription payment cannot be automatically cancelled from the portal. If you wish to cancel a payment due to an error, the cancellation request must be raised within <strong>24 hours</strong> of the transaction. A member may request a manual review through an official support channel only for exceptional cases.
           Do not share a PIN, login code, card number, CVV, or banking password with the unit.
         </p>
       </PolicySection>
@@ -43,10 +43,10 @@ export default function CancellationAndRefundPolicyPage() {
         ]} />
       </PolicySection>
 
-      <PolicySection title="Review and processing">
+      <PolicySection title="Refund Mode and Duration">
         <p>
           The member should provide the payment reference, date, amount, and reason for the request. The unit will verify the portal record and payment-provider status before deciding the request.
-          If a refund is approved by the committee, the applicable initiation and expected bank-processing timeline (usually 5-7 business days) will be communicated through an official support channel.
+          If a refund is approved by the committee, the refund will be credited back to the <strong>original mode of payment</strong> (e.g., Bank Account, Credit Card, UPI) within <strong>5 to 7 business days</strong>.
         </p>
       </PolicySection>
 

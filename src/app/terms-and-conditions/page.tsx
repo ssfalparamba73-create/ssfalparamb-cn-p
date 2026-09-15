@@ -15,6 +15,12 @@ export default function TermsAndConditionsPage() {
       title="Terms and Conditions"
       description="These terms apply when a member, administrator, or visitor accesses the SSF Alparamba Membership Portal."
     >
+      <PolicySection title="General Information">
+        <p>
+          <strong>This website is operated by Atiyya Group.</strong> These terms govern the use of our services and portal.
+        </p>
+      </PolicySection>
+
       <PolicySection title="Purpose and permitted use">
         <p>
           The portal is provided for authorised member access, subscriptions payment records, approved unit administration, receipts, and related support.
