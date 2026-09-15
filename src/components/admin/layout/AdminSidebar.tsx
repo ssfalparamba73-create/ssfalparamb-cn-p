@@ -16,7 +16,8 @@ import {
   Droplet, 
   History, 
   PanelLeft,
-  Settings 
+  Settings,
+  MessageSquare
 } from "lucide-react";
 import { useAuth } from "@/lib/admin/AuthContext";
 import { canAccessAdminPath } from "@/lib/admin/accessControl";
@@ -24,6 +25,7 @@ import { prefetchAdminRouteData } from "@/lib/client/adminPrefetch";
 
 const navItems = [
   { name: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
+  { name: "Messages", href: "/admin/messages", icon: MessageSquare },
   { name: "Members", href: "/admin/members", icon: Users },
   { name: "Cash Entry", href: "/admin/cash-entry", icon: Banknote },
   { name: "Payments", href: "/admin/payments", icon: Wallet },

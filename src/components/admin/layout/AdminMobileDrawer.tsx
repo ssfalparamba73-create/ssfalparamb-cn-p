@@ -4,7 +4,7 @@ import React, { useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
-import { X, LayoutDashboard, Users, Banknote, Wallet, AlertOctagon, BarChart3, Droplet, History, Settings, Moon, Sun } from "lucide-react";
+import { X, LayoutDashboard, Users, Banknote, Wallet, AlertOctagon, BarChart3, Droplet, History, Settings, Moon, Sun, MessageSquare } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { AdminActionIcon } from "./AdminActionIcon";
 import { useAuth } from "@/lib/admin/AuthContext";
@@ -17,6 +17,7 @@ interface AdminMobileDrawerProps {
 
 const navItems = [
   { name: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
+  { name: "Messages", href: "/admin/messages", icon: MessageSquare },
   { name: "Members", href: "/admin/members", icon: Users },
   { name: "Cash Entry", href: "/admin/cash-entry", icon: Banknote },
   { name: "Payments", href: "/admin/payments", icon: Wallet },

@@ -9,6 +9,7 @@ export const ADMIN_ROUTE_ACCESS = [
   { prefix: "/admin/blood-donors", permissions: ["members.view"] },
   { prefix: "/admin/members", permissions: ["members.view"] },
   { prefix: "/admin/events", permissions: ["settings.view"] },
+  { prefix: "/admin/messages", permissions: ["dashboard.view"] },
   { prefix: "/admin/dashboard", permissions: ["dashboard.view"] },
 ] as const;
 
