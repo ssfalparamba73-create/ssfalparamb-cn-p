@@ -100,7 +100,7 @@ export function mapRowToMemberPaymentHistoryItemDTO(row: any): MemberPaymentHist
     date: row.paid_at || row.created_at,
     amount: Number(row.amount),
     method: row.method,
-    status: row.status === "confirmed" ? "COMPLETED" : row.status === "pending" ? "PENDING" : row.status === "refunded" ? "REFUNDED" : row.status === "cancelled" || row.status === "rejected" ? "CANCELLED" : "FAILED",
+    status: row.status === "confirmed" ? "COMPLETED" : row.status === "refunded" ? "REFUNDED" : row.status === "cancelled" || row.status === "rejected" || row.status === "pending" ? "FAILED" : "FAILED",
     receiptUrl: undefined,
   };
 }
