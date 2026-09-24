@@ -104,7 +104,7 @@ function PayNowContent() {
     (paymentMethod === "upi" && !isUpiAvailable) ||
     (paymentMethod === "cash" && !selectedAdmin) ||
     (activeTab === "subscriptions" && selectedMonths.length === 0) ||
-    (activeTab === "event" && finalAmount < 30);
+    (activeTab === "event" && finalAmount < paymentSettings.customMinimum);
 
   const selectedAdminName = admins.find((admin) => admin.id === selectedAdmin)?.name || "";
 
@@ -330,12 +330,12 @@ function PayNowContent() {
                         className="pl-9 h-14 text-lg font-bold bg-white dark:bg-slate-900/50 dark:border-slate-700 dark:text-slate-50 dark:focus-visible:ring-blue-500/30 dark:focus-visible:border-blue-500/50"
                         value={customAmount}
                         onChange={(e) => setCustomAmount(e.target.value)}
-                        min="30"
+                        min={paymentSettings.customMinimum}
                       />
                     </div>
-                    {activeTab === "event" && finalAmount > 0 && finalAmount < 30 && (
+                    {activeTab === "event" && finalAmount > 0 && finalAmount < paymentSettings.customMinimum && (
                       <p className="text-xs text-red-500 font-medium flex items-center gap-1">
-                        <AlertCircle className="size-3" /> Minimum amount is ₹30
+                        <AlertCircle className="size-3" /> Minimum amount is ₹{paymentSettings.customMinimum}
                       </p>
                     )}
                   </div>
