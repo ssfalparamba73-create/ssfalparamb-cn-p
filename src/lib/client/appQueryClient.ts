@@ -19,7 +19,7 @@ export function createAppQueryClient(): QueryClient {
         },
         refetchOnMount: true,
         refetchOnReconnect: true,
-        refetchOnWindowFocus: true,
+        refetchOnWindowFocus: false, // Turned off globally to prevent API spam on tab switch
       },
       mutations: {
         retry: false,

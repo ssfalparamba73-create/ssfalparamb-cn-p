@@ -30,6 +30,7 @@ export const memberDashboardQuery = queryOptions({
   queryKey: memberQueryKeys.dashboard,
   queryFn: getMemberDashboard,
   staleTime: 2 * MINUTE,
+  refetchOnWindowFocus: true, // explicitly opt-in for dashboard live updates
 });
 
 export const memberProfileQuery = queryOptions({
