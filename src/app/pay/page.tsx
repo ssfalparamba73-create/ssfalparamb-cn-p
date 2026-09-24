@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { ArrowLeft, CreditCard, Banknote, ShieldCheck, Smartphone, QrCode, ChevronDown, AlertCircle, Loader2 } from "lucide-react"
 import Link from "next/link"
-import { useSearchParams } from "next/navigation"
+import { useSearchParams, useRouter } from "next/navigation"
 
 import { requestBackend } from "@/lib/api/backendClient"
 import { getCurrentMemberProfile } from "@/lib/api/memberClient"
@@ -17,6 +17,7 @@ const isUpiAvailable = true;
 
 function PayNowContent() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const source = searchParams.get("source");
   const [paymentMethod, setPaymentMethod] = useState<"upi" | "cash">(
     isUpiAvailable ? "upi" : "cash"
@@ -150,7 +151,7 @@ function PayNowContent() {
               })
             });
             if (verifyRes.ok) {
-              window.location.href = "/success?paymentId=" + intent.paymentId;
+              router.push("/success?paymentId=" + intent.paymentId);
             } else {
               setCashfreeError("Payment verification failed.");
             }
@@ -202,7 +203,7 @@ function PayNowContent() {
         }),
       });
 
-      window.location.href = `/success?method=cash_handover&admin=${encodeURIComponent(selectedAdminName)}&phone=${encodeURIComponent(memberQuery)}&amount=${intent.amount}${activeTab === 'event' ? '&category=special_event' : ''}${source === 'member' ? '&source=member' : ''}&paymentId=${intent.paymentId}`;
+      router.push(`/success?method=cash_handover&admin=${encodeURIComponent(selectedAdminName)}&phone=${encodeURIComponent(memberQuery)}&amount=${intent.amount}${activeTab === 'event' ? '&category=special_event' : ''}${source === 'member' ? '&source=member' : ''}&paymentId=${intent.paymentId}`);
     } catch (error) {
       setCheckoutHint(error instanceof Error ? error.message : "Unable to record the cash handover.");
     }
