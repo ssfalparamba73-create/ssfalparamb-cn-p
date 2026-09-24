@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label"
 import { ArrowLeft, CreditCard, Banknote, ShieldCheck, Smartphone, QrCode, ChevronDown, AlertCircle, Loader2 } from "lucide-react"
 import Link from "next/link"
 import { useSearchParams } from "next/navigation"
-import { useCashfreeCheckout } from "@/lib/hooks/useCashfreeCheckout"
+
 import { requestBackend } from "@/lib/api/backendClient"
 import { getCurrentMemberProfile } from "@/lib/api/memberClient"
 import { getCashReceivers, type CashReceiver } from "@/lib/api/cashReceiverClient"
@@ -30,7 +30,8 @@ function PayNowContent() {
   const [admins, setAdmins] = useState<CashReceiver[]>([]);
   const [isAdminDropdownOpen, setIsAdminDropdownOpen] = useState(false);
   const [memberQuery, setMemberQuery] = useState("");
-  const { initiateCheckout, isProcessing, error: cashfreeError, clearError } = useCashfreeCheckout();
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [cashfreeError, setCashfreeError] = useState<string | null>(null);
 
   useEffect(() => {
     if (source !== "member") return;
@@ -91,48 +92,76 @@ function PayNowContent() {
   const selectedAdminName = admins.find((admin) => admin.id === selectedAdmin)?.name || "";
 
   const handleQrClick = () => {
-    void handleCashfreeCheckout();
+    void handleRazorpayCheckout();
   };
 
-  const handleCashfreeCheckout = async () => {
+  const handleRazorpayCheckout = async () => {
     if (isButtonDisabled) {
       setCheckoutHint("Enter your phone number or member ID above to continue with Digital Payment.");
       return;
     }
     setCheckoutHint(null);
+    setIsProcessing(true);
+    setCashfreeError(null);
 
     try {
-      const intent = await requestBackend<{ paymentId: string; amount: number }>("/api/v1/payments/intent", {
+      const orderRes = await fetch("/api/v1/payments/razorpay/order", {
         method: "POST",
-        body: JSON.stringify({
-          memberQuery,
-          payerName: memberQuery,
-          payerPhone: memberQuery,
-          category: activeTab === "event" ? "special_event" : "monthly_dues",
-          method: "upi",
-          selectedMonthIds: activeTab === "subscriptions" ? selectedMonths : undefined,
-          tier: activeTab === "subscriptions" ? (duesTier === 50 ? "base" : "premium") : "custom",
-          customAmount: activeTab === "event" ? finalAmount : undefined,
-        }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ amount: finalAmount })
       });
+      const orderData = await orderRes.json();
+      if (!orderRes.ok) throw new Error(orderData.error || "Failed to create order");
 
-      const orderRes = await requestBackend<{ paymentSessionId: string }>("/api/v1/payments/cashfree/order", {
-        method: "POST",
-        body: JSON.stringify({
-          paymentId: intent.paymentId,
-          amount: intent.amount,
-          customerPhone: memberQuery,
-        }),
+      const options = {
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "",
+        amount: orderData.amount,
+        currency: orderData.currency,
+        name: "Atiyya Group",
+        description: "Educational Subscription",
+        order_id: orderData.id,
+        handler: async function (response: any) {
+          try {
+            const verifyRes = await fetch("/api/v1/payments/razorpay/verify", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_signature: response.razorpay_signature,
+                amount: finalAmount,
+                paymentMethod: "upi",
+                category: activeTab === "event" ? "special_event" : "monthly_dues",
+              })
+            });
+            if (verifyRes.ok) {
+              window.location.href = "/success";
+            } else {
+              setCashfreeError("Payment verification failed.");
+            }
+          } catch (err) {
+            setCashfreeError("Payment verification failed.");
+          }
+        },
+        prefill: {
+          contact: memberQuery,
+        },
+        theme: { color: "#0f172a" }
+      };
+      
+      const rzp = new (window as any).Razorpay(options);
+      rzp.on("payment.failed", function (response: any) {
+        setCashfreeError(response.error.description);
       });
-
-      await initiateCheckout({
-        paymentSessionId: orderRes.paymentSessionId,
-      });
+      rzp.open();
     } catch (err: any) {
-      console.error("Payment initialization failed:", err);
-      setCheckoutHint(err.message || "Failed to initialize payment gateway");
+      setCashfreeError(err.message || "Something went wrong.");
+    } finally {
+      setIsProcessing(false);
     }
   };
+
+
 
   const handleCashHandover = async () => {
     if (isButtonDisabled) {
@@ -292,7 +321,7 @@ function PayNowContent() {
               <dl className="space-y-2 text-sm">
                 <div className="flex items-center justify-between gap-4"><dt className="text-muted-foreground">Member</dt><dd className="max-w-[62%] truncate text-right font-semibold text-slate-900 dark:text-slate-50">{memberQuery.trim() || "Enter member details"}</dd></div>
                 <div className="flex items-center justify-between gap-4"><dt className="text-muted-foreground">subscriptions Period</dt><dd className="text-right font-semibold text-slate-900 dark:text-slate-50">{activeTab === "subscriptions" ? currentContributionPeriod : "Approved event"}</dd></div>
-                <div className="flex items-center justify-between gap-4"><dt className="text-muted-foreground">Payment Purpose</dt><dd className="text-right font-semibold text-slate-900 dark:text-slate-50">Membership subscriptions</dd></div>
+                <div className="flex items-center justify-between gap-4"><dt className="text-muted-foreground">Payment Purpose</dt><dd className="text-right font-semibold text-slate-900 dark:text-slate-50">Educational Subscription</dd></div>
                 <div className="flex items-center justify-between gap-4 border-t border-blue-100 pt-2 dark:border-blue-500/20"><dt className="font-semibold text-slate-700 dark:text-slate-300">Amount</dt><dd className="text-right text-lg font-bold text-slate-950 dark:text-slate-50">₹{finalAmount || 0}</dd></div>
               </dl>
             </div>
@@ -471,7 +500,7 @@ function PayNowContent() {
                 size="lg"
                 className="w-full text-lg h-14 rounded-xl"
                 disabled={isButtonDisabled || isProcessing}
-                onClick={handleCashfreeCheckout}
+                onClick={handleRazorpayCheckout}
               >
                 {isProcessing ? (
                   <>
@@ -539,7 +568,7 @@ function PayNowContent() {
               <div className="w-full bg-[#F6F8FC] border border-[#E5EAF3] rounded-xl p-3.5 space-y-2 mb-6 text-left dark:bg-slate-800 dark:border-slate-700">
                 <div className="flex justify-between text-xs">
                   <span className="text-slate-400 font-medium">Payment Purpose</span>
-                  <span className="text-slate-700 font-semibold">Monthly Support Collection</span>
+                  <span className="text-slate-700 font-semibold">Educational Subscription</span>
                 </div>
                 <div className="flex justify-between text-xs">
                   <span className="text-slate-400 font-medium">Merchant Account</span>
@@ -571,11 +600,16 @@ function PayNowContent() {
   )
 }
 
+import Script from "next/script";
+
 export default function PayNowPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-secondary/50 flex items-center justify-center p-4"><p className="text-muted-foreground font-medium animate-pulse">Loading payment details...</p></div>}>
+    <>
+      <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" />
+      <Suspense fallback={<div className="min-h-screen bg-secondary/50 flex items-center justify-center p-4"><p className="text-muted-foreground font-medium animate-pulse">Loading payment details...</p></div>}>
       <PayNowContent />
     </Suspense>
+    </>
   )
 }
 

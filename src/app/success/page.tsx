@@ -38,7 +38,7 @@ function SuccessPageContent() {
     };
 
     if (searchParams.has("order_id")) {
-      requestBackend<PaymentDTO>("/api/v1/payments/cashfree/verify", {
+      requestBackend<PaymentDTO>("/api/v1/payments/razorpay/verify", {
         method: "POST",
         body: JSON.stringify({ cfOrderId: paymentId }),
       })

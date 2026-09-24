@@ -5,7 +5,7 @@ import { PolicyList, PolicySection, PublicPolicyShell } from "@/components/publi
 
 export const metadata: Metadata = {
   title: "Terms and Conditions | SSF Alparamba",
-  description: "Terms for access to and use of the SSF Alparamba Membership Portal.",
+  description: "Terms for access to and use of the SSF Alparamba Educational Portal.",
 };
 
 export default function TermsAndConditionsPage() {
@@ -13,7 +13,7 @@ export default function TermsAndConditionsPage() {
     <PublicPolicyShell
       eyebrow="Portal Terms"
       title="Terms and Conditions"
-      description="These terms apply when a member, administrator, or visitor accesses the SSF Alparamba Membership Portal."
+      description="These terms apply when a member, administrator, or visitor accesses the SSF Alparamba Educational Portal."
     >
       <PolicySection title="General Information">
         <p>

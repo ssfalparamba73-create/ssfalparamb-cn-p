@@ -5,7 +5,7 @@ import { PolicyList, PolicySection, PublicPolicyShell } from "@/components/publi
 
 export const metadata: Metadata = {
   title: "Privacy Policy | SSF Alparamba",
-  description: "Privacy information for members and visitors using the SSF Alparamba Membership Portal.",
+  description: "Privacy information for members and visitors using the SSF Alparamba Educational Portal.",
 };
 
 export default function PrivacyPolicyPage() {
@@ -13,13 +13,13 @@ export default function PrivacyPolicyPage() {
     <PublicPolicyShell
       eyebrow="Privacy & Data"
       title="Privacy Policy"
-      description="This policy explains the information used to operate the membership portal and protect member access."
+      description="This policy explains the information used to operate the educational portal and protect member access."
     >
       <PolicySection title="Information handled by the portal">
         <PolicyList items={[
           "Member identity and contact details such as name, member code, and phone number.",
           "Profile information voluntarily provided for unit records, including family or blood-donor details where applicable.",
-          "Membership subscriptions, payment-status, receipt, and transaction-reference information.",
+          "Educational subscriptions, payment-status, receipt, and transaction-reference information.",
           "Authentication, session, device, request, and audit information needed to secure the portal.",
           "Support messages and contact details submitted when assistance is requested.",
         ]} />

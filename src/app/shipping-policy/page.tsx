@@ -5,7 +5,7 @@ import { PolicySection, PublicPolicyShell } from "@/components/public/PublicPoli
 
 export const metadata: Metadata = {
   title: "Shipping Policy | SSF Alparamba",
-  description: "Digital delivery and no-shipping policy for the SSF Alparamba Membership Portal.",
+  description: "Digital delivery and no-shipping policy for the SSF Alparamba Educational Portal.",
 };
 
 export default function ShippingPolicyPage() {
@@ -13,11 +13,11 @@ export default function ShippingPolicyPage() {
     <PublicPolicyShell
       eyebrow="Digital Service Policy"
       title="Shipping Policy"
-      description="The portal manages membership subscriptions and digital records; it does not sell or ship physical products."
+      description="The portal manages educational subscriptions and digital records; it does not sell or ship physical products."
     >
       <PolicySection title="No physical goods are shipped">
         <p>
-          SSF Alparamba Membership Portal does not sell, dispatch, or deliver physical products. Therefore, shipping charges, courier tracking,
+          SSF Alparamba Educational Portal does not sell, dispatch, or deliver physical products. Therefore, shipping charges, courier tracking,
           delivery addresses, and physical delivery timelines do not apply.
         </p>
       </PolicySection>

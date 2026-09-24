@@ -6,7 +6,7 @@ import { ContactForm } from "@/components/public/ContactForm";
 
 export const metadata: Metadata = {
   title: "Contact | Atiyya Group",
-  description: "Official support contacts for the Atiyya Group Membership Portal.",
+  description: "Official support contacts for the Atiyya Group Educational Portal.",
 };
 
 const officeBearers = [
