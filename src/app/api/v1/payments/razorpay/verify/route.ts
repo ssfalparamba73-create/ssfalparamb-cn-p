@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import crypto from "crypto";
 import { getPaymentRepository } from "@/lib/backend/composition/paymentService.server";
+import { getReceiptService } from "@/lib/backend/composition/receiptService.server";
 
 export async function POST(req: Request) {
   try {
@@ -24,7 +25,14 @@ export async function POST(req: Request) {
 
     // Update payment record as confirmed
     const repo = getPaymentRepository();
-    await repo.confirmPayment(paymentId, razorpay_payment_id, razorpay_signature);
+    const payment = await repo.findById(paymentId);
+    
+    if (payment && payment.status === "pending") {
+      await repo.confirmPayment(paymentId, razorpay_payment_id, razorpay_signature);
+      
+      // Generate the receipt immediately so frontend can fetch it right away
+      await getReceiptService().createForPayment(paymentId, { requestId: "verify-endpoint", role: "system", actorType: "admin" } as any);
+    }
 
     // Success response
     return NextResponse.json({ success: true, message: "Payment verified successfully" }, { status: 200 });
