@@ -9,6 +9,7 @@ import { MemberBottomNav } from "@/components/layout/MemberBottomNav";
 import { memberSessionQuery } from "@/lib/client/memberQueries";
 import { PageContentSkeleton } from "@/components/ui/loading-skeletons";
 import { MemberDataWarmup } from "@/components/member/MemberDataWarmup";
+import { BackendApiError } from "@/lib/api/backendClient";
 
 const PROFILE_COMPLETION_PATH = "/member/complete-profile";
 

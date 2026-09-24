@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { getCurrentSession, loginAdmin, logoutSession } from "@/lib/api/authClient";
+import { BackendApiError } from "@/lib/api/backendClient";
 
 interface CurrentAdminUser {
   id: string;
@@ -14,6 +15,7 @@ interface CurrentAdminUser {
 interface AuthContextType {
   currentUser: CurrentAdminUser | null;
   isLoading: boolean;
+  networkError: boolean;
   login: (phone: string, pin: string) => Promise<void>;
   logout: () => Promise<void>;
 }
@@ -23,6 +25,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [currentUser, setCurrentUser] = useState<CurrentAdminUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [networkError, setNetworkError] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -37,8 +40,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           permissions: session.permissions ?? [],
         });
       })
-      .catch(() => {
-        if (active) setCurrentUser(null);
+      .catch((error) => {
+        if (active) {
+          if (error instanceof BackendApiError && (error.status === 401 || error.status === 403)) {
+            setCurrentUser(null);
+          } else {
+            setNetworkError(true);
+          }
+        }
       })
       .finally(() => {
         if (active) setIsLoading(false);
@@ -74,7 +83,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ currentUser, isLoading, login, logout }}>
+    <AuthContext.Provider value={{ currentUser, isLoading, networkError, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
