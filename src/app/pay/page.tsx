@@ -105,14 +105,31 @@ function PayNowContent() {
     setCashfreeError(null);
 
     try {
+      // 1. Create intent
+      const intent = await requestBackend<{ paymentId: string; amount: number }>("/api/v1/payments/intent", {
+        method: "POST",
+        body: JSON.stringify({
+          memberQuery,
+          payerName: memberQuery,
+          payerPhone: memberQuery,
+          category: activeTab === "event" ? "special_event" : "monthly_dues",
+          method: "upi",
+          selectedMonthIds: activeTab === "subscriptions" ? selectedMonths : undefined,
+          tier: activeTab === "subscriptions" ? (duesTier === 50 ? "base" : "premium") : "custom",
+          customAmount: activeTab === "event" ? finalAmount : undefined,
+        }),
+      });
+
+      // 2. Create Razorpay order mapping to intent
       const orderRes = await fetch("/api/v1/payments/razorpay/order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ amount: finalAmount })
+        body: JSON.stringify({ amount: intent.amount, paymentId: intent.paymentId })
       });
       const orderData = await orderRes.json();
       if (!orderRes.ok) throw new Error(orderData.error || "Failed to create order");
 
+      // 3. Open modal
       const options = {
         key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "",
         amount: orderData.amount,
@@ -126,16 +143,14 @@ function PayNowContent() {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
+                paymentId: intent.paymentId,
                 razorpay_payment_id: response.razorpay_payment_id,
                 razorpay_order_id: response.razorpay_order_id,
                 razorpay_signature: response.razorpay_signature,
-                amount: finalAmount,
-                paymentMethod: "upi",
-                category: activeTab === "event" ? "special_event" : "monthly_dues",
               })
             });
             if (verifyRes.ok) {
-              window.location.href = "/success";
+              window.location.href = "/success?paymentId=" + intent.paymentId;
             } else {
               setCashfreeError("Payment verification failed.");
             }
@@ -155,6 +170,7 @@ function PayNowContent() {
       });
       rzp.open();
     } catch (err: any) {
+      console.error(err);
       setCashfreeError(err.message || "Something went wrong.");
     } finally {
       setIsProcessing(false);
