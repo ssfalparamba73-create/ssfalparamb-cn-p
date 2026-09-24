@@ -5,10 +5,17 @@ import { getPaymentRepository } from "@/lib/backend/composition/paymentService.s
 
 export async function POST(req: Request) {
   try {
-    const { amount, receipt, paymentId } = await req.json();
+    const { paymentId } = await req.json();
 
-    if (!amount || !paymentId) {
-      return NextResponse.json({ error: "Amount and paymentId are required" }, { status: 400 });
+    if (!paymentId) {
+      return NextResponse.json({ error: "paymentId is required" }, { status: 400 });
+    }
+
+    const repo = getPaymentRepository();
+    const payment = await repo.findById(paymentId);
+    
+    if (!payment || payment.status !== "pending") {
+      return NextResponse.json({ error: "Valid pending payment not found" }, { status: 404 });
     }
 
     // Initialize Razorpay instance
@@ -18,15 +25,14 @@ export async function POST(req: Request) {
     });
 
     const options = {
-      amount: Math.round(amount * 100), // Convert to paise
+      amount: Math.round(payment.amount * 100), // Server-verified amount
       currency: "INR",
-      receipt: receipt || `rcpt_${paymentId.substring(0, 8)}`,
+      receipt: `rcpt_${paymentId.substring(0, 8)}`,
     };
 
     const order = await razorpay.orders.create(options);
     
     // Bind the razorpay order id to our pending payment intent
-    const repo = getPaymentRepository();
     await repo.updateGatewayOrderId(paymentId, order.id, order.id);
 
     return NextResponse.json(order, { status: 200 });

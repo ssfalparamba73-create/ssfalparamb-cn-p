@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
 import { getPaymentSettings, updatePaymentSettings, type PaymentSettings, type DuesFrequency } from "@/lib/api/paymentSettingsClient";
 
 const defaults: PaymentSettings = {
@@ -20,6 +21,8 @@ const defaults: PaymentSettings = {
   customMinimum: 10,
   receiptPrefix: "REC",
   includeYear: true,
+  upiEnabled: true,
+  specialEventEnabled: false,
 };
 
 export function PaymentConfigManager() {
@@ -50,6 +53,27 @@ export function PaymentConfigManager() {
         <CardContent className="flex items-start gap-3 p-5">
           <ShieldCheck className="mt-0.5 size-5 text-green-600" />
           <div><p className="font-semibold text-green-800 dark:text-green-300">Razorpay payment gateway connected</p><p className="text-sm text-green-700 dark:text-green-400">Orders, verification, receipts, and webhook reconciliation are active.</p></div>
+        </CardContent>
+      </Card>
+
+      
+      <Card className="border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
+        <CardHeader><CardTitle>Payment Methods & Features</CardTitle><CardDescription>Toggle available payment methods and tabs on the public pay page.</CardDescription></CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center justify-between rounded-lg border p-4">
+            <div className="space-y-0.5">
+              <Label className="text-base">UPI Payments</Label>
+              <p className="text-sm text-muted-foreground">Allow users to pay via UPI and QR Code.</p>
+            </div>
+            <Select value={settings.upiEnabled ? "yes" : "no"} onValueChange={(v) => update("upiEnabled", v === "yes")} disabled={isLoading || isSaving}><SelectTrigger className="w-[120px]"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="yes">Enabled</SelectItem><SelectItem value="no">Disabled</SelectItem></SelectContent></Select>
+          </div>
+          <div className="flex items-center justify-between rounded-lg border p-4">
+            <div className="space-y-0.5">
+              <Label className="text-base">Special Event Tab</Label>
+              <p className="text-sm text-muted-foreground">Show the special event tab for custom event contributions.</p>
+            </div>
+            <Select value={settings.specialEventEnabled ? "yes" : "no"} onValueChange={(v) => update("specialEventEnabled", v === "yes")} disabled={isLoading || isSaving}><SelectTrigger className="w-[120px]"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="yes">Visible</SelectItem><SelectItem value="no">Hidden</SelectItem></SelectContent></Select>
+          </div>
         </CardContent>
       </Card>
 

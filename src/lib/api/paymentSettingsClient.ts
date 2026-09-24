@@ -12,6 +12,8 @@ export interface PaymentSettings {
   customMinimum: number;
   receiptPrefix: string;
   includeYear: boolean;
+  upiEnabled: boolean;
+  specialEventEnabled: boolean;
 }
 
 export function getPaymentSettings() {

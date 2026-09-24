@@ -98,9 +98,9 @@ export class SupabasePaymentRepository implements PaymentRepository {
       let monthlyAmount = 0;
       
       if (input.tier === "base" || input.tier === "premium") {
-        const { data: settings } = await supabase.from("settings").select("key, value").in("key", ["monthly_due_base_amount", "monthly_due_premium_amount"]);
-        const baseAmount = Number(settings?.find(s => s.key === "monthly_due_base_amount")?.value || 50);
-        const premiumAmount = Number(settings?.find(s => s.key === "monthly_due_premium_amount")?.value || 100);
+        const { data: appSettings } = await supabase.from("app_settings").select("value").eq("namespace", "payments").eq("key", "config").maybeSingle();
+          const baseAmount = Number((appSettings?.value as any)?.baseTier || 50);
+          const premiumAmount = Number((appSettings?.value as any)?.premiumTier || 100);
         monthlyAmount = input.tier === "base" ? baseAmount : premiumAmount;
       } else {
         if (!memberId) {
@@ -351,7 +351,7 @@ export class SupabasePaymentRepository implements PaymentRepository {
 
     const { error } = await supabase.from("payments").update({
       gateway_order_id: gatewayOrderId,
-      gateway_provider: "cashfree"
+      gateway_provider: "razorpay"
     }).eq("id", paymentId);
 
     if (error) throw error;

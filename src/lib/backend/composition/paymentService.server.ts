@@ -14,7 +14,7 @@ export function getPaymentService() {
     getSpecialEventMinimumAmount: async () => {
       const supabase = createSupabaseBackendClient();
       const { data } = await supabase.from("app_settings").select("value").eq("namespace", "payments").eq("key", "config").maybeSingle();
-      return Number(data?.value?.customMinimum || 30);
+      return Number(data?.value?.customMinimum || 10);
     },
     getCashEntryMinimumAmount: async () => 1,
   });

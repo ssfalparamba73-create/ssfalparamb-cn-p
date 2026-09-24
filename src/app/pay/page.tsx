@@ -13,15 +13,11 @@ import { requestBackend } from "@/lib/api/backendClient"
 import { getCurrentMemberProfile } from "@/lib/api/memberClient"
 import { getCashReceivers, type CashReceiver } from "@/lib/api/cashReceiverClient"
 
-const isUpiAvailable = true;
-
 function PayNowContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const source = searchParams.get("source");
-  const [paymentMethod, setPaymentMethod] = useState<"upi" | "cash">(
-    isUpiAvailable ? "upi" : "cash"
-  );
+  const [paymentMethod, setPaymentMethod] = useState<"upi" | "cash">("upi");
   const [selectedUpiApp, setSelectedUpiApp] = useState<string | null>(null);
   const [showQrModal] = useState(false);
   const setShowQrModal = (_open: boolean) => undefined;
@@ -32,7 +28,7 @@ function PayNowContent() {
   const [isAdminDropdownOpen, setIsAdminDropdownOpen] = useState(false);
   const [memberQuery, setMemberQuery] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
-  const [cashfreeError, setCashfreeError] = useState<string | null>(null);
+  const [paymentError, setPaymentError] = useState<string | null>(null);
 
   useEffect(() => {
     if (source !== "member") return;
@@ -68,7 +64,8 @@ function PayNowContent() {
   // New states for Support & Events
   const [activeTab, setActiveTab] = useState<"subscriptions" | "event">("subscriptions");
   const [selectedMonths, setSelectedMonths] = useState<string[]>(["current"]);
-  const [paymentSettings, setPaymentSettings] = useState({ baseTier: 50, premiumTier: 100, customMinimum: 10 });
+  const [paymentSettings, setPaymentSettings] = useState({ baseTier: 50, premiumTier: 100, customMinimum: 10, upiEnabled: true, specialEventEnabled: false });
+  const isUpiAvailable = paymentSettings.upiEnabled ?? true;
   const [duesTier, setDuesTier] = useState<number>(50);
 
   // Fetch dynamic payment settings from admin panel configuration
@@ -88,8 +85,22 @@ function PayNowContent() {
   const [customAmount, setCustomAmount] = useState<string>("");
   const [checkoutHint, setCheckoutHint] = useState<string | null>(null);
 
+  useEffect(() => {
+    if (!isUpiAvailable && paymentMethod === "upi") {
+      setPaymentMethod("cash");
+    }
+  }, [isUpiAvailable, paymentMethod]);
+
+
   // Special events remain available only through configured event support.
-  const isSpecialEventActive = true;
+  const isSpecialEventActive = paymentSettings.specialEventEnabled ?? false;
+  
+  useEffect(() => {
+    if (!isSpecialEventActive && activeTab === "event") {
+      setActiveTab("subscriptions");
+    }
+  }, [isSpecialEventActive, activeTab]);
+
   const currentContributionPeriod = new Intl.DateTimeFormat("en-IN", { month: "long", year: "numeric" }).format(new Date());
 
   let finalAmount = 0;
@@ -119,7 +130,7 @@ function PayNowContent() {
     }
     setCheckoutHint(null);
     setIsProcessing(true);
-    setCashfreeError(null);
+    setPaymentError(null);
 
     try {
       // 1. Create intent
@@ -141,7 +152,7 @@ function PayNowContent() {
       const orderRes = await fetch("/api/v1/payments/razorpay/order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ amount: intent.amount, paymentId: intent.paymentId })
+        body: JSON.stringify({ paymentId: intent.paymentId })
       });
       const orderData = await orderRes.json();
       if (!orderRes.ok) throw new Error(orderData.error || "Failed to create order");
@@ -177,12 +188,12 @@ function PayNowContent() {
       
       const rzp = new (window as any).Razorpay(options);
       rzp.on("payment.failed", function (response: any) {
-        setCashfreeError(response.error.description);
+        setPaymentError(response.error.description);
       });
       rzp.open();
     } catch (err: any) {
       console.error(err);
-      setCashfreeError(err.message || "Something went wrong.");
+      setPaymentError(err.message || "Something went wrong.");
     } finally {
       setIsProcessing(false);
     }
@@ -508,11 +519,11 @@ function PayNowContent() {
                 </div>
               )}
             </div>
-            {cashfreeError && (
+            {paymentError && (
               <div className="flex flex-col gap-3 text-sm text-destructive bg-destructive/10 p-4 rounded-xl border border-destructive/20 w-full animate-in fade-in zoom-in-95">
                 <div className="flex items-start gap-2.5 w-full">
                   <AlertCircle className="size-5 shrink-0 mt-0.5" />
-                  <span className="leading-relaxed break-words flex-1">{cashfreeError}</span>
+                  <span className="leading-relaxed break-words flex-1">{paymentError}</span>
                 </div>
                 <div className="flex items-center gap-3 pl-7 flex-wrap mt-1">
                   <Link href="/support" className="inline-flex items-center gap-1.5 text-xs font-semibold bg-white/80 px-3.5 py-2 rounded-lg border border-destructive/20 hover:bg-white transition-colors text-destructive shadow-sm">
@@ -529,7 +540,7 @@ function PayNowContent() {
               </div>
             )}
             
-            {checkoutHint && !cashfreeError && (
+            {checkoutHint && !paymentError && (
               <div className="p-3 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 text-sm">
                 {checkoutHint}
               </div>

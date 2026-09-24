@@ -9,6 +9,8 @@ const DEFAULTS = {
   baseTier: 50,
   premiumTier: 100,
   customMinimum: 10,
+  upiEnabled: true,
+  specialEventEnabled: false,
 };
 
 export async function GET(request: NextRequest) {
@@ -29,6 +31,8 @@ export async function GET(request: NextRequest) {
       baseTier: data?.value?.baseTier ?? DEFAULTS.baseTier,
       premiumTier: data?.value?.premiumTier ?? DEFAULTS.premiumTier,
       customMinimum: data?.value?.customMinimum ?? DEFAULTS.customMinimum,
+      upiEnabled: data?.value?.upiEnabled ?? DEFAULTS.upiEnabled,
+      specialEventEnabled: data?.value?.specialEventEnabled ?? DEFAULTS.specialEventEnabled,
     };
 
     const response = createBackendResponse(ok(publicSettings), context.requestId);

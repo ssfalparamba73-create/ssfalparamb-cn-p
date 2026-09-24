@@ -17,6 +17,8 @@ const DEFAULTS = {
   customMinimum: 10,
   receiptPrefix: "REC",
   includeYear: true,
+  upiEnabled: true,
+  specialEventEnabled: false,
 };
 
 const DUES_FREQUENCIES = new Set(["monthly", "bimonthly", "quarterly"]);
@@ -57,6 +59,8 @@ export async function PATCH(request: NextRequest) {
       customMinimum: Number(body.customMinimum),
       receiptPrefix: String(body.receiptPrefix || "REC").trim().toUpperCase(),
       includeYear: Boolean(body.includeYear),
+      upiEnabled: body.upiEnabled === undefined ? true : Boolean(body.upiEnabled),
+      specialEventEnabled: Boolean(body.specialEventEnabled),
     };
     if (!DUES_FREQUENCIES.has(settings.duesFrequency)) {
       return createBackendResponse(fail(validationError("Invalid subscriptions frequency.", "duesFrequency")), context.requestId);
