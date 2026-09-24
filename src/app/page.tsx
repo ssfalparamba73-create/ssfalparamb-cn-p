@@ -40,7 +40,7 @@ export default function LandingPage() {
           <div className="pointer-events-none absolute inset-0 z-[1] bg-white/10 backdrop-blur-sm" />
 
           {/* Left Column: Brand & Value */}
-          <div className="relative z-10 flex flex-col justify-center overflow-hidden px-4 py-6 md:px-12 lg:px-20 md:py-16 text-center md:text-left items-center md:items-start">
+          <div className="relative z-10 flex flex-col justify-center overflow-hidden px-4 pt-24 pb-6 md:px-12 lg:px-20 md:pt-32 md:pb-16 text-center md:text-left items-center md:items-start">
             <div 
               className="relative z-10 w-full max-w-xl space-y-4 md:space-y-5 p-2 sm:p-8 mt-2 md:mt-0 flex flex-col items-center md:items-start animate-in fade-in slide-in-from-bottom-8 duration-700 ease-out fill-mode-both"
             >
@@ -79,7 +79,7 @@ export default function LandingPage() {
           </div>
 
           {/* Right Column: Login/Signup Form */}
-          <div className="relative z-10 hidden lg:flex items-center justify-center pt-8 pb-0 px-20 w-full">
+          <div className="relative z-10 hidden lg:flex items-center justify-center pt-24 pb-8 px-20 w-full">
             <div 
               className="relative z-10 w-full max-w-[420px] shrink-0 self-center animate-in fade-in zoom-in-95 duration-700 delay-200 ease-out fill-mode-both"
             >
