@@ -68,7 +68,23 @@ function PayNowContent() {
   // New states for Support & Events
   const [activeTab, setActiveTab] = useState<"subscriptions" | "event">("subscriptions");
   const [selectedMonths, setSelectedMonths] = useState<string[]>(["current"]);
-  const [duesTier, setDuesTier] = useState<50 | 100>(50);
+  const [paymentSettings, setPaymentSettings] = useState({ baseTier: 50, premiumTier: 100, customMinimum: 10 });
+  const [duesTier, setDuesTier] = useState<number>(50);
+
+  // Fetch dynamic payment settings from admin panel configuration
+  useEffect(() => {
+    fetch("/api/v1/settings/payments")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.ok && data.data) {
+          setPaymentSettings(data.data);
+          // Only update duesTier to the new base if they haven't manually changed it, 
+          // or if they are currently on the old default '50'
+          setDuesTier((prev) => (prev === 50 ? data.data.baseTier : prev));
+        }
+      })
+      .catch(() => {});
+  }, []);
   const [customAmount, setCustomAmount] = useState<string>("");
   const [checkoutHint, setCheckoutHint] = useState<string | null>(null);
 
@@ -116,7 +132,7 @@ function PayNowContent() {
           category: activeTab === "event" ? "special_event" : "monthly_dues",
           method: "upi",
           selectedMonthIds: activeTab === "subscriptions" ? selectedMonths : undefined,
-          tier: activeTab === "subscriptions" ? (duesTier === 50 ? "base" : "premium") : "custom",
+          tier: activeTab === "subscriptions" ? (duesTier === paymentSettings.baseTier ? "base" : "premium") : "custom",
           customAmount: activeTab === "event" ? finalAmount : undefined,
         }),
       });
@@ -191,7 +207,7 @@ function PayNowContent() {
           category: activeTab === "event" ? "special_event" : "monthly_dues",
           method: "cash_handover",
           selectedMonthIds: activeTab === "subscriptions" ? selectedMonths : undefined,
-          tier: activeTab === "subscriptions" ? (duesTier === 50 ? "base" : "premium") : "custom",
+          tier: activeTab === "subscriptions" ? (duesTier === paymentSettings.baseTier ? "base" : "premium") : "custom",
           customAmount: activeTab === "event" ? finalAmount : undefined,
           receivedByAdminId: selectedAdmin,
         }),
@@ -276,12 +292,12 @@ function PayNowContent() {
                   <div className="pt-2">
                     <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 block">Membership Tier</Label>
                     <div className="grid grid-cols-2 gap-2">
-                      <button type="button" onClick={() => setDuesTier(50)} className={`p-3 rounded-xl border flex flex-col items-center justify-center gap-0.5 transition-all ${duesTier === 50 ? "bg-primary/5 border-primary text-primary dark:bg-blue-500/10 dark:border-blue-500/50 dark:text-blue-400" : "bg-white border-slate-200 text-slate-500 hover:border-primary/40 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-400 dark:hover:border-blue-500/40"}`}>
-                        <span className="font-bold text-lg leading-none">₹50</span>
+                      <button type="button" onClick={() => setDuesTier(paymentSettings.baseTier)} className={`p-3 rounded-xl border flex flex-col items-center justify-center gap-0.5 transition-all ${duesTier === paymentSettings.baseTier ? "bg-primary/5 border-primary text-primary dark:bg-blue-500/10 dark:border-blue-500/50 dark:text-blue-400" : "bg-white border-slate-200 text-slate-500 hover:border-primary/40 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-400 dark:hover:border-blue-500/40"}`}>
+                        <span className="font-bold text-lg leading-none">₹{paymentSettings.baseTier}</span>
                         <span className="text-[10px] uppercase tracking-wider">Base / Month</span>
                       </button>
-                      <button type="button" onClick={() => setDuesTier(100)} className={`p-3 rounded-xl border flex flex-col items-center justify-center gap-0.5 transition-all ${duesTier === 100 ? "bg-primary/5 border-primary text-primary dark:bg-blue-500/10 dark:border-blue-500/50 dark:text-blue-400" : "bg-white border-slate-200 text-slate-500 hover:border-primary/40 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-400 dark:hover:border-blue-500/40"}`}>
-                        <span className="font-bold text-lg leading-none">₹100</span>
+                      <button type="button" onClick={() => setDuesTier(paymentSettings.premiumTier)} className={`p-3 rounded-xl border flex flex-col items-center justify-center gap-0.5 transition-all ${duesTier === paymentSettings.premiumTier ? "bg-primary/5 border-primary text-primary dark:bg-blue-500/10 dark:border-blue-500/50 dark:text-blue-400" : "bg-white border-slate-200 text-slate-500 hover:border-primary/40 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-400 dark:hover:border-blue-500/40"}`}>
+                        <span className="font-bold text-lg leading-none">₹{paymentSettings.premiumTier}</span>
                         <span className="text-[10px] uppercase tracking-wider">Premium / Month</span>
                       </button>
                     </div>
@@ -428,7 +444,7 @@ function PayNowContent() {
 
                       {isQrInlineOpen && (
                         <div className="pt-2 pb-1 border-t border-slate-100 flex flex-col items-center justify-center animate-in fade-in zoom-in duration-200">
-                          <p className="text-xs font-semibold text-slate-500 mb-2">Scan & Pay ₹100</p>
+                          <p className="text-xs font-semibold text-slate-500 mb-2">Scan & Pay ₹{finalAmount || 0}</p>
                           <div className="border border-slate-200 p-2 rounded-xl bg-white shadow-sm">
                             {renderMockQrCode()}
                           </div>
@@ -601,7 +617,7 @@ function PayNowContent() {
                 </div>
                 <div className="border-t border-[#E5EAF3] pt-2.5 flex justify-between items-baseline">
                   <span className="text-xs text-slate-500 font-bold">Amount to Pay</span>
-                  <span className="text-xl font-bold text-slate-900">₹100.00</span>
+                  <span className="text-xl font-bold text-slate-900">₹{finalAmount || 0}.00</span>
                 </div>
               </div>
 
