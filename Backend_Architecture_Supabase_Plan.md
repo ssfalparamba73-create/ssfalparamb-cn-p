@@ -2764,3 +2764,15 @@ Approval gate:
 - Product owner approves production env readiness.
 - Product owner approves mock removal timing.
 - No implementation begins until this addendum is approved.
+
+
+## L. Important Note on Supabase Data API Grants (Oct 30, 2026)
+
+Starting October 30, 2026, Supabase will no longer automatically grant Data API access to new tables created in the public schema. Any new migration that creates a table MUST explicitly include GRANT statements for anon, authenticated, and service_role, or the table will be unreachable via the API. 
+
+Example:
+```sql
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.new_table TO anon;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.new_table TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.new_table TO service_role;
+```
