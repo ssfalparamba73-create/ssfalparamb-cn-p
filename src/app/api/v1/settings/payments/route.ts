@@ -31,7 +31,10 @@ export async function GET(request: NextRequest) {
       customMinimum: data?.value?.customMinimum ?? DEFAULTS.customMinimum,
     };
 
-    return createBackendResponse(ok(publicSettings), context.requestId);
+    const response = createBackendResponse(ok(publicSettings), context.requestId);
+    // Cache heavily on Vercel Edge network to prevent database load
+    response.headers.set("Cache-Control", "public, s-maxage=3600, stale-while-revalidate=86400");
+    return response;
   } catch {
     return createBackendResponse(fail(serverError()), context.requestId);
   }

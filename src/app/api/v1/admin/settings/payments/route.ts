@@ -1,4 +1,5 @@
 import type { NextRequest } from "next/server";
+import { revalidatePath } from "next/cache";
 import { resolveAuthenticatedActor } from "@/lib/backend/auth/resolveActor";
 import { createSupabaseBackendClient } from "@/lib/backend/adapters/supabase/client";
 import { serverError, validationError } from "@/lib/backend/errors/createBackendError";
@@ -66,6 +67,7 @@ export async function PATCH(request: NextRequest) {
     const supabase = createSupabaseBackendClient();
     const { error } = await supabase.from("app_settings").upsert({ namespace: "payments", key: "config", value: settings, updated_at: new Date().toISOString() }, { onConflict: "namespace,key" });
     if (error) throw error;
+    revalidatePath("/pay"); // Instantly update public page cache
     return createBackendResponse(ok(settings), context.requestId);
   } catch {
     return createBackendResponse(fail(serverError("Unable to save payment settings.")), context.requestId);
