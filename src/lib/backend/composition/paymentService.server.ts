@@ -1,5 +1,6 @@
 import "server-only";
 
+import { createSupabaseBackendClient } from "../adapters/supabase/client";
 import { SupabasePaymentRepository } from "../adapters/supabase/repositories/supabasePaymentRepository";
 import { createPaymentService } from "../services/paymentService";
 
@@ -10,9 +11,11 @@ export function getPaymentRepository() {
 export function getPaymentService() {
   return createPaymentService({
     paymentRepository: getPaymentRepository(),
-    // Keep this value aligned with the public payment form until the admin
-    // subscriptions settings are persisted in the backend.
-    getSpecialEventMinimumAmount: async () => 30,
+    getSpecialEventMinimumAmount: async () => {
+      const supabase = createSupabaseBackendClient();
+      const { data } = await supabase.from("app_settings").select("value").eq("namespace", "payments").eq("key", "config").maybeSingle();
+      return Number(data?.value?.customMinimum || 30);
+    },
     getCashEntryMinimumAmount: async () => 1,
   });
 }
