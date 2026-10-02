@@ -31,7 +31,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
         {/* Logo Section */}
         <div className="text-center mb-8 flex flex-col items-center">
           <TransparentLogo src="/logo/atiyya-logo-icon.png" alt="Atiyya Logo" className="h-16 w-auto object-contain mb-3 drop-shadow-sm" />
-          <h1 className="font-cooper text-4xl font-bold text-slate-900 tracking-tight">Atiyya</h1>
+          <h1 className="font-sans text-4xl font-bold text-slate-900 tracking-tight">Atiyya</h1>
           <p className="text-slate-900 font-bold text-lg mt-1">Alparamba Unit</p>
         </div>
 

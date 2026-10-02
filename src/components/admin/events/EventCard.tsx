@@ -2,7 +2,7 @@ import React from "react";
 import { Calendar, Edit, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
-// Matches the shape of MOCK_SPECIAL_EVENTS in lib/admin/mock-data.ts
+// Displays the live special-event DTO shape.
 interface SpecialEvent {
   id: string;
   name: string;

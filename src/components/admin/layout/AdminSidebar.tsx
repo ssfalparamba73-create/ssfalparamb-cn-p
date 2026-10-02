@@ -25,7 +25,7 @@ import { prefetchAdminRouteData } from "@/lib/client/adminPrefetch";
 
 const navItems = [
   { name: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
-  { name: "Messages", href: "/admin/messages", icon: MessageSquare },
+  { name: "Get in Touch", href: "/admin/get-in-touch", icon: MessageSquare },
   { name: "Members", href: "/admin/members", icon: Users },
   { name: "Cash Entry", href: "/admin/cash-entry", icon: Banknote },
   { name: "Payments", href: "/admin/payments", icon: Wallet },
@@ -89,7 +89,7 @@ export function AdminSidebar({ isCollapsed, onToggle }: AdminSidebarProps) {
           {!isCollapsed && (
             <span className="min-w-0">
               <span className="block truncate text-sm font-bold leading-tight text-slate-950 dark:text-slate-50">
-                <span className="font-cooper">Atiyya</span> Alparamba
+                <span className="font-sans font-bold">Atiyya</span> Alparamba
               </span>
               <span className="block truncate text-xs font-medium leading-tight text-slate-500 dark:text-slate-400">
                 Admin Panel

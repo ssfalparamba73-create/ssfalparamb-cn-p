@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
-import { Inter, Noto_Sans_Malayalam, Quicksand, League_Spartan } from "next/font/google";
+import { Inter, Noto_Sans_Malayalam } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "sonner";
 import { ThemeProvider } from "@/components/theme/ThemeProvider";
@@ -19,28 +19,11 @@ const notoMalayalam = Noto_Sans_Malayalam({
   preload: false,
 });
 
-const quicksand = Quicksand({
-  variable: '--font-quicksand',
-  subsets: ['latin'],
-  display: 'swap',
-});
-
-const leagueSpartan = League_Spartan({
-  variable: '--font-league-spartan',
-  subsets: ['latin'],
-  display: 'swap',
-});
-
 const cooper = localFont({
   src: '../../public/font/COOPBL.ttf',
   variable: '--font-cooper-next',
   display: 'swap',
-});
-
-const barabara = localFont({
-  src: '../../public/font/BARABARA-final.otf',
-  variable: '--font-barabara',
-  display: 'swap',
+  preload: false,
 });
 
 export const metadata: Metadata = {
@@ -87,7 +70,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.variable} ${notoMalayalam.variable} ${cooper.variable} ${quicksand.variable} ${leagueSpartan.variable} ${barabara.variable} antialiased transition-colors duration-300`} suppressHydrationWarning>
+      <body className={`${inter.variable} ${notoMalayalam.variable} ${cooper.variable} antialiased transition-colors duration-300`} suppressHydrationWarning>
         <ThemeProvider>
           <AppQueryProvider>
             {children}

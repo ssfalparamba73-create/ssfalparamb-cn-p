@@ -3,10 +3,10 @@
 import React, { Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Banknote } from "lucide-react";
 import { PremiumReceiptCard } from "@/components/receipt/PremiumReceiptCard";
 import { requestBackend } from "@/lib/api/backendClient";
-import type { PaymentDTO } from "@/lib/backend/dto/payment.dto";
+import type { ReceiptDTO } from "@/lib/backend/dto/payment.dto";
 import { useQueryClient } from "@tanstack/react-query";
 import { memberQueryKeys } from "@/lib/client/memberQueries";
 import Image from 'next/image';
@@ -54,14 +54,33 @@ function SuccessPageContent() {
   const queryClient = useQueryClient();
   const source = searchParams.get("source");
   const paymentId = searchParams.get("paymentId") || searchParams.get("order_id");
-  const [payment, setPayment] = React.useState<PaymentDTO | null>(null);
+  const receiptId = searchParams.get("receiptId");
+  const isCashHandover = searchParams.get("method") === "cash_handover";
+  const [receipt, setReceipt] = React.useState<ReceiptDTO | null>(null);
   const [error, setError] = React.useState<string | null>(null);
+  const queryError = !isCashHandover && !paymentId
+    ? "Payment record is missing."
+    : !isCashHandover && !receiptId
+      ? "Secure receipt access is missing. Please contact the administration."
+      : null;
 
   React.useEffect(() => {
-    if (!paymentId) { setError("Payment record is missing."); return; }
+    if (isCashHandover || !paymentId || !receiptId) return;
 
-    const handleSuccess = (p: PaymentDTO) => {
-      setPayment(p);
+    let access: { receiptId?: string; token?: string } | null = null;
+    try {
+      const savedAccess = sessionStorage.getItem(`receipt-access:${paymentId}`);
+      access = savedAccess ? JSON.parse(savedAccess) as { receiptId?: string; token?: string } : null;
+    } catch {
+      access = null;
+    }
+    if (access?.receiptId !== receiptId || !access.token) {
+      queueMicrotask(() => setError("Secure receipt access is missing. Please contact the administration."));
+      return;
+    }
+
+    const handleSuccess = (value: ReceiptDTO) => {
+      setReceipt(value);
       if (source === "member") {
         void queryClient.invalidateQueries({ queryKey: memberQueryKeys.dashboard });
         void queryClient.invalidateQueries({ queryKey: memberQueryKeys.payments });
@@ -74,7 +93,10 @@ function SuccessPageContent() {
     let timerId: ReturnType<typeof setTimeout>;
 
     const fetchReceipt = () => {
-      requestBackend<PaymentDTO>(`/api/v1/payments/${encodeURIComponent(paymentId)}/receipt`)
+      requestBackend<ReceiptDTO>(`/api/v1/receipts/${encodeURIComponent(receiptId)}`, {
+        method: "POST",
+        body: JSON.stringify({ token: access!.token }),
+      })
         .then(handleSuccess)
         .catch(() => {
           attempts++;
@@ -88,7 +110,7 @@ function SuccessPageContent() {
 
     fetchReceipt();
     return () => clearTimeout(timerId);
-  }, [paymentId, source, queryClient]);
+  }, [isCashHandover, paymentId, receiptId, source, queryClient]);
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-[#E6F0FA] to-[#F6F8FC] px-3 py-4 sm:px-6 sm:py-10 flex flex-col justify-between">
@@ -113,26 +135,40 @@ function SuccessPageContent() {
               className="object-contain w-16 h-16 md:w-[88px] md:h-[88px] mix-blend-multiply"
               priority
             />
-            <h1 className="text-xl md:text-3xl font-cooper text-[#063b78] tracking-tight text-center mt-1">
+            <h1 className="text-xl md:text-3xl font-sans font-bold text-[#063b78] tracking-tight text-center mt-1">
               Atiyya Group
             </h1>
           </div>
         </div>
 
         <div className="animate-in fade-in zoom-in-95 duration-500 delay-150 fill-mode-both">
-          {error ? (
-            <div className="rounded-2xl border border-red-200 bg-red-50 p-6 text-center text-sm text-red-700">{error}</div>
-          ) : payment ? (
+          {isCashHandover ? (
+            <div className="rounded-2xl border border-amber-200 bg-amber-50 p-6 text-center shadow-sm">
+              <div className="mx-auto mb-3 flex size-12 items-center justify-center rounded-full bg-amber-100 text-amber-700">
+                <Banknote className="size-6" />
+              </div>
+              <h2 className="text-lg font-semibold text-slate-900">Cash handover pending</h2>
+              <p className="mt-2 text-sm text-slate-600">
+                The payment will be confirmed after the receiving administrator records the cash. A receipt will be available after confirmation.
+              </p>
+              <p className="mt-4 text-sm font-semibold text-slate-800">
+                ₹{Number(searchParams.get("amount") || 0).toLocaleString("en-IN")}
+                {searchParams.get("admin") ? ` · ${searchParams.get("admin")}` : ""}
+              </p>
+            </div>
+          ) : queryError || error ? (
+            <div className="rounded-2xl border border-red-200 bg-red-50 p-6 text-center text-sm text-red-700">{queryError || error}</div>
+          ) : receipt ? (
             <div className="animate-in fade-in zoom-in-95 duration-400">
               <PremiumReceiptCard
-                receiptId={payment.receiptId}
-                method={payment.method}
-                admin={payment.collectedByAdminName || (payment as any).receivedBy || "Atiyya Group"}
-                payerName={payment.payerName}
-                phone={payment.payerPhone}
-                amount={payment.amount}
-                category={payment.category}
-                paidAt={payment.paidAt || payment.recordedAt || (payment as any).issuedAt}
+                receiptId={receipt.receiptId}
+                method={receipt.method}
+                admin={receipt.receivedBy || "Atiyya Group"}
+                payerName={receipt.payerName}
+                phone={receipt.payerPhone}
+                amount={receipt.amount}
+                category={receipt.category}
+                paidAt={receipt.paidAt || receipt.issuedAt}
               />
             </div>
           ) : (

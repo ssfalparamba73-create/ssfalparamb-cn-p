@@ -1,5 +1,11 @@
+import { createHash } from "node:crypto";
 import type { ActorContext, PaginatedResult, PaginationInput } from "../../../contracts/common.contract";
-import type { CreatePaymentIntentInput, PaymentRepository, RecordCashEntryInput } from "../../../contracts/payment.contract";
+import type {
+  ConfirmGatewayPaymentInput,
+  CreatePaymentIntentInput,
+  PaymentRepository,
+  RecordCashEntryInput,
+} from "../../../contracts/payment.contract";
 import type { CashEntryDTO, MemberPaymentHistoryItemDTO, PaymentDTO, PaymentFilters } from "../../../dto/payment.dto";
 import { createSupabaseBackendClient } from "../client";
 import { mapRowToCashEntryDTO, mapRowToMemberPaymentHistoryItemDTO, mapRowToPaymentDTO } from "../mappers/payment.mapper";
@@ -26,6 +32,7 @@ export class SupabasePaymentRepository implements PaymentRepository {
     if (filters.status) query = query.eq("status", filters.status);
     if (filters.method) query = query.eq("method", filters.method);
     if (filters.category) query = query.eq("category", filters.category);
+    query = query.order("recorded_at", { ascending: false });
 
     const page = pagination.page || 1;
     const pageSize = pagination.pageSize || 20;
@@ -95,13 +102,17 @@ export class SupabasePaymentRepository implements PaymentRepository {
     }
 
     if (input.category === "monthly_dues") {
-      let monthlyAmount = 0;
+      let contributionAmount = 0;
       
       if (input.tier === "base" || input.tier === "premium") {
         const { data: appSettings } = await supabase.from("app_settings").select("value").eq("namespace", "payments").eq("key", "config").maybeSingle();
-          const baseAmount = Number((appSettings?.value as any)?.baseTier || 50);
-          const premiumAmount = Number((appSettings?.value as any)?.premiumTier || 100);
-        monthlyAmount = input.tier === "base" ? baseAmount : premiumAmount;
+        const settings = appSettings?.value as Record<string, unknown> | null;
+        const baseAmount = Number(settings?.baseTier ?? 50);
+        const premiumAmount = Number(settings?.premiumTier ?? 100);
+        contributionAmount = input.tier === "base" ? baseAmount : premiumAmount;
+        if (!Number.isFinite(contributionAmount) || contributionAmount <= 0) {
+          throw new Error("Configured contribution period amount is invalid.");
+        }
       } else {
         if (!memberId) {
           throw new Error("A valid member is required to resolve custom Educational Subscriptions amount.");
@@ -111,14 +122,13 @@ export class SupabasePaymentRepository implements PaymentRepository {
           p_category: input.category
         });
         if (!error && data !== null) {
-          monthlyAmount = Number(data);
+          contributionAmount = Number(data);
         } else {
           throw new Error("Failed to resolve Educational Subscriptions amount.");
         }
       }
       
-      const monthsCount = input.selectedMonthIds && input.selectedMonthIds.length > 0 ? input.selectedMonthIds.length : 1;
-      return monthlyAmount * monthsCount;
+      return contributionAmount;
     }
 
     if (input.category === "special_event" && input.eventId) {
@@ -140,6 +150,7 @@ export class SupabasePaymentRepository implements PaymentRepository {
   }
 
   async createPendingPayment(input: CreatePaymentIntentInput, actor: ActorContext): Promise<PaymentDTO> {
+    void actor;
     const supabase = createSupabaseBackendClient();
     const memberDetails = await this.resolveMemberDetails(supabase, input.memberQuery);
     const memberId = memberDetails?.id || null;
@@ -166,17 +177,64 @@ export class SupabasePaymentRepository implements PaymentRepository {
       const { data: existing } = await existingQuery.maybeSingle();
       
       const amount = await this.resolvePaymentAmount(supabase, input, memberId);
+      const amountMinor = Math.round(amount * 100);
+      if (
+        !Number.isFinite(amount) || amount <= 0 || amount > 99_999_999.99 ||
+        !Number.isSafeInteger(amountMinor) || Math.abs(amount * 100 - amountMinor) > 1e-7
+      ) {
+        throw new Error("Resolved payment amount is invalid.");
+      }
 
       if (existing) {
-        if (existing.amount !== amount || existing.tier !== input.tier) {
-          // Update the existing pending payment to reflect the new tier/amount
-          const { data: updated, error: updateError } = await supabase.from("payments")
-            .update({ amount: amount, tier: input.tier })
-            .eq("id", existing.id)
-            .select("*, payment_months(*)")
-            .single();
+        const requestedMonths = input.category === "monthly_dues" ? (input.selectedMonthIds ?? []).slice().sort() : [];
+        const existingMonths = (existing.payment_months || [])
+          .map((month: { month_key: string }) => month.month_key)
+          .sort();
+        const termsChanged =
+          Number(existing.amount) !== amount ||
+          existing.tier !== (input.tier ?? null) ||
+          existing.method !== input.method ||
+          existing.event_id !== (input.eventId ?? null) ||
+          existing.collected_by_admin_id !== (input.receivedByAdminId ?? null) ||
+          JSON.stringify(existingMonths) !== JSON.stringify(requestedMonths);
+
+        if (termsChanged) {
+          if (existing.gateway_order_id || existing.gateway_payment_id) {
+            throw {
+              code: "INVALID_PAYMENT_STATUS_TRANSITION",
+              type: "validation",
+              message: "An active provider order exists for this payment. Complete it before changing the payment details.",
+              retryable: false,
+            };
+          }
+
+          const { data: updated, error: updateError } = await supabase.rpc("update_pending_payment_months_atomic", {
+            p_payment_id: existing.id,
+            p_amount: amount,
+            p_tier: input.tier ?? null,
+            p_month_keys: requestedMonths,
+            p_method: input.method,
+            p_event_id: input.eventId ?? null,
+            p_collected_by_admin_id: input.receivedByAdminId ?? null,
+            p_notes: input.notes ?? null,
+          });
           if (updateError) throw updateError;
-          return mapRowToPaymentDTO(updated, updated.payment_months || []);
+          if (updated !== true) {
+            throw {
+              code: "INVALID_PAYMENT_STATUS_TRANSITION",
+              type: "validation",
+              message: "This pending payment changed while being updated. Please start again.",
+              retryable: true,
+            };
+          }
+
+          const { data: refreshed, error: refreshError } = await supabase
+            .from("payments")
+            .select("*, payment_months(*)")
+            .eq("id", existing.id)
+            .single();
+          if (refreshError || !refreshed) throw refreshError || new Error("Updated payment was not returned.");
+          return mapRowToPaymentDTO(refreshed, refreshed.payment_months || []);
         }
         return mapRowToPaymentDTO(existing, existing.payment_months || []);
       }
@@ -184,45 +242,50 @@ export class SupabasePaymentRepository implements PaymentRepository {
     const { data: receiptId, error: receiptIdError } = await supabase.rpc("generate_receipt_id");
     if (receiptIdError || !receiptId) throw new Error("Failed to generate receipt ID");
 
-    const { data, error } = await supabase.from("payments").insert([{
-      member_id: memberId,
-      receipt_id: receiptId,
-      payer_phone: finalPayerPhone,
-      payer_name: finalPayerName,
-      category: input.category,
-      method: input.method,
-      amount: amount,
-      status: "pending",
-      tier: input.tier,
-      event_id: input.eventId,
-      collected_by_admin_id: input.receivedByAdminId,
-      notes: input.notes,
-    }]).select("*").single();
+    const { data: paymentId, error } = await supabase.rpc("create_pending_payment_atomic", {
+      p_member_id: memberId,
+      p_receipt_id: receiptId,
+      p_payer_phone: finalPayerPhone,
+      p_payer_name: finalPayerName ?? null,
+      p_category: input.category,
+      p_method: input.method,
+      p_amount: amount,
+      p_tier: input.tier ?? null,
+      p_event_id: input.eventId ?? null,
+      p_collected_by_admin_id: input.receivedByAdminId ?? null,
+      p_notes: input.notes ?? null,
+      p_month_keys: input.category === "monthly_dues" ? (input.selectedMonthIds ?? []) : [],
+    });
+    if (error || !paymentId) throw error || new Error("Pending payment was not created.");
 
-    if (error) throw error;
-    
-    if (input.category === "monthly_dues" && input.selectedMonthIds && input.selectedMonthIds.length > 0) {
-      // Calculate amount per month (divide total amount by number of months)
-      const amountPerMonth = amount / input.selectedMonthIds.length;
-      const monthsData = input.selectedMonthIds.map(monthKey => ({
-        payment_id: data.id,
-        month_key: monthKey,
-        amount: amountPerMonth
-      }));
-      
-      await supabase.from("payment_months").insert(monthsData);
+    const paymentWithMonths = await supabase.from("payments").select("*, payment_months(*)").eq("id", paymentId).single();
+    if (paymentWithMonths.error || !paymentWithMonths.data) {
+      throw paymentWithMonths.error || new Error("Pending payment could not be loaded after creation.");
     }
-    
-    const paymentWithMonths = await supabase.from("payments").select("*, payment_months(*)").eq("id", data.id).single();
 
-    return mapRowToPaymentDTO(paymentWithMonths.data, paymentWithMonths.data?.payment_months || []);
+    return mapRowToPaymentDTO(paymentWithMonths.data, paymentWithMonths.data.payment_months || []);
   }
 
   async recordCashEntry(input: RecordCashEntryInput, actor: ActorContext): Promise<CashEntryDTO> {
     const supabase = createSupabaseBackendClient();
 
-    const { data: adminUser } = await supabase.from("admin_users").select("name").eq("id", input.receivedByAdminId).single();
-    if (!adminUser) throw new Error("Invalid admin user for cash entry");
+    const { data: adminUser, error: adminError } = await supabase
+      .from("admin_users")
+      .select("name, status")
+      .eq("id", input.receivedByAdminId)
+      .single();
+    if (adminError || !adminUser || adminUser.status !== "active") {
+      throw adminError || new Error("The selected cash receiver is not active.");
+    }
+    const { data: receiverPermission, error: permissionError } = await supabase
+      .from("admin_permissions")
+      .select("permission_code")
+      .eq("admin_id", input.receivedByAdminId)
+      .eq("permission_code", "payments.record_cash")
+      .maybeSingle();
+    if (permissionError || !receiverPermission) {
+      throw permissionError || new Error("The selected administrator is not enabled to receive cash.");
+    }
 
     const { data: receiptId, error: receiptIdError } = await supabase.rpc("generate_receipt_id");
     if (receiptIdError || !receiptId) throw new Error("Failed to generate receipt ID");
@@ -230,65 +293,59 @@ export class SupabasePaymentRepository implements PaymentRepository {
     let payerPhone = input.guestPhone;
     let payerName = input.guestName;
 
-    if (input.memberId && (!payerPhone || !payerName)) {
-      const { data: member } = await supabase
+    if (input.memberId) {
+      const { data: member, error: memberError } = await supabase
         .from("members")
         .select("phone, name")
         .eq("id", input.memberId)
-        .single();
-
-      if (member) {
-        if (!payerPhone) payerPhone = member.phone;
-        if (!payerName) payerName = member.name;
-      }
+        .maybeSingle();
+      if (memberError || !member) throw memberError || new Error("Selected member was not found.");
+      payerPhone = member.phone;
+      payerName = member.name;
     }
 
     if (!payerPhone) {
       throw new Error("A valid payer phone is required for cash entry payment.");
     }
 
-    const { data: payment, error: paymentError } = await supabase.from("payments").insert([{
-      member_id: input.memberId || null,
-      receipt_id: receiptId,
-      payer_name: payerName,
-      payer_phone: payerPhone,
-      category: input.category,
-      method: "admin_cash_entry",
-      amount: input.amount,
-      status: "confirmed",
-      event_id: input.eventId || null,
-      recorded_by_admin_id: actor.adminId,
-      collected_by_admin_id: input.receivedByAdminId,
-      collected_by_admin_name: adminUser.name,
-      paid_at: new Date().toISOString(),
-      recorded_at: new Date().toISOString(),
-      notes: input.notes,
-    }]).select("*").single();
-
-    if (paymentError || !payment) {
-      throw new Error("Failed to create linked payment for cash entry");
+    const { data, error } = await supabase.rpc("record_cash_payment_atomic", {
+      p_idempotency_key: input.idempotencyKey,
+      p_request_hash: createHash("sha256").update(JSON.stringify({
+        memberId: input.memberId ?? null,
+        payerName: payerName ?? null,
+        payerPhone,
+        category: input.category,
+        amount: input.amount,
+        eventId: input.eventId ?? null,
+        months: input.months ?? null,
+        receivedByAdminId: input.receivedByAdminId,
+        notes: input.notes ?? null,
+      })).digest("hex"),
+      p_member_id: input.memberId ?? null,
+      p_receipt_id: receiptId,
+      p_payer_name: payerName ?? null,
+      p_payer_phone: payerPhone,
+      p_category: input.category,
+      p_amount: input.amount,
+      p_event_id: input.eventId ?? null,
+      p_months: input.months ?? null,
+      p_received_by_admin_id: input.receivedByAdminId,
+      p_received_by_admin_name: adminUser.name,
+      p_recorded_by_admin_id: actor.adminId,
+      p_notes: input.notes ?? null,
+    });
+    if (error || !data) throw error || new Error("Cash entry was not returned after creation.");
+    const cashEntry = Array.isArray(data) ? data[0] : data;
+    const { data: paymentRecord, error: paymentRecordError } = await supabase
+      .from("payments")
+      .select("receipt_id")
+      .eq("id", cashEntry.payment_id)
+      .single();
+    if (paymentRecordError || !paymentRecord) {
+      throw paymentRecordError || new Error("Cash payment receipt reference was not returned.");
     }
 
-    const { data, error } = await supabase.from("cash_entries").insert([{
-      payment_id: payment.id,
-      member_id: input.memberId,
-      payer_name: payerName,
-      payer_phone: payerPhone,
-      category: input.category,
-      amount: input.amount,
-      months: input.months,
-      event_id: input.eventId,
-      received_by_admin_id: input.receivedByAdminId,
-      received_by_admin_name: adminUser.name,
-      notes: input.notes,
-      status: "recorded"
-    }]).select("*").single();
-
-    if (error) {
-      throw new Error(`Cash entry insertion failed. Payment ID was ${payment.id}: ${error.message}`);
-    }
-
-    return mapRowToCashEntryDTO(data);
+    return { ...mapRowToCashEntryDTO(cashEntry), receiptId: paymentRecord.receipt_id };
   }
 
   async approve(paymentId: string, actor: ActorContext, notes?: string): Promise<PaymentDTO> {
@@ -298,9 +355,10 @@ export class SupabasePaymentRepository implements PaymentRepository {
       notes: notes,
       verified_by_admin_id: actor.adminId,
       verified_at: new Date().toISOString()
-    }).eq("id", paymentId).select("*").single();
+    }).eq("id", paymentId).eq("status", "pending").eq("method", "cash_handover").select("*").maybeSingle();
 
     if (error) throw error;
+    if (!data) throw new Error("This payment is no longer a pending cash handover.");
     return mapRowToPaymentDTO(data);
   }
 
@@ -311,9 +369,10 @@ export class SupabasePaymentRepository implements PaymentRepository {
       notes: reason,
       verified_by_admin_id: actor.adminId,
       verified_at: new Date().toISOString()
-    }).eq("id", paymentId).select("*").single();
+    }).eq("id", paymentId).eq("status", "pending").eq("method", "cash_handover").select("*").maybeSingle();
 
     if (error) throw error;
+    if (!data) throw new Error("This payment is no longer a pending cash handover.");
     return mapRowToPaymentDTO(data);
   }
 
@@ -322,7 +381,21 @@ export class SupabasePaymentRepository implements PaymentRepository {
     const { data, error } = await supabase.from("payments").update({
       status: "cancelled",
       notes: reason
-    }).eq("id", paymentId).select("*").single();
+    }).eq("id", paymentId).eq("status", "pending").eq("method", "cash_handover").select("*").maybeSingle();
+
+    if (error) throw error;
+    if (!data) throw new Error("Only pending cash handovers can be cancelled.");
+    return mapRowToPaymentDTO(data);
+  }
+
+  async updateNotes(paymentId: string, notes: string | null): Promise<PaymentDTO> {
+    const supabase = createSupabaseBackendClient();
+    const { data, error } = await supabase
+      .from("payments")
+      .update({ notes })
+      .eq("id", paymentId)
+      .select("*")
+      .single();
 
     if (error) throw error;
     return mapRowToPaymentDTO(data);
@@ -346,37 +419,92 @@ export class SupabasePaymentRepository implements PaymentRepository {
     return mapRowToPaymentDTO(data, data.payment_months || []);
   }
 
-  async updateGatewayOrderId(paymentId: string, gatewayOrderId: string, paymentSessionId?: string): Promise<void> {
+  async setGatewayOrderIdIfUnset(paymentId: string, gatewayOrderId: string, expectedPayment: PaymentDTO): Promise<boolean> {
     const supabase = createSupabaseBackendClient();
-
-    const { error } = await supabase.from("payments").update({
-      gateway_order_id: gatewayOrderId,
-      gateway_provider: "razorpay"
-    }).eq("id", paymentId);
-
+    const { data, error } = await supabase.rpc("claim_razorpay_order_if_unchanged", {
+      p_payment_id: paymentId,
+      p_gateway_order_id: gatewayOrderId,
+      p_expected_member_id: expectedPayment.memberId ?? null,
+      p_expected_payer_phone: expectedPayment.payerPhone,
+      p_expected_payer_name: expectedPayment.payerName ?? null,
+      p_expected_category: expectedPayment.category,
+      p_expected_method: expectedPayment.method,
+      p_expected_amount: expectedPayment.amount,
+      p_expected_tier: expectedPayment.tier ?? null,
+      p_expected_event_id: expectedPayment.eventId ?? null,
+      p_expected_collected_by_admin_id: expectedPayment.collectedByAdminId ?? null,
+      p_expected_notes: expectedPayment.notes ?? null,
+      p_expected_month_keys: (expectedPayment.months ?? []).map((month) => month.monthKey).sort(),
+    });
     if (error) throw error;
+    return data === true;
   }
 
-  async confirmPayment(paymentId: string, gatewayPaymentId: string, gatewaySignature: string): Promise<PaymentDTO> {
+  async confirmGatewayPayment(input: ConfirmGatewayPaymentInput): Promise<PaymentDTO> {
     const supabase = createSupabaseBackendClient();
     const { data: current, error: currentError } = await supabase
       .from("payments")
       .select("*")
-      .eq("id", paymentId)
+      .eq("id", input.paymentId)
       .single();
     if (currentError || !current) throw currentError || new Error("Payment not found");
-    if (current.status === "confirmed") return mapRowToPaymentDTO(current);
+    if (
+      current.gateway_provider !== "razorpay" ||
+      current.gateway_order_id !== input.gatewayOrderId
+    ) {
+      throw new Error("Razorpay order does not belong to this payment.");
+    }
+
+    const expectedAmountMinor = Math.round(Number(current.amount) * 100);
+    if (
+      !Number.isSafeInteger(input.amountMinor) ||
+      expectedAmountMinor !== input.amountMinor ||
+      input.currency !== "INR"
+    ) {
+      throw new Error("Razorpay payment amount or currency does not match.");
+    }
+
+    if (current.status === "confirmed") {
+      if (current.gateway_payment_id === input.gatewayPaymentId) {
+        return mapRowToPaymentDTO(current);
+      }
+      throw new Error("This payment was already confirmed with a different provider payment.");
+    }
     if (current.status !== "pending") throw new Error("Only pending payments can be confirmed.");
 
     const { data, error } = await supabase.from("payments").update({
       status: "confirmed",
-      gateway_payment_id: gatewayPaymentId,
-      gateway_signature: gatewaySignature,
+      gateway_payment_id: input.gatewayPaymentId,
+      gateway_signature: input.gatewaySignature ?? null,
       paid_at: new Date().toISOString()
-    }).eq("id", paymentId).eq("status", "pending").select("*").single();
+    })
+      .eq("id", input.paymentId)
+      .eq("status", "pending")
+      .eq("gateway_provider", "razorpay")
+      .eq("gateway_order_id", input.gatewayOrderId)
+      .eq("amount", current.amount)
+      .select("*")
+      .maybeSingle();
 
     if (error) throw error;
-    return mapRowToPaymentDTO(data);
+    if (data) return mapRowToPaymentDTO(data);
+
+    // Another verified callback may have won the conditional update. Treat only
+    // the same provider payment as an idempotent success.
+    const { data: latest, error: latestError } = await supabase
+      .from("payments")
+      .select("*")
+      .eq("id", input.paymentId)
+      .single();
+    if (latestError || !latest) throw latestError || new Error("Payment not found");
+    if (
+      latest.status === "confirmed" &&
+      latest.gateway_order_id === input.gatewayOrderId &&
+      latest.gateway_payment_id === input.gatewayPaymentId
+    ) {
+      return mapRowToPaymentDTO(latest);
+    }
+    throw new Error("Payment state changed before confirmation completed.");
   }
 
   async failPayment(paymentId: string, reason?: string): Promise<PaymentDTO> {

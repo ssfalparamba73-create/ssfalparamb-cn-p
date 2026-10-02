@@ -4,11 +4,13 @@ import { serverError } from "@/lib/backend/errors/createBackendError";
 import { fail, ok } from "@/lib/backend/errors/resultHelpers";
 import { createBackendResponse } from "@/lib/backend/http/backendResultResponse";
 import { buildPublicActorContext } from "@/lib/backend/http/requestContext";
+import { isDuesFrequency } from "@/lib/payments/duesPeriod";
 
 const DEFAULTS = {
   baseTier: 50,
   premiumTier: 100,
   customMinimum: 10,
+  duesFrequency: "monthly" as const,
   upiEnabled: true,
   specialEventEnabled: false,
 };
@@ -31,15 +33,19 @@ export async function GET(request: NextRequest) {
       baseTier: data?.value?.baseTier ?? DEFAULTS.baseTier,
       premiumTier: data?.value?.premiumTier ?? DEFAULTS.premiumTier,
       customMinimum: data?.value?.customMinimum ?? DEFAULTS.customMinimum,
+      duesFrequency: isDuesFrequency(data?.value?.duesFrequency)
+        ? data.value.duesFrequency
+        : DEFAULTS.duesFrequency,
       upiEnabled: data?.value?.upiEnabled ?? DEFAULTS.upiEnabled,
       specialEventEnabled: data?.value?.specialEventEnabled ?? DEFAULTS.specialEventEnabled,
     };
 
     const response = createBackendResponse(ok(publicSettings), context.requestId);
-    // Cache heavily on Vercel Edge network to prevent database load
-    response.headers.set("Cache-Control", "public, s-maxage=3600, stale-while-revalidate=86400");
+    response.headers.set("Cache-Control", "private, no-store, max-age=0");
     return response;
   } catch {
-    return createBackendResponse(fail(serverError()), context.requestId);
+    const response = createBackendResponse(fail(serverError()), context.requestId);
+    response.headers.set("Cache-Control", "private, no-store, max-age=0");
+    return response;
   }
 }

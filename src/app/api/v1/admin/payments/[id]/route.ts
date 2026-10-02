@@ -17,6 +17,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     if (body.action === "approve") return createBackendResponse(await service.approvePayment(input, actorResult.data!), context.requestId);
     if (body.action === "reject") return createBackendResponse(await service.rejectPayment(input, actorResult.data!), context.requestId);
     if (body.action === "cancel") return createBackendResponse(await service.cancelPayment(input, actorResult.data!), context.requestId);
+    if (body.action === "update_notes") return createBackendResponse(await service.updatePaymentNotes(input, actorResult.data!), context.requestId);
     if (body.action === "void") return createBackendResponse(await service.voidPayment(input, actorResult.data!), context.requestId);
     return createBackendResponse(fail(validationError("Invalid payment action.", "action")), context.requestId);
   } catch {

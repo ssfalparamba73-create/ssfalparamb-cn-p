@@ -36,6 +36,7 @@ export interface PaymentDTO {
   notes?: string;
   paidAt?: ISODateTime;
   recordedAt: ISODateTime;
+  updatedAt?: ISODateTime;
   verifiedAt?: ISODateTime;
   voidedAt?: ISODateTime;
   voidedByAdminId?: ID;
@@ -43,12 +44,14 @@ export interface PaymentDTO {
   gatewayProvider?: string;
   gatewayOrderId?: string;
   gatewayPaymentId?: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export interface PaymentIntentDTO {
   paymentId: ID;
   receiptId?: string;
+  paymentUpdatedAt?: ISODateTime;
+  receiptAccessToken?: string;
   status: PaymentStatus;
   amount: number;
   currency: "INR";
@@ -90,6 +93,7 @@ export interface ReceiptDTO {
 export interface CashEntryDTO {
   id: ID;
   paymentId: ID;
+  receiptId?: string;
   memberId?: ID;
   payerName?: string;
   payerPhone: string;

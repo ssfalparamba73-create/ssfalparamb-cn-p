@@ -71,7 +71,7 @@ export function createBackendResponse<T>(
       });
 
       result = fail<T>(
-        serverError(`${result.error?.message} | Code: ${result.error?.code}`),
+        serverError(`Request failed. Code: ${result.error?.code ?? "INTERNAL_ERROR"}`),
         { requestId }
       );
     }

@@ -35,6 +35,7 @@ export function mapRowToPaymentDTO(row: any, monthsRows: any[] = []): PaymentDTO
     notes: row.notes,
     paidAt: row.paid_at,
     recordedAt: row.recorded_at,
+    updatedAt: row.updated_at ?? row.created_at,
     verifiedAt: row.verified_at,
     voidedAt: row.voided_at,
     voidedByAdminId: row.voided_by_admin_id,

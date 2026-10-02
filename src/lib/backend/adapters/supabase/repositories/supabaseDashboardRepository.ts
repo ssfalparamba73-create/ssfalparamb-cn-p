@@ -21,12 +21,21 @@ interface PaymentRow {
   recorded_at: string;
 }
 
-interface CashRow {
+type FinalPaymentRow = Omit<PaymentRow, "status"> & {
+  status: Extract<PaymentStatus, "confirmed" | "failed">;
+};
+
+interface CashHandoverPaymentRow {
   id: string;
   amount: number | string;
-  received_by_admin_name: string;
-  status: "received" | "recorded" | "verified" | "disputed";
-  received_at: string;
+  collected_by_admin_id: string | null;
+  status: "pending" | "confirmed";
+  recorded_at: string;
+}
+
+interface CashReceiverRow {
+  id: string;
+  name: string;
 }
 
 interface MemberRow {
@@ -60,7 +69,7 @@ function paymentDate(row: PaymentRow): string {
   return row.paid_at ?? row.recorded_at;
 }
 
-function mapRecentPayment(row: PaymentRow): DashboardRecentPaymentDTO {
+function mapRecentPayment(row: FinalPaymentRow): DashboardRecentPaymentDTO {
   return {
     id: row.id,
     receiptId: row.receipt_id,
@@ -133,19 +142,25 @@ export class SupabaseDashboardRepository implements DashboardRepository {
         .select("id,dues_pending,is_blood_donor,donor_available")
         .eq("status", "active"),
       supabase
-        .from("cash_entries")
+        .from("payments")
         .select("id", { count: "exact", head: true })
-        .in("status", ["received", "recorded"]),
+        .eq("method", "cash_handover")
+        .eq("status", "pending")
+        .is("voided_at", null),
       supabase
         .from("payments")
         .select("id,receipt_id,payer_name,category,method,amount,status,paid_at,recorded_at")
+        .in("status", ["confirmed", "failed"])
         .is("voided_at", null)
         .order("recorded_at", { ascending: false })
         .limit(5),
       supabase
-        .from("cash_entries")
-        .select("id,amount,received_by_admin_name,status,received_at")
-        .order("received_at", { ascending: false })
+        .from("payments")
+        .select("id,amount,collected_by_admin_id,status,recorded_at")
+        .eq("method", "cash_handover")
+        .in("status", ["pending", "confirmed"])
+        .is("voided_at", null)
+        .order("recorded_at", { ascending: false })
         .limit(5),
     ]);
 
@@ -158,6 +173,20 @@ export class SupabaseDashboardRepository implements DashboardRepository {
       recentCashResult.error,
     ].find(Boolean);
     if (firstError) throw firstError;
+
+    const recentCashPayments = (recentCashResult.data ?? []) as CashHandoverPaymentRow[];
+    const receiverIds = Array.from(new Set(
+      recentCashPayments
+        .map((row) => row.collected_by_admin_id)
+        .filter((id): id is string => Boolean(id))
+    ));
+    const receiverResult = receiverIds.length > 0
+      ? await supabase.from("admin_users").select("id,name").in("id", receiverIds)
+      : { data: [], error: null };
+    if (receiverResult.error) throw receiverResult.error;
+    const receiverNames = new Map(
+      ((receiverResult.data ?? []) as CashReceiverRow[]).map((row) => [row.id, row.name])
+    );
 
     const currentPayments = (currentPaymentsResult.data ?? []) as PaymentRow[];
     const trendPayments = (trendPaymentsResult.data ?? []) as PaymentRow[];
@@ -233,14 +262,16 @@ export class SupabaseDashboardRepository implements DashboardRepository {
         collectionTrend,
         paymentMethodSplit,
       },
-      recentPayments: ((recentPaymentsResult.data ?? []) as PaymentRow[]).map(mapRecentPayment),
-      recentCashHandovers: ((recentCashResult.data ?? []) as CashRow[]).map(
+      recentPayments: ((recentPaymentsResult.data ?? []) as PaymentRow[])
+        .filter((row): row is FinalPaymentRow => row.status === "confirmed" || row.status === "failed")
+        .map(mapRecentPayment),
+      recentCashHandovers: recentCashPayments.map(
         (row): DashboardRecentCashHandoverDTO => ({
           id: row.id,
           amount: toNumber(row.amount),
-          adminName: row.received_by_admin_name,
-          date: row.received_at,
-          status: row.status === "verified" ? "verified" : "pending",
+          adminName: receiverNames.get(row.collected_by_admin_id ?? "") ?? "Admin",
+          date: row.recorded_at,
+          status: row.status === "confirmed" ? "verified" : "pending",
         })
       ),
     };

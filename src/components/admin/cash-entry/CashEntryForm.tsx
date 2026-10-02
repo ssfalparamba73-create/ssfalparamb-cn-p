@@ -1,19 +1,20 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Check, Search, ArrowLeft, Receipt, User, AlertCircle } from "lucide-react";
+import { Check, Search, ArrowLeft, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import { PremiumReceiptCard } from "@/components/receipt/PremiumReceiptCard";
 import { getAdminMembers } from "@/lib/api/memberClient";
 import { recordAdminCashEntry } from "@/lib/api/adminPaymentClient";
 import { getCurrentSession } from "@/lib/api/authClient";
-import { getAdminUsers } from "@/lib/api/adminUserClient";
-import type { AdminUserDTO } from "@/lib/backend/dto/admin.dto";
+import { getCashReceivers } from "@/lib/api/cashReceiverClient";
+import { getAdminEvents } from "@/lib/api/eventClient";
+import type { SpecialEventDTO } from "@/lib/backend/dto/event.dto";
 
 export function CashEntryForm() {
   const [category, setCategory] = useState("monthly_dues");
@@ -27,7 +28,8 @@ export function CashEntryForm() {
   const [amount, setAmount] = useState("");
   const [admin, setAdmin] = useState("Farhan (President)");
   const [adminId, setAdminId] = useState("");
-  const [admins, setAdmins] = useState<AdminUserDTO[]>([]);
+  const [admins, setAdmins] = useState<{ id: string; name: string }[]>([]);
+  const [events, setEvents] = useState<SpecialEventDTO[]>([]);
   const [notes, setNotes] = useState("");
   const [months, setMonths] = useState("");
   const [eventId, setEventId] = useState("");
@@ -35,19 +37,28 @@ export function CashEntryForm() {
   // UI State
   const [showConfirm, setShowConfirm] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const cashIdempotencyKey = useRef<string | null>(null);
+  const cashIdempotencyPayload = useRef<string | null>(null);
   const [generatedReceiptId, setGeneratedReceiptId] = useState("");
 
   useEffect(() => {
-    getAdminUsers()
-      .then((result) => setAdmins(result.items.filter((item) => item.status === "active" && item.canReceiveCash)))
+    getCashReceivers()
+      .then((result) => {
+        setAdmins(result);
+        getCurrentSession().then((session) => {
+          if (session.actorType === "admin") {
+            const receiver = result.find((item) => item.id === session.actorId) ?? result[0];
+            setAdminId(receiver?.id ?? "");
+            setAdmin(receiver?.name ?? "");
+          }
+        }).catch(() => undefined);
+      })
       .catch(() => setAdmins([]));
+    getAdminEvents()
+      .then((result) => setEvents(result.filter((event) => event.isActive)))
+      .catch(() => setEvents([]));
 
-    getCurrentSession().then((session) => {
-      if (session.actorType === "admin") {
-        setAdminId(session.actorId);
-        setAdmin(session.actorName);
-      }
-    }).catch(() => undefined);
   }, []);
 
   const handleInitialSubmit = (e: React.FormEvent) => {
@@ -64,6 +75,14 @@ export function CashEntryForm() {
       toast.error("Please enter a valid amount (Min ₹10)");
       return;
     }
+    if (category === "special_event" && !eventId) {
+      toast.error("Please select an active special event.");
+      return;
+    }
+    if (!adminId || !admins.some((item) => item.id === adminId)) {
+      toast.error("Please select an active cash receiver.");
+      return;
+    }
     setShowConfirm(true);
   };
 
@@ -72,8 +91,26 @@ export function CashEntryForm() {
       toast.error("Unable to identify the signed-in admin.");
       return;
     }
+    const requestPayload = JSON.stringify({
+      memberId: isGuest ? null : selectedMember?.id ?? null,
+      guestName: isGuest ? guestName : null,
+      guestPhone: isGuest ? guestPhone : null,
+      category,
+      amount: Number(amount),
+      months: category === "monthly_dues" ? months.split(",").map((month) => month.trim()).filter(Boolean) : null,
+      eventId: category === "special_event" ? eventId : null,
+      receivedByAdminId: adminId,
+      notes,
+    });
+    if (!cashIdempotencyKey.current || cashIdempotencyPayload.current !== requestPayload) {
+      cashIdempotencyKey.current = crypto.randomUUID();
+      cashIdempotencyPayload.current = requestPayload;
+    }
+    const idempotencyKey = cashIdempotencyKey.current;
+    setIsSaving(true);
     try {
       const entry = await recordAdminCashEntry({
+        idempotencyKey,
         memberId: isGuest ? undefined : selectedMember?.id,
         guestName: isGuest ? guestName : undefined,
         guestPhone: isGuest ? guestPhone : undefined,
@@ -84,16 +121,22 @@ export function CashEntryForm() {
         receivedByAdminId: adminId,
         notes,
       });
-      setGeneratedReceiptId(entry.id);
+      setGeneratedReceiptId(entry.receiptId ?? entry.id);
       setShowConfirm(false);
       setShowSuccess(true);
+      cashIdempotencyKey.current = null;
+      cashIdempotencyPayload.current = null;
       toast.success("Payment recorded successfully!");
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Unable to record payment.");
+    } finally {
+      setIsSaving(false);
     }
   };
 
   const resetForm = () => {
+    cashIdempotencyKey.current = null;
+    cashIdempotencyPayload.current = null;
     setSelectedMember(null);
     setMemberSearch("");
     setGuestName("");
@@ -117,9 +160,7 @@ export function CashEntryForm() {
   };
 
   if (showSuccess) {
-    const payerName = isGuest ? guestName : selectedMember?.name || "";
     const payerPhone = isGuest ? guestPhone : selectedMember?.phone || "";
-
     return (
       <div className="flex flex-col items-center justify-center space-y-6 animate-in fade-in zoom-in-95 duration-300 py-8">
         <div className="flex flex-col items-center text-center space-y-2">
@@ -150,8 +191,6 @@ export function CashEntryForm() {
 
   if (showConfirm) {
     const payerName = isGuest ? guestName : selectedMember?.name;
-    const payerPhone = isGuest ? guestPhone : selectedMember?.phone;
-
     return (
       <Card className="max-w-md mx-auto border-slate-200 shadow-sm dark:border-slate-800 dark:bg-slate-900 animate-in slide-in-from-right-4 duration-300">
         <CardHeader className="bg-blue-50/50 dark:bg-blue-900/10 border-b border-slate-100 dark:border-slate-800 pb-4 rounded-t-xl">
@@ -185,8 +224,8 @@ export function CashEntryForm() {
           <Button type="button" variant="outline" className="flex-1" onClick={() => setShowConfirm(false)}>
             <ArrowLeft className="size-4 mr-2" /> Back
           </Button>
-          <Button type="button" className="flex-1 bg-blue-600 hover:bg-blue-700 text-white" onClick={confirmAndSave}>
-            Confirm & Save
+          <Button type="button" className="flex-1 bg-blue-600 hover:bg-blue-700 text-white" onClick={confirmAndSave} disabled={isSaving}>
+            {isSaving ? "Saving..." : "Confirm & Save"}
           </Button>
         </CardFooter>
       </Card>
@@ -323,11 +362,12 @@ export function CashEntryForm() {
                       <SelectValue placeholder="Select Event" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="building_fund">Building Construction Fund</SelectItem>
-                      <SelectItem value="ramadan_relief">Ramadan Relief Fund</SelectItem>
-                      <SelectItem value="education_aid">Education Aid</SelectItem>
+                      {events.map((event) => (
+                        <SelectItem key={event.id} value={event.id}>{event.name}</SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
+                  {events.length === 0 && <p className="text-xs text-amber-700">No active special events are available.</p>}
                 </div>
               </>
             )}
@@ -363,7 +403,7 @@ export function CashEntryForm() {
                   <SelectContent>
                     {admins.map((item) => (
                       <SelectItem key={item.id} value={item.id}>
-                        {item.name} ({item.roles[0] || "Cash Receiver"})
+                        {item.name}
                       </SelectItem>
                     ))}
                   </SelectContent>

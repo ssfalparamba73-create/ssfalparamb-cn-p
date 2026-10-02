@@ -60,18 +60,21 @@ export function RecentPayments({ payments }: RecentPaymentsProps) {
                   </Badge>
                   <Badge
                     variant="outline"
-                    className={
-                      payment.status === "confirmed" ? "bg-green-50 text-green-700 border-green-200" :
-                      payment.status === "pending" ? "bg-orange-50 text-orange-700 border-orange-200" :
-                      "bg-slate-50 text-slate-700 border-slate-200"
-                    }
+                    className={payment.status === "confirmed"
+                      ? "bg-green-50 text-green-700 border-green-200"
+                      : "bg-red-50 text-red-700 border-red-200"}
                   >
-                    {payment.status}
+                    {payment.status === "confirmed" ? "Confirmed" : "Failed"}
                   </Badge>
                 </div>
               </div>
             </div>
           ))}
+          {payments.length === 0 && (
+            <p className="rounded-lg bg-slate-50 px-3 py-4 text-center text-sm text-slate-500 dark:bg-slate-800/40 dark:text-slate-400">
+              No confirmed or failed payments yet.
+            </p>
+          )}
         </div>
       </CardContent>
     </Card>

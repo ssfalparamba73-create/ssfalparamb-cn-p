@@ -11,8 +11,7 @@ import { authError, rateLimitError } from "../errors/createBackendError";
 import { ERROR_CODES } from "../errors/errorCodes";
 import { emptyOk, fail, fromThrowable, ok } from "../errors/resultHelpers";
 import { validateAdminCodeLoginInput, validateMemberLoginInput } from "../validation/authSchemas";
-
-const SESSION_LIFETIME_MS = 10 * 365 * 24 * 60 * 60 * 1000;
+import { SESSION_LIFETIME_MS } from "../auth/sessionConstants";
 
 export function hashSessionToken(rawToken: string): string {
   return createHash("sha256").update(rawToken, "utf8").digest("hex");

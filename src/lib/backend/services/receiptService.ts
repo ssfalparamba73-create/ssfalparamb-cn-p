@@ -14,6 +14,10 @@ export function createReceiptService(deps: {
   const { receiptRepository } = deps;
 
   return {
+    async issuePublicAccessToken(paymentId: string): Promise<string> {
+      return receiptRepository.issuePublicAccessToken(paymentId);
+    },
+
     async getReceiptByToken(
       receiptId: string, 
       token: string, 

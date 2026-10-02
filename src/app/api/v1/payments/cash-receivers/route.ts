@@ -10,10 +10,20 @@ export async function GET(request: NextRequest) {
 
   try {
     const supabase = createSupabaseBackendClient();
+    const { data: permissions, error: permissionError } = await supabase
+      .from("admin_permissions")
+      .select("admin_id")
+      .eq("permission_code", "payments.record_cash");
+    if (permissionError) throw permissionError;
+    const receiverIds = [...new Set((permissions ?? []).map((permission) => permission.admin_id))];
+    if (receiverIds.length === 0) {
+      return createBackendResponse(ok([]), actor.requestId);
+    }
     const { data, error } = await supabase
       .from("admin_users")
       .select("id, name")
       .eq("status", "active")
+      .in("id", receiverIds)
       .order("name");
 
     if (error) throw error;

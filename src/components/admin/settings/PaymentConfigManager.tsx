@@ -62,8 +62,8 @@ export function PaymentConfigManager() {
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between rounded-lg border p-4">
             <div className="space-y-0.5">
-              <Label className="text-base">UPI Payments</Label>
-              <p className="text-sm text-muted-foreground">Allow users to pay via UPI and QR Code.</p>
+              <Label className="text-base">Online Payment</Label>
+              <p className="text-sm text-muted-foreground">Allow members to continue to the connected Razorpay checkout.</p>
             </div>
             <Select value={settings.upiEnabled ? "yes" : "no"} onValueChange={(v) => update("upiEnabled", v === "yes")} disabled={isLoading || isSaving}><SelectTrigger className="w-[120px]"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="yes">Enabled</SelectItem><SelectItem value="no">Disabled</SelectItem></SelectContent></Select>
           </div>
@@ -78,23 +78,19 @@ export function PaymentConfigManager() {
       </Card>
 
       <Card className="border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
-        <CardHeader><CardTitle>UPI & QR Code</CardTitle><CardDescription>These values are used on the member payment flow.</CardDescription></CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2"><Label>Official UPI ID</Label><Input value={settings.upiId} onChange={(e) => update("upiId", e.target.value)} disabled={isLoading || isSaving} /></div>
-            <div className="space-y-2"><Label>Merchant Name</Label><Input value={settings.merchantName} onChange={(e) => update("merchantName", e.target.value)} disabled={isLoading || isSaving} /></div>
-            <div className="space-y-2 md:col-span-2"><Label>QR Code Image URL (Optional)</Label><Input value={settings.qrCodeUrl} onChange={(e) => update("qrCodeUrl", e.target.value)} placeholder="https://..." disabled={isLoading || isSaving} /></div>
-          </div>
+        <CardHeader><CardTitle>Razorpay Checkout</CardTitle><CardDescription>Payment options are presented securely by Razorpay after the member continues.</CardDescription></CardHeader>
+        <CardContent>
+          <p className="text-sm text-muted-foreground">Individual app buttons and static QR codes are not used by this checkout. The Online Payment switch above controls whether the public payment page offers Razorpay.</p>
         </CardContent>
       </Card>
 
       <Card className="border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
-        <CardHeader><CardTitle>subscriptions Settings</CardTitle><CardDescription>Configure the contribution frequency and amounts used to resolve member subscriptions.</CardDescription></CardHeader>
+        <CardHeader><CardTitle>Subscription Settings</CardTitle><CardDescription>Set the contribution period and the amount charged once for that full period.</CardDescription></CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="space-y-2"><Label>subscriptions Frequency</Label><Select value={settings.duesFrequency} onValueChange={(value) => update("duesFrequency", value as DuesFrequency)} disabled={isLoading || isSaving}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="monthly">Monthly (1 month)</SelectItem><SelectItem value="bimonthly">Bi-Monthly (2 months)</SelectItem><SelectItem value="quarterly">Quarterly (3 months)</SelectItem></SelectContent></Select></div>
-            <div className="space-y-2"><Label>Base Tier (₹)</Label><Input type="number" value={settings.baseTier} onChange={(e) => update("baseTier", Number(e.target.value))} disabled={isLoading || isSaving} /></div>
-            <div className="space-y-2"><Label>Premium Tier (₹)</Label><Input type="number" value={settings.premiumTier} onChange={(e) => update("premiumTier", Number(e.target.value))} disabled={isLoading || isSaving} /></div>
+            <div className="space-y-2"><Label>Contribution Frequency</Label><Select value={settings.duesFrequency} onValueChange={(value) => update("duesFrequency", value as DuesFrequency)} disabled={isLoading || isSaving}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="monthly">Monthly (1 month)</SelectItem><SelectItem value="bimonthly">Every 2 months</SelectItem><SelectItem value="quarterly">Quarterly (3 months)</SelectItem></SelectContent></Select></div>
+            <div className="space-y-2"><Label>Base Tier per Period (₹)</Label><Input type="number" value={settings.baseTier} onChange={(e) => update("baseTier", Number(e.target.value))} disabled={isLoading || isSaving} /></div>
+            <div className="space-y-2"><Label>Premium Tier per Period (₹)</Label><Input type="number" value={settings.premiumTier} onChange={(e) => update("premiumTier", Number(e.target.value))} disabled={isLoading || isSaving} /></div>
             <div className="space-y-2"><Label>Custom Minimum (₹)</Label><Input type="number" value={settings.customMinimum} onChange={(e) => update("customMinimum", Number(e.target.value))} disabled={isLoading || isSaving} /></div>
           </div>
         </CardContent>

@@ -3,7 +3,7 @@ import { PaymentConfigManager } from "@/components/admin/settings/PaymentConfigM
 
 export const metadata = {
   title: "Payment Configuration | SSF Alparamba Admin",
-  description: "Configure UPI, QR codes, and Educational Subscriptions settings.",
+  description: "Configure Razorpay availability, contribution frequency, and payment amounts.",
 };
 
 export default function PaymentSettingsPage() {
@@ -13,7 +13,7 @@ export default function PaymentSettingsPage() {
         <div>
           <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-50">Payment Settings</h2>
           <p className="text-slate-500 dark:text-slate-400">
-            Configure UPI IDs, QR codes, receipt prefixes, and standard Educational Subscriptions amounts.
+            Configure online checkout, contribution periods, amounts, and receipt numbering.
           </p>
         </div>
       </div>

@@ -32,7 +32,7 @@ export function ContactForm() {
       } else {
         toast.error("Failed to send message. Please try again.");
       }
-    } catch (err) {
+    } catch {
       toast.error("An error occurred while sending the message.");
     } finally {
       setIsSubmitting(false);

@@ -36,12 +36,19 @@ export function PaymentsTable() {
 
   const getStatusBadge = (status: string, voided = false) => {
     if (voided) return <Badge className="bg-slate-100 text-slate-600 border-slate-200 shadow-none">Voided</Badge>;
-    const effectiveStatus = (status === "pending" || status === "cancelled") ? "failed" : status;
-    switch (effectiveStatus) {
+    switch (status) {
       case "confirmed":
         return <Badge className="bg-green-50 text-green-700 hover:bg-green-50 border-green-200 shadow-none">Completed</Badge>;
       case "failed":
         return <Badge variant="destructive">Failed</Badge>;
+      case "pending":
+        return <Badge className="bg-amber-50 text-amber-700 border-amber-200 shadow-none">Pending review</Badge>;
+      case "cancelled":
+        return <Badge variant="outline">Cancelled</Badge>;
+      case "rejected":
+        return <Badge variant="destructive">Rejected</Badge>;
+      case "refunded":
+        return <Badge className="bg-slate-100 text-slate-700 border-slate-200 shadow-none">Refunded</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
     }

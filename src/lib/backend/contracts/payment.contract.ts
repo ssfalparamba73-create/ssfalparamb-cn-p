@@ -30,6 +30,7 @@ export interface CreatePaymentIntentInput {
 }
 
 export interface RecordCashEntryInput {
+  idempotencyKey: string;
   memberId?: string;
   guestName?: string;
   guestPhone?: string;
@@ -39,6 +40,15 @@ export interface RecordCashEntryInput {
   eventId?: string;
   receivedByAdminId: string;
   notes?: string;
+}
+
+export interface ConfirmGatewayPaymentInput {
+  paymentId: string;
+  gatewayOrderId: string;
+  gatewayPaymentId: string;
+  gatewaySignature?: string;
+  amountMinor: number;
+  currency: string;
 }
 
 export interface PaymentStatusTransitionInput {
@@ -58,14 +68,16 @@ export interface PaymentRepository {
   approve(paymentId: string, actor: ActorContext, notes?: string): Promise<PaymentDTO>;
   reject(paymentId: string, actor: ActorContext, reason?: string): Promise<PaymentDTO>;
   cancel(paymentId: string, actor: ActorContext, reason?: string): Promise<PaymentDTO>;
+  updateNotes(paymentId: string, notes: string | null): Promise<PaymentDTO>;
   voidPayment(paymentId: string, actor: ActorContext, reason: string): Promise<PaymentDTO>;
-  updateGatewayOrderId(paymentId: string, gatewayOrderId: string, paymentSessionId?: string): Promise<void>;
-  confirmPayment(paymentId: string, gatewayPaymentId: string, gatewaySignature: string): Promise<PaymentDTO>;
+  setGatewayOrderIdIfUnset(paymentId: string, gatewayOrderId: string, expectedPayment: PaymentDTO): Promise<boolean>;
+  confirmGatewayPayment(input: ConfirmGatewayPaymentInput): Promise<PaymentDTO>;
   failPayment(paymentId: string, reason?: string): Promise<PaymentDTO>;
 }
 
 export interface ReceiptRepository {
   createForPayment(paymentId: string, actor: ActorContext): Promise<ReceiptDTO>;
+  issuePublicAccessToken(paymentId: string): Promise<string>;
   findByReceiptIdAndToken(receiptId: string, token: string): Promise<ReceiptDTO | null>;
   findForMember(paymentId: string, memberId: string): Promise<ReceiptDTO | null>;
   findByPaymentId(paymentId: string): Promise<ReceiptDTO | null>;
@@ -83,6 +95,7 @@ export interface PaymentService {
 }
 
 export interface ReceiptService {
+  issuePublicAccessToken(paymentId: string): Promise<string>;
   getReceiptByToken(receiptId: string, token: string, actor: ActorContext): Promise<BackendResult<ReceiptDTO>>;
   getReceiptForMember(paymentId: string, actor: ActorContext): Promise<BackendResult<ReceiptDTO>>;
 }
@@ -96,5 +109,6 @@ export interface AdminPaymentService {
   approvePayment(input: PaymentStatusTransitionInput, actor: ActorContext): Promise<BackendResult<PaymentDTO>>;
   rejectPayment(input: PaymentStatusTransitionInput, actor: ActorContext): Promise<BackendResult<PaymentDTO>>;
   cancelPayment(input: PaymentStatusTransitionInput, actor: ActorContext): Promise<BackendResult<PaymentDTO>>;
+  updatePaymentNotes(input: PaymentStatusTransitionInput, actor: ActorContext): Promise<BackendResult<PaymentDTO>>;
   voidPayment(input: PaymentStatusTransitionInput, actor: ActorContext): Promise<BackendResult<PaymentDTO>>;
 }

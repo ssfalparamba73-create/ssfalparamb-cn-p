@@ -1,6 +1,7 @@
 import { requestBackend } from "./backendClient";
+import type { DuesFrequency } from "@/lib/payments/duesPeriod";
 
-export type DuesFrequency = "monthly" | "bimonthly" | "quarterly";
+export type { DuesFrequency } from "@/lib/payments/duesPeriod";
 
 export interface PaymentSettings {
   upiId: string;
@@ -17,7 +18,9 @@ export interface PaymentSettings {
 }
 
 export function getPaymentSettings() {
-  return requestBackend<PaymentSettings>("/api/v1/admin/settings/payments");
+  return requestBackend<PaymentSettings>("/api/v1/admin/settings/payments", {
+    headers: { "x-ssf-admin-cache-bypass": "1" },
+  });
 }
 
 export function updatePaymentSettings(settings: PaymentSettings) {

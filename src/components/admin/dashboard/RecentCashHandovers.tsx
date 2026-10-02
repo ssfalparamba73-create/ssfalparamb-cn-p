@@ -34,7 +34,7 @@ export function RecentCashHandovers({
                   <div className="flex items-center gap-2">
                     <span className="font-semibold text-slate-900 dark:text-slate-100">₹{item.amount.toLocaleString("en-IN")}</span>
                     {item.status === "pending" ? (
-                      <Badge variant="outline" className="text-[10px] uppercase text-amber-600 bg-amber-50 border-amber-200">Pending</Badge>
+                      <Badge variant="outline" className="text-[10px] uppercase text-amber-600 bg-amber-50 border-amber-200">Needs verification</Badge>
                     ) : (
                       <Badge variant="outline" className="text-[10px] uppercase text-green-600 bg-green-50 border-green-200"><CheckCircle2 className="w-3 h-3 mr-1 inline"/> Verified</Badge>
                     )}
@@ -44,9 +44,11 @@ export function RecentCashHandovers({
                   </div>
                 </div>
                 {item.status === "pending" && (
-                  <Button size="sm" variant="outline" className="h-8 text-xs text-blue-600 border-blue-200 hover:bg-blue-50">
-                    Verify
-                  </Button>
+                  <Link href={`/admin/payments/${encodeURIComponent(item.id)}`}>
+                    <Button size="sm" variant="outline" className="h-8 text-xs text-blue-600 border-blue-200 hover:bg-blue-50">
+                      Review
+                    </Button>
+                  </Link>
                 )}
               </div>
             ))}

@@ -79,7 +79,7 @@ export default function AdminLoginPage() {
             <TransparentLogo src="/logo/atiyya-logo-icon.png" alt="Atiyya Logo" className="h-16 w-auto object-contain mb-3 drop-shadow-sm" />
           </div>
           <CardTitle className="text-3xl font-bold">
-            <span className="font-cooper text-slate-900">Atiyya</span> Admin
+            <span className="font-sans font-bold text-slate-900">Atiyya</span> Admin
           </CardTitle>
           <CardDescription className="text-slate-500 font-medium text-base">
             Alparamba Unit

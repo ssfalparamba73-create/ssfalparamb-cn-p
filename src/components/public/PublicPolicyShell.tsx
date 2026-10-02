@@ -35,7 +35,7 @@ export function PublicPolicyShell({
               <Image src="/logo/atiyya-logo-icon.png" alt="Atiyya Logo" width={30} height={30} className="size-8 object-contain" />
             </span>
             <span className="truncate text-base font-bold text-slate-900">
-              <span className="font-cooper font-normal">Atiyya</span> Alparamba Unit
+              <span className="font-sans font-bold">Atiyya</span> Alparamba Unit
             </span>
           </Link>
           <Button asChild variant="outline" size="sm" className="rounded-xl border-slate-200 bg-white/80">

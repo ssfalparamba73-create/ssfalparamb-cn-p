@@ -189,7 +189,7 @@ export function SecuritySettingsManager() {
                 </div>
 
                 <div className="p-6 sm:p-10 flex justify-center items-center">
-                  {/* The Mock Modal */}
+                  {/* Static preview of the member PIN onboarding dialog. */}
                   <div className="w-full max-w-sm bg-white dark:bg-slate-950 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-800 overflow-hidden relative">
                     {/* Decorative Background */}
                     <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none"></div>
@@ -204,7 +204,7 @@ export function SecuritySettingsManager() {
                         Welcome to SSF Alparamba
                       </h3>
 
-                      <p className="text-[15px] leading-relaxed text-slate-600 dark:text-slate-300 mb-6 font-medium" style={{ fontFamily: "'Noto Sans Malayalam', sans-serif" }}>
+                      <p className="text-[15px] leading-relaxed text-slate-600 dark:text-slate-300 mb-6 font-medium" style={{ fontFamily: "var(--font-noto-malayalam), sans-serif" }}>
                         നിങ്ങളുടെ അക്കൗണ്ടിന്റെ സുരക്ഷയ്ക്കായി സിസ്റ്റം നൽകിയ പാസ്‌വേഡ് മാറ്റി, പുതിയൊരു രഹസ്യ പിൻ (PIN) നിർബന്ധമായും സെറ്റ് ചെയ്യുക.
                       </p>
 

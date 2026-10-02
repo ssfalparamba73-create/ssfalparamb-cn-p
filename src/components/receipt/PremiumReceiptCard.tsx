@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { 
   Download, 
@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { fitDonorNameFontSize } from "@/lib/receipt/fitDonorNameFontSize";
 
 interface PremiumReceiptCardProps {
   receiptId: string;
@@ -42,6 +43,8 @@ export function PremiumReceiptCard({
   const [isSharing, setIsSharing] = useState(false);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const receiptRef = useRef<HTMLDivElement>(null);
+  const donorNameRef = useRef<HTMLHeadingElement>(null);
+  const [donorFontSize, setDonorFontSize] = useState<number | null>(null);
 
   // Core canvas generation function used by both download and share
   const generateDataUrl = async () => {
@@ -116,6 +119,48 @@ export function PremiumReceiptCard({
   // User requested: if there is no name, show the phone number
   const donorName = (payerName === "Guest User" || !payerName) ? phone : payerName;
 
+  useEffect(() => {
+    const heading = donorNameRef.current;
+    if (!heading) return;
+
+    let isCurrent = true;
+    const fitName = () => {
+      const context = document.createElement("canvas").getContext("2d");
+      if (!context) return;
+
+      const computedStyle = window.getComputedStyle(heading);
+      const rootFontSize = Number.parseFloat(window.getComputedStyle(document.documentElement).fontSize) || 16;
+      const maxFontSize = rootFontSize * (window.matchMedia("(min-width: 640px)").matches ? 1.75 : 1.55);
+      const letterSpacing = computedStyle.letterSpacing === "normal"
+        ? 0
+        : Number.parseFloat(computedStyle.letterSpacing) || 0;
+
+      const fittedSize = fitDonorNameFontSize(
+        donorName,
+        heading.clientWidth,
+        (text, fontSize) => {
+          context.font = `${computedStyle.fontWeight} ${fontSize}px ${computedStyle.fontFamily}`;
+          return context.measureText(text).width + Math.max(Array.from(text).length - 1, 0) * letterSpacing;
+        },
+        maxFontSize,
+      );
+
+      if (isCurrent) setDonorFontSize(fittedSize);
+    };
+
+    const resizeObserver = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(fitName);
+    resizeObserver?.observe(heading);
+    window.addEventListener("resize", fitName);
+    fitName();
+    void document.fonts?.ready.then(fitName);
+
+    return () => {
+      isCurrent = false;
+      resizeObserver?.disconnect();
+      window.removeEventListener("resize", fitName);
+    };
+  }, [donorName]);
+
   // Amount formatting
   const formattedAmount = Number(amount).toLocaleString("en-IN");
 
@@ -138,10 +183,7 @@ export function PremiumReceiptCard({
         />
 
         {/* Overlay Data Container */}
-        <div
-          className="absolute inset-0 z-10 font-sans"
-          style={{ fontFamily: "var(--font-quicksand), sans-serif" }}
-        >
+        <div className="absolute inset-0 z-10 font-sans">
           {/* Receipt No */}
           <div className="absolute top-[27%] left-[67.5%] w-[32%] -translate-y-1/2 text-left">
             <div className="text-[#1f1f1f] text-[12px] font-semibold tracking-tight whitespace-nowrap leading-none">
@@ -158,14 +200,10 @@ export function PremiumReceiptCard({
 
           {/* Donor Name (Center Area) */}
           <div className="absolute top-[44.4%] left-0 w-full -translate-y-1/2 text-center px-8 sm:px-12 flex items-center justify-center">
-            <h2 
-              className={`font-bold text-[#1f1f1f] tracking-tight leading-tight line-clamp-2 ${
-                donorName.length > 26 
-                  ? "text-[1.15rem] sm:text-[1.3rem]" 
-                  : donorName.length > 20
-                  ? "text-[1.35rem] sm:text-[1.5rem]"
-                  : "text-[1.55rem] sm:text-[1.75rem]"
-              }`}
+            <h2
+              ref={donorNameRef}
+              className="w-full break-words font-sans text-[1.55rem] font-bold leading-tight tracking-tight text-[#1f1f1f] line-clamp-2 sm:text-[1.75rem]"
+              style={donorFontSize ? { fontSize: `${donorFontSize}px` } : undefined}
             >
               {donorName}
             </h2>

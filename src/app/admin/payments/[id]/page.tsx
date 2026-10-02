@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
-import { getAdminPayments, transitionAdminPayment } from "@/lib/api/adminPaymentClient";
+import { getAdminPayments, transitionAdminPayment, updateAdminPaymentNotes } from "@/lib/api/adminPaymentClient";
 import type { PaymentDTO } from "@/lib/backend/dto/payment.dto";
 import { useAuth } from "@/lib/admin/AuthContext";
 
@@ -26,6 +26,7 @@ export default function PaymentDetailPage() {
   const [isSaving, setIsSaving] = useState(false);
   const { currentUser } = useAuth();
   const canVoid = currentUser?.permissions.includes("payments.void") ?? false;
+  const canEditNotes = currentUser?.permissions.includes("payments.verify") ?? false;
 
   useEffect(() => {
     getAdminPayments()
@@ -60,12 +61,17 @@ export default function PaymentDetailPage() {
     notes: actualPayment.notes || "No notes provided."
   };
 
-  const handleSaveNotes = () => {
+  const handleSaveNotes = async () => {
     setIsSaving(true);
-    setTimeout(() => {
-      setIsSaving(false);
+    try {
+      const updated = await updateAdminPaymentNotes(actualPayment.id, notes);
+      setActualPayment(updated);
       toast.success("Notes updated successfully");
-    }, 600);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Unable to save payment notes.");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleTransition = async (action: "approve" | "reject" | "cancel") => {
@@ -166,15 +172,20 @@ export default function PaymentDetailPage() {
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
+              readOnly={!canEditNotes}
               placeholder="Add admin notes here... (Not visible to member)"
               className="w-full min-h-[100px] p-3 text-sm rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all resize-y mb-3"
             />
-            <div className="flex justify-end">
-               <Button onClick={handleSaveNotes} disabled={isSaving} className="bg-slate-900 hover:bg-slate-800 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-slate-200">
-                 <Save className="w-4 h-4 mr-2" />
-                 {isSaving ? "Saving..." : "Save Notes"}
-               </Button>
-            </div>
+            {canEditNotes ? (
+              <div className="flex justify-end">
+                <Button onClick={() => void handleSaveNotes()} disabled={isSaving} className="bg-slate-900 hover:bg-slate-800 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-slate-200">
+                  <Save className="w-4 h-4 mr-2" />
+                  {isSaving ? "Saving..." : "Save Notes"}
+                </Button>
+              </div>
+            ) : (
+              <p className="text-right text-xs text-slate-500">Payment verification permission is required to edit notes.</p>
+            )}
           </Card>
         </div>
 
@@ -183,7 +194,7 @@ export default function PaymentDetailPage() {
            <Card className="p-4 border-slate-200 dark:border-slate-800 shadow-sm bg-white dark:bg-slate-900">
              <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100 mb-3">Actions</h3>
              
-             {paymentStatus === "pending" && (
+             {paymentStatus === "pending" && actualPayment.method === "cash_handover" && (
                <div className="space-y-2 mb-4 pb-4 border-b border-slate-100 dark:border-slate-800">
                  <Button 
                    className="w-full bg-green-600 hover:bg-green-700 text-white shadow-none" 
@@ -197,18 +208,6 @@ export default function PaymentDetailPage() {
                    onClick={() => void handleTransition("reject")}
                  >
                    Reject
-                 </Button>
-               </div>
-             )}
-
-             {paymentStatus === "confirmed" && !actualPayment.voidedAt && (
-               <div className="mb-4 pb-4 border-b border-slate-100 dark:border-slate-800">
-                 <Button 
-                   variant="outline" 
-                   className="w-full text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200 dark:border-red-900/50 dark:hover:bg-red-900/20 shadow-none"
-                   onClick={() => void handleTransition("cancel")}
-                 >
-                   Cancel / Undo Payment
                  </Button>
                </div>
              )}

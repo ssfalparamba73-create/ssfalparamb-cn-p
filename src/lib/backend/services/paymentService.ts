@@ -6,27 +6,33 @@ import type {
 } from "../contracts/payment.contract";
 import type { ActorContext, BackendResult, PaginatedResult, PaginationInput } from "../contracts/common.contract";
 import type { PaymentIntentDTO, CashEntryDTO, MemberPaymentHistoryItemDTO } from "../dto/payment.dto";
-import { authError, permissionError } from "../errors/createBackendError";
+import { authError, permissionError, validationError } from "../errors/createBackendError";
 import { ok, fail, fromThrowable } from "../errors/resultHelpers";
 import { 
   validateCreatePaymentIntentInput, 
   validateRecordCashEntryInput
 } from "../validation/paymentSchemas";
 import { validatePagination } from "../validation/commonSchemas";
+import type { DuesFrequency } from "@/lib/payments/duesPeriod";
+import { getDuesMonthKeys } from "@/lib/payments/duesPeriod";
+
+interface PublicPaymentPolicy {
+  customMinimum: number;
+  duesFrequency: DuesFrequency;
+  specialEventEnabled: boolean;
+  upiEnabled: boolean;
+}
 
 export function createPaymentService(deps: {
   paymentRepository: PaymentRepository;
-  getSpecialEventMinimumAmount: (
-    input: Partial<CreatePaymentIntentInput>,
-    actor: ActorContext
-  ) => Promise<number>;
+  getPublicPaymentPolicy: () => Promise<PublicPaymentPolicy>;
   getCashEntryMinimumAmount: (
     actor: ActorContext
   ) => Promise<number>;
 }): PaymentService {
   const { 
     paymentRepository, 
-    getSpecialEventMinimumAmount, 
+    getPublicPaymentPolicy,
     getCashEntryMinimumAmount 
   } = deps;
 
@@ -50,10 +56,24 @@ export function createPaymentService(deps: {
       actor: ActorContext
     ): Promise<BackendResult<PaymentIntentDTO>> {
       try {
-        const specialEventMinimumAmount = await getSpecialEventMinimumAmount(input, actor);
-        
+        const policy = await getPublicPaymentPolicy();
+
+        if ((input.method === "upi" || input.method === "qr_code") && !policy.upiEnabled) {
+          return fail(validationError("Online payments are temporarily unavailable."));
+        }
+        if (input.category === "special_event" && !policy.specialEventEnabled) {
+          return fail(validationError("Special event payments are not currently available."));
+        }
+        if (input.category === "monthly_dues") {
+          const expectedMonths = getDuesMonthKeys(policy.duesFrequency).slice().sort();
+          const requestedMonths = (input.selectedMonthIds ?? []).slice().sort();
+          if (JSON.stringify(requestedMonths) !== JSON.stringify(expectedMonths)) {
+            return fail(validationError("The selected payment period does not match the configured dues frequency.", "selectedMonthIds"));
+          }
+        }
+
         const validation = validateCreatePaymentIntentInput(input, {
-          specialEventMinimumAmount
+          specialEventMinimumAmount: policy.customMinimum,
         });
         if (!validation.ok) return fail(validation.error!);
 
@@ -62,6 +82,7 @@ export function createPaymentService(deps: {
         return ok({
           paymentId: intent.id,
           receiptId: intent.receiptId,
+          paymentUpdatedAt: intent.updatedAt,
           status: intent.status,
           amount: intent.amount,
           currency: intent.currency,
@@ -79,6 +100,9 @@ export function createPaymentService(deps: {
       try {
         const adminCheck = requireAdmin(actor);
         if (!adminCheck.ok) return fail(adminCheck.error!);
+        if (!actor.permissions?.includes("payments.record_cash")) {
+          return fail(permissionError("You do not have permission to record cash payments."));
+        }
 
         const cashEntryMinimumAmount = await getCashEntryMinimumAmount(actor);
 

@@ -1,6 +1,7 @@
 import type { ActorContext } from "../../../contracts/common.contract";
 import type { ReceiptRepository } from "../../../contracts/payment.contract";
 import type { ReceiptDTO } from "../../../dto/payment.dto";
+import { randomBytes } from "node:crypto";
 import { createSupabaseBackendClient } from "../client";
 import { mapRowToReceiptDTO } from "../mappers/payment.mapper";
 
@@ -10,6 +11,42 @@ export interface CreatedReceiptWithToken {
 }
 
 export class SupabaseReceiptRepository implements ReceiptRepository {
+  async issuePublicAccessToken(paymentId: string): Promise<string> {
+    const supabase = createSupabaseBackendClient();
+    const { data: payment, error: paymentError } = await supabase
+      .from("payments")
+      .select("id, status, voided_at")
+      .eq("id", paymentId)
+      .maybeSingle();
+    if (paymentError) throw paymentError;
+    if (!payment || (payment.status !== "pending" && payment.status !== "confirmed") || payment.voided_at) {
+      throw new Error("A public receipt token can only be issued for an active payment.");
+    }
+
+    const now = new Date();
+    const { error: cleanupError } = await supabase
+      .from("payment_receipt_access_tokens")
+      .delete()
+      .lt("expires_at", now.toISOString());
+    if (cleanupError) throw cleanupError;
+
+    const rawToken = randomBytes(32).toString("base64url");
+    const { data: tokenHash, error: tokenHashError } = await supabase.rpc("hash_receipt_token", {
+      p_token: rawToken,
+    });
+    if (tokenHashError || !tokenHash) throw tokenHashError || new Error("Failed to secure receipt token.");
+
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + 30);
+    const { error: insertError } = await supabase.from("payment_receipt_access_tokens").insert({
+      payment_id: paymentId,
+      token_hash: tokenHash,
+      expires_at: expiresAt.toISOString(),
+    });
+    if (insertError) throw insertError;
+    return rawToken;
+  }
+
   async createForPaymentWithToken(paymentId: string, actor: ActorContext): Promise<CreatedReceiptWithToken> {
     void actor;
     const supabase = createSupabaseBackendClient();
@@ -88,6 +125,28 @@ export class SupabaseReceiptRepository implements ReceiptRepository {
     if (tokenHashError) throw tokenHashError;
     if (!tokenHash) throw new Error("Receipt token hashing returned no value.");
 
+    const { data: accessToken, error: accessTokenError } = await supabase
+      .from("payment_receipt_access_tokens")
+      .select("payment_id")
+      .eq("token_hash", tokenHash)
+      .gt("expires_at", new Date().toISOString())
+      .maybeSingle();
+    if (accessTokenError) throw accessTokenError;
+
+    if (accessToken) {
+      const { data, error } = await supabase
+        .from("payment_receipts")
+        .select("*, payments(*, payment_months(*))")
+        .eq("receipt_id", receiptId)
+        .eq("payment_id", accessToken.payment_id)
+        .maybeSingle();
+      if (error) throw error;
+      if (!data || !data.payments || data.payments.status !== "confirmed" || data.payments.voided_at) {
+        return null;
+      }
+      return mapRowToReceiptDTO(data, data.payments);
+    }
+
     const { data, error } = await supabase.from("payment_receipts")
       .select("*, payments(*, payment_months(*))")
       .eq("receipt_id", receiptId)
@@ -99,7 +158,7 @@ export class SupabaseReceiptRepository implements ReceiptRepository {
     if (!data || !data.payments) return null;
 
     // For Phase 6, only confirmed payments can display public receipts
-    if (data.payments.status !== "confirmed") return null;
+    if (data.payments.status !== "confirmed" || data.payments.voided_at) return null;
 
     return mapRowToReceiptDTO(data, data.payments);
   }

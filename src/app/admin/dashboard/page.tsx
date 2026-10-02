@@ -106,7 +106,7 @@ export default function AdminDashboardPage() {
            <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mt-1">Total Collected</p>
         </Link>
 
-        {/* Button 2: Pending Amount */}
+        {/* Button 2: Outstanding Dues */}
         <Link href="/admin/defaulters" className="relative group overflow-hidden rounded-2xl bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border border-slate-200 dark:border-slate-800 p-4 shadow-sm flex flex-col items-center justify-center text-center transition-all active:scale-95">
            <div className="w-12 h-12 rounded-full bg-red-50 text-red-600 dark:bg-red-500/10 dark:text-red-300 flex items-center justify-center mb-3">
              <AlertOctagon className="w-6 h-6" />
@@ -114,7 +114,7 @@ export default function AdminDashboardPage() {
            <h3 className="text-lg font-bold text-red-600 dark:text-red-400 font-mono tracking-tight">
              ₹{stats.pendingAmount.toLocaleString("en-IN")}
            </h3>
-           <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mt-1">Pending Amount</p>
+           <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mt-1">Outstanding Dues</p>
         </Link>
 
         {/* Button 3: Paid Members */}
@@ -151,7 +151,7 @@ export default function AdminDashboardPage() {
           href="/admin/payments"
         />
         <StatsCard
-          label="Pending Amount"
+          label="Outstanding Dues"
           metric={`₹${stats.pendingAmount.toLocaleString("en-IN")}`}
           helper="Across all active members"
           icon={AlertOctagon}
@@ -168,7 +168,7 @@ export default function AdminDashboardPage() {
         <StatsCard
           label="Cash Handovers"
           metric={stats.pendingCashHandovers}
-          helper="Pending verification"
+          helper="Needs verification"
           icon={Banknote}
           variant="warning"
           href="/admin/cash-entry"

@@ -29,8 +29,10 @@ export function createEventService(deps: {
     async list(actor: ActorContext): Promise<BackendResult<SpecialEventDTO[]>> {
       try {
         const access = await checkAccess(actor, "settings.view");
-        if (!access.ok) return fail(access.error!);
-        return ok(await deps.repository.list());
+        const canRecordPayments = actor.permissions?.includes("payments.record_cash") ?? false;
+        if (!access.ok && !canRecordPayments) return fail(access.error!);
+        const events = await deps.repository.list();
+        return ok(access.ok ? events : events.filter((event) => event.isActive));
       } catch (error) {
         return fail(fromThrowable(error));
       }

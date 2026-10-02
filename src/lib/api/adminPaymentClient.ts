@@ -23,6 +23,17 @@ export function transitionAdminPayment(id: string, action: "approve" | "reject" 
   });
 }
 
+export function updateAdminPaymentNotes(id: string, notes: string) {
+  return requestBackend<PaymentDTO>(`/api/v1/admin/payments/${encodeURIComponent(id)}`, {
+    method: "PATCH",
+    body: JSON.stringify({ action: "update_notes", notes }),
+  }).then((result) => {
+    invalidateQueries("admin:api:/api/v1/admin/payments");
+    invalidateQueries("admin:dashboard");
+    return result;
+  });
+}
+
 export function recordAdminCashEntry(input: Record<string, unknown>) {
   return requestBackend<CashEntryDTO>("/api/v1/admin/cash-entry", {
     method: "POST",

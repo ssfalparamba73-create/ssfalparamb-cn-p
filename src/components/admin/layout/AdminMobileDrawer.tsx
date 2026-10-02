@@ -17,7 +17,7 @@ interface AdminMobileDrawerProps {
 
 const navItems = [
   { name: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
-  { name: "Messages", href: "/admin/messages", icon: MessageSquare },
+  { name: "Get in Touch", href: "/admin/get-in-touch", icon: MessageSquare },
   { name: "Members", href: "/admin/members", icon: Users },
   { name: "Cash Entry", href: "/admin/cash-entry", icon: Banknote },
   { name: "Payments", href: "/admin/payments", icon: Wallet },

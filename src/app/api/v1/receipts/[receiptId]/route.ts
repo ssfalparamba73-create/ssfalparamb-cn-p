@@ -36,3 +36,31 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     return createBackendResponse(errResult, actor.requestId);
   }
 }
+
+export async function POST(request: NextRequest, { params }: RouteParams) {
+  const actor = buildPublicActorContext(request);
+
+  try {
+    const { receiptId } = await params;
+    let body: unknown;
+    try {
+      body = await request.json();
+    } catch {
+      const errResult = fail(validationError("Request body must be valid JSON."));
+      return createBackendResponse(errResult, actor.requestId);
+    }
+    const token = body && typeof body === "object" && !Array.isArray(body)
+      ? (body as { token?: unknown }).token
+      : undefined;
+    if (typeof token !== "string" || token.length < 32 || token.length > 256) {
+      const errResult = fail(validationError("A valid receipt token is required."));
+      return createBackendResponse(errResult, actor.requestId);
+    }
+
+    const result = await getReceiptService().getReceiptByToken(receiptId, token, actor);
+    return createBackendResponse(result, actor.requestId);
+  } catch {
+    const errResult = fail(serverError("An internal server error occurred."));
+    return createBackendResponse(errResult, actor.requestId);
+  }
+}

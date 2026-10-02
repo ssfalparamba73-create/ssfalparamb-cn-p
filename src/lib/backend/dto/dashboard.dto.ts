@@ -10,7 +10,7 @@ export interface DashboardRecentPaymentDTO {
   category: PaymentCategory;
   method: PaymentMethod;
   amount: number;
-  status: PaymentStatus;
+  status: Extract<PaymentStatus, "confirmed" | "failed">;
   paidAt: ISODateTime;
 }
 

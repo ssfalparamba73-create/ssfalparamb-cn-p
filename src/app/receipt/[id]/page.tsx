@@ -61,7 +61,7 @@ function ReceiptPageContent({ params }: { params: Promise<{ id: string }> }) {
               className="object-contain w-16 h-16 md:w-[88px] md:h-[88px]"
               priority
             />
-            <h1 className="text-xl md:text-3xl font-cooper text-[#063b78] dark:text-slate-50 tracking-tight text-center mt-1 transition-colors duration-500">
+            <h1 className="text-xl md:text-3xl font-sans font-bold text-[#063b78] dark:text-slate-50 tracking-tight text-center mt-1 transition-colors duration-500">
               Atiyya Group
             </h1>
           </div>
