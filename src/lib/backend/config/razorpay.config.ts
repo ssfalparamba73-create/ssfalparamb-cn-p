@@ -3,7 +3,6 @@ import { createBackendError } from "../errors/createBackendError";
 export interface RazorpayConfig {
   keyId: string;
   keySecret: string;
-  webhookSecret: string;
   checkoutConfigId?: string;
 }
 
@@ -25,14 +24,29 @@ function loadEnvVar(name: string): string {
 export function getRazorpayConfig(): RazorpayConfig {
   if (_config) return _config;
 
+  // NEXT_PUBLIC_RAZORPAY_KEY_ID was the server-side key name in older
+  // deployments. Keep it as a fallback while preferring the private name.
+  const keyId = process.env.RAZORPAY_KEY_ID || process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
+  if (!keyId) {
+    throw createBackendError({
+      code: "INTERNAL_ERROR",
+      type: "server",
+      message: "Missing required environment variable: RAZORPAY_KEY_ID",
+      retryable: false,
+    });
+  }
+
   _config = {
-    keyId: loadEnvVar("RAZORPAY_KEY_ID"),
+    keyId,
     keySecret: loadEnvVar("RAZORPAY_KEY_SECRET"),
-    webhookSecret: loadEnvVar("RAZORPAY_WEBHOOK_SECRET"),
     checkoutConfigId: process.env.RAZORPAY_CHECKOUT_CONFIG_ID || undefined,
   };
 
   return _config;
+}
+
+export function getRazorpayWebhookSecret(): string {
+  return loadEnvVar("RAZORPAY_WEBHOOK_SECRET");
 }
 
 export function getRazorpayPublicKey(): string {
@@ -40,13 +54,8 @@ export function getRazorpayPublicKey(): string {
 }
 
 export function isRazorpayConfigured(): boolean {
-  try {
-    return !!(
-      process.env.RAZORPAY_KEY_ID &&
-      process.env.RAZORPAY_KEY_SECRET &&
-      process.env.RAZORPAY_WEBHOOK_SECRET
-    );
-  } catch {
-    return false;
-  }
+  return !!(
+    (process.env.RAZORPAY_KEY_ID || process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID) &&
+    process.env.RAZORPAY_KEY_SECRET
+  );
 }

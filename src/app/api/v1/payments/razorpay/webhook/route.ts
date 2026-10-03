@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getPaymentRepository } from "@/lib/backend/composition/paymentService.server";
 import { getReceiptService } from "@/lib/backend/composition/receiptService.server";
-import { getRazorpayConfig } from "@/lib/backend/config/razorpay.config";
+import { getRazorpayWebhookSecret } from "@/lib/backend/config/razorpay.config";
 import { verifyRazorpaySignature } from "@/lib/backend/payments/razorpaySecurity";
 import type { ActorContext } from "@/lib/backend/contracts/common.contract";
 
@@ -27,8 +27,8 @@ export async function POST(request: NextRequest) {
   try {
     const rawBody = await request.text();
     const signature = request.headers.get("x-razorpay-signature") ?? "";
-    const config = getRazorpayConfig();
-    if (!verifyRazorpaySignature(config.webhookSecret, rawBody, signature)) {
+    const webhookSecret = getRazorpayWebhookSecret();
+    if (!verifyRazorpaySignature(webhookSecret, rawBody, signature)) {
       return NextResponse.json({ error: "Invalid signature." }, { status: 400 });
     }
 

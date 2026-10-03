@@ -12,6 +12,7 @@ function sameOrderAmount(order: { amount?: string | number; currency?: string },
 }
 
 export async function POST(request: NextRequest) {
+  let failureStage = "parse_request";
   try {
     let body: unknown;
     try {
@@ -34,11 +35,13 @@ export async function POST(request: NextRequest) {
     ) {
       return NextResponse.json({ error: "A valid paymentId and payment version are required." }, { status: 400 });
     }
+    failureStage = "rate_limit";
     const withinLimit = await consumePublicRateLimit("razorpay-order", paymentId, 12, 900);
     if (!withinLimit) {
       return NextResponse.json({ error: rateLimitError().message }, { status: 429 });
     }
 
+    failureStage = "load_payment";
     const repository = getPaymentRepository();
     const payment = await repository.findById(paymentId);
     if (!payment || payment.status !== "pending") {
@@ -59,10 +62,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Payment amount is invalid." }, { status: 409 });
     }
 
+    failureStage = "razorpay_config";
     const config = getRazorpayConfig();
     const razorpay = new Razorpay({ key_id: config.keyId, key_secret: config.keySecret });
 
     if (payment.gatewayOrderId) {
+      failureStage = "fetch_existing_order";
       const existingOrder = await razorpay.orders.fetch(payment.gatewayOrderId);
       if (
         existingOrder.id !== payment.gatewayOrderId ||
@@ -78,6 +83,7 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    failureStage = "create_provider_order";
     const createdOrder = await razorpay.orders.create({
       amount,
       currency: "INR",
@@ -85,8 +91,10 @@ export async function POST(request: NextRequest) {
       notes: { internal_payment_id: paymentId },
     });
 
+    failureStage = "save_provider_order";
     const claimed = await repository.setGatewayOrderIdIfUnset(paymentId, createdOrder.id, payment);
     if (!claimed) {
+      failureStage = "resolve_order_race";
       const latest = await repository.findById(paymentId);
       if (
         latest?.status === "pending" &&
@@ -116,7 +124,22 @@ export async function POST(request: NextRequest) {
       currency: createdOrder.currency,
       keyId: config.keyId,
     });
-  } catch {
+  } catch (error) {
+    const details = error && typeof error === "object" ? error as Record<string, unknown> : {};
+    const safeCode = typeof details.code === "string" && /^[a-z0-9_.-]{1,32}$/i.test(details.code)
+      ? details.code
+      : undefined;
+    const safeStatus = Number.isInteger(details.statusCode) ? details.statusCode : undefined;
+    const safeConfigurationIssue = typeof details.message === "string" &&
+      /^Missing required environment variable: (RAZORPAY_KEY_ID|RAZORPAY_KEY_SECRET)$/.test(details.message)
+      ? details.message
+      : undefined;
+    console.error("[razorpay/order] request failed", {
+      stage: failureStage,
+      code: safeCode,
+      statusCode: safeStatus,
+      configuration: safeConfigurationIssue,
+    });
     return NextResponse.json({ error: "Failed to create Razorpay order." }, { status: 500 });
   }
 }
