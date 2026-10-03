@@ -143,6 +143,8 @@ export function PremiumReceiptCard({
           return context.measureText(text).width + Math.max(Array.from(text).length - 1, 0) * letterSpacing;
         },
         maxFontSize,
+        8,
+        1,
       );
 
       if (isCurrent) setDonorFontSize(fittedSize);
@@ -202,7 +204,7 @@ export function PremiumReceiptCard({
           <div className="absolute top-[44.4%] left-0 w-full -translate-y-1/2 text-center px-8 sm:px-12 flex items-center justify-center">
             <h2
               ref={donorNameRef}
-              className="w-full break-words font-sans text-[1.55rem] font-bold leading-tight tracking-tight text-[#1f1f1f] line-clamp-2 sm:text-[1.75rem]"
+              className="w-full break-words font-sans text-[1.55rem] font-bold leading-tight tracking-tight text-[#1f1f1f] line-clamp-3 sm:text-[1.75rem]"
               style={donorFontSize ? { fontSize: `${donorFontSize}px` } : undefined}
             >
               {donorName}

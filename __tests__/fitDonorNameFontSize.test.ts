@@ -22,6 +22,21 @@ describe("receipt donor name font fitting", () => {
     expect(fontSize).toBeGreaterThanOrEqual(10);
   });
 
+  it("scales a long name down to fit one line when requested", () => {
+    const name = "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMN";
+    const fontSize = fitDonorNameFontSize(
+      name,
+      200,
+      measureByCharacterCount,
+      28,
+      8,
+      1,
+    );
+
+    expect(fontSize).toBeLessThan(28);
+    expect(measureByCharacterCount(name, fontSize)).toBeLessThanOrEqual(200);
+  });
+
   it("wraps a long unbroken name across lines instead of overflowing", () => {
     const fontSize = fitDonorNameFontSize(
       "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJK",
