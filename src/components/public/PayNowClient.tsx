@@ -5,10 +5,11 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { ArrowLeft, CreditCard, Banknote, ShieldCheck, ChevronDown, AlertCircle, Loader2 } from "lucide-react"
+import { ArrowLeft, CreditCard, Banknote, ShieldCheck, AlertCircle, Loader2 } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 import { requestBackend } from "@/lib/api/backendClient"
 import { getCurrentMemberProfile } from "@/lib/api/memberClient"
@@ -62,7 +63,6 @@ function PayNowContent({ source }: { source: string | null }) {
   const [paymentMethod, setPaymentMethod] = useState<"upi" | "cash">("upi");
   const [selectedAdmin, setSelectedAdmin] = useState<string>("");
   const [admins, setAdmins] = useState<CashReceiver[]>([]);
-  const [isAdminDropdownOpen, setIsAdminDropdownOpen] = useState(false);
   const [memberQuery, setMemberQuery] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentError, setPaymentError] = useState<string | null>(null);
@@ -456,53 +456,39 @@ function PayNowContent({ source }: { source: string | null }) {
               {/* Cash Handover Options (Admin Dropdown) */}
               {effectivePaymentMethod === "cash" && (
                 <div className="mt-4 p-4 rounded-xl border bg-secondary/30 space-y-3 animate-in fade-in slide-in-from-top-2 duration-200 relative dark:bg-slate-800/50 dark:border-slate-700">
-                  <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                  <Label htmlFor="received-by-admin" className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                     Received By
                   </Label>
 
-                  <div className="relative">
-                    <button
-                      type="button"
-                      className="flex h-12 w-full items-center justify-between rounded-xl border border-[#E5EAF3] bg-background px-4 py-2 text-base text-left transition-all hover:bg-slate-50/50 focus:outline-none focus:ring-1 focus:ring-primary dark:border-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700"
-                      onClick={() => setIsAdminDropdownOpen(!isAdminDropdownOpen)}
+                  <Select
+                    value={selectedAdmin}
+                    onValueChange={setSelectedAdmin}
+                    disabled={admins.length === 0}
+                  >
+                    <SelectTrigger
+                      id="received-by-admin"
+                      className="h-12 w-full select-none rounded-xl border-[#E5EAF3] bg-background px-4 text-base font-medium focus:ring-1 focus:ring-primary dark:border-slate-700 dark:bg-slate-800"
                     >
-                      <span className={selectedAdmin ? "text-foreground font-medium" : "text-muted-foreground"}>
-                        {selectedAdmin
-                          ? selectedAdminName
-                          : "Select Admin"}
-                      </span>
-                      <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform duration-200 ${isAdminDropdownOpen ? "rotate-180" : ""}`} />
-                    </button>
-
-                    {isAdminDropdownOpen && (
-                      <>
-                        <div
-                          className="fixed inset-0 z-20"
-                          onClick={() => setIsAdminDropdownOpen(false)}
-                        />
-                        <div className="absolute left-0 right-0 mt-2 z-30 max-h-40 overflow-auto rounded-xl border border-[#E5EAF3] bg-white p-1 shadow-lg animate-in fade-in slide-in-from-top-2 duration-150 dark:border-slate-700 dark:bg-slate-800">
-                          {admins.map((admin) => (
-                            <button
-                              key={admin.id}
-                              type="button"
-                              className={`w-full text-left px-4 py-1.5 rounded-lg transition-colors flex flex-col ${
-                                selectedAdmin === admin.id
-                                  ? "bg-primary/10 text-primary font-medium dark:bg-blue-500/15 dark:text-blue-400"
-                                  : "text-slate-700 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-700"
-                              }`}
-                              onClick={() => {
-                                setSelectedAdmin(admin.id);
-                                setIsAdminDropdownOpen(false);
-                              }}
-                            >
-                              <span className="font-semibold text-[14px] leading-tight">{admin.name}</span>
-                              <span className="text-[11px] text-slate-400 font-normal leading-none mt-0.5">Cash Receiver</span>
-                            </button>
-                          ))}
-                        </div>
-                      </>
-                    )}
-                  </div>
+                      <SelectValue placeholder={admins.length ? "Select Admin" : "No cash receivers available"} />
+                    </SelectTrigger>
+                    <SelectContent
+                      position="popper"
+                      align="start"
+                      sideOffset={4}
+                      collisionPadding={8}
+                      className="z-[100] max-h-[min(40vh,20rem)] w-[var(--radix-select-trigger-width)] rounded-xl border-[#E5EAF3] bg-white shadow-lg dark:border-slate-700 dark:bg-slate-800"
+                    >
+                      {admins.map((admin) => (
+                        <SelectItem
+                          key={admin.id}
+                          value={admin.id}
+                          className="min-h-10 select-none rounded-lg py-2 font-medium"
+                        >
+                          {admin.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               )}
             </div>
