@@ -8,11 +8,27 @@ export function fitDonorNameFontSize(
   maxFontSize: number,
   minFontSize = 10,
   maxLines = 2,
+  maxHeight = Number.POSITIVE_INFINITY,
+  lineHeightMultiplier = 1.25,
 ): number {
-  if (!text.trim() || maxWidth <= 0) return maxFontSize;
+  if (!text.trim()) return maxFontSize;
+  if (maxWidth <= 0 || maxHeight <= 0) return minFontSize;
+
+  const segmenter = typeof Intl.Segmenter === "undefined"
+    ? null
+    : new Intl.Segmenter(undefined, { granularity: "grapheme" });
+  const words = text.trim().split(/\s+/u).filter(Boolean).map((word) =>
+    segmenter
+      ? Array.from(segmenter.segment(word), ({ segment }) => segment)
+      : Array.from(word),
+  );
 
   for (let fontSize = maxFontSize; fontSize >= minFontSize; fontSize -= 0.5) {
-    if (fitsWithinLines(text, maxWidth, fontSize, measureText, maxLines)) {
+    const lineCount = countWrappedLines(words, maxWidth, fontSize, measureText, maxLines);
+    if (
+      lineCount <= maxLines &&
+      lineCount * fontSize * lineHeightMultiplier <= maxHeight
+    ) {
       return Math.round(fontSize * 10) / 10;
     }
   }
@@ -20,17 +36,18 @@ export function fitDonorNameFontSize(
   return minFontSize;
 }
 
-function fitsWithinLines(
-  text: string,
+function countWrappedLines(
+  words: string[][],
   maxWidth: number,
   fontSize: number,
   measureText: TextWidthMeasurer,
   maxLines: number,
-): boolean {
+): number {
   let lineCount = 1;
   let currentLine = "";
 
-  for (const word of text.trim().split(/\s+/u).filter(Boolean)) {
+  for (const graphemes of words) {
+    const word = graphemes.join("");
     const candidate = currentLine ? `${currentLine} ${word}` : word;
     if (measureText(candidate, fontSize) <= maxWidth) {
       currentLine = candidate;
@@ -40,7 +57,7 @@ function fitsWithinLines(
     if (currentLine) {
       lineCount += 1;
       currentLine = "";
-      if (lineCount > maxLines) return false;
+      if (lineCount > maxLines) return lineCount;
     }
 
     if (measureText(word, fontSize) <= maxWidth) {
@@ -48,20 +65,19 @@ function fitsWithinLines(
       continue;
     }
 
-    for (const character of Array.from(word)) {
-      const characterCandidate = `${currentLine}${character}`;
+    for (const grapheme of graphemes) {
+      const characterCandidate = `${currentLine}${grapheme}`;
       if (measureText(characterCandidate, fontSize) <= maxWidth) {
         currentLine = characterCandidate;
         continue;
       }
 
+      if (measureText(grapheme, fontSize) > maxWidth) return maxLines + 1;
       if (currentLine) lineCount += 1;
-      if (lineCount > maxLines || measureText(character, fontSize) > maxWidth) {
-        return false;
-      }
-      currentLine = character;
+      if (lineCount > maxLines) return lineCount;
+      currentLine = grapheme;
     }
   }
 
-  return lineCount <= maxLines;
+  return lineCount;
 }

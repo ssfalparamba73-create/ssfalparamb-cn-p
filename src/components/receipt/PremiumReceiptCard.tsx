@@ -43,14 +43,21 @@ export function PremiumReceiptCard({
   const [isSharing, setIsSharing] = useState(false);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const receiptRef = useRef<HTMLDivElement>(null);
+  const donorNameAreaRef = useRef<HTMLDivElement>(null);
   const donorNameRef = useRef<HTMLHeadingElement>(null);
   const [donorFontSize, setDonorFontSize] = useState<number | null>(null);
+  const [donorFontWeight, setDonorFontWeight] = useState(600);
 
   // Core canvas generation function used by both download and share
   const generateDataUrl = async () => {
     const { toJpeg } = await import("html-to-image");
     const element = receiptRef.current;
     if (!element) throw new Error("Receipt element not found");
+
+    await document.fonts?.ready;
+    await new Promise<void>((resolve) => {
+      requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+    });
 
     const imagePromise = toJpeg(element, { quality: 0.9, pixelRatio: 2 });
     
@@ -121,37 +128,56 @@ export function PremiumReceiptCard({
 
   useEffect(() => {
     const heading = donorNameRef.current;
-    if (!heading) return;
+    const nameArea = donorNameAreaRef.current;
+    if (!heading || !nameArea) return;
 
     let isCurrent = true;
+    let frameId: number | null = null;
     const fitName = () => {
-      const context = document.createElement("canvas").getContext("2d");
-      if (!context) return;
+      if (frameId !== null) cancelAnimationFrame(frameId);
+      frameId = requestAnimationFrame(() => {
+        frameId = null;
+        if (!isCurrent) return;
 
-      const computedStyle = window.getComputedStyle(heading);
-      const rootFontSize = Number.parseFloat(window.getComputedStyle(document.documentElement).fontSize) || 16;
-      const maxFontSize = rootFontSize * (window.matchMedia("(min-width: 640px)").matches ? 1.75 : 1.55);
-      const letterSpacing = computedStyle.letterSpacing === "normal"
-        ? 0
-        : Number.parseFloat(computedStyle.letterSpacing) || 0;
+        const maxWidth = heading.clientWidth;
+        const maxHeight = nameArea.clientHeight;
+        if (maxWidth <= 0 || maxHeight <= 0) return;
 
-      const fittedSize = fitDonorNameFontSize(
-        donorName,
-        heading.clientWidth,
-        (text, fontSize) => {
-          context.font = `${computedStyle.fontWeight} ${fontSize}px ${computedStyle.fontFamily}`;
-          return context.measureText(text).width + Math.max(Array.from(text).length - 1, 0) * letterSpacing;
-        },
-        maxFontSize,
-        8,
-        1,
-      );
+        const context = document.createElement("canvas").getContext("2d");
+        if (!context) return;
 
-      if (isCurrent) setDonorFontSize(fittedSize);
+        const computedStyle = window.getComputedStyle(heading);
+        const rootFontSize = Number.parseFloat(window.getComputedStyle(document.documentElement).fontSize) || 16;
+        const maxFontSize = rootFontSize * (window.matchMedia("(min-width: 640px)").matches ? 1.75 : 1.55);
+        const baseFontSize = Number.parseFloat(computedStyle.fontSize) || 18;
+        const lineHeight = computedStyle.lineHeight === "normal"
+          ? 1.2
+          : (Number.parseFloat(computedStyle.lineHeight) / baseFontSize) || 1.2;
+        const letterSpacing = computedStyle.letterSpacing === "normal"
+          ? 0
+          : Number.parseFloat(computedStyle.letterSpacing) || 0;
+
+        const fittedSize = fitDonorNameFontSize(
+          donorName,
+          maxWidth,
+          (text, fontSize) => {
+            context.font = `700 ${fontSize}px ${computedStyle.fontFamily}`;
+            return context.measureText(text).width + Math.max(Array.from(text).length - 1, 0) * letterSpacing;
+          },
+          maxFontSize,
+          10,
+          2,
+          maxHeight,
+          lineHeight,
+        );
+
+        setDonorFontSize(fittedSize);
+        setDonorFontWeight(fittedSize < 16 ? 500 : fittedSize < 22 ? 600 : 700);
+      });
     };
 
     const resizeObserver = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(fitName);
-    resizeObserver?.observe(heading);
+    resizeObserver?.observe(nameArea);
     window.addEventListener("resize", fitName);
     fitName();
     void document.fonts?.ready.then(fitName);
@@ -160,6 +186,7 @@ export function PremiumReceiptCard({
       isCurrent = false;
       resizeObserver?.disconnect();
       window.removeEventListener("resize", fitName);
+      if (frameId !== null) cancelAnimationFrame(frameId);
     };
   }, [donorName]);
 
@@ -201,11 +228,14 @@ export function PremiumReceiptCard({
           </div>
 
           {/* Donor Name (Center Area) */}
-          <div className="absolute top-[44.4%] left-0 w-full -translate-y-1/2 text-center px-8 sm:px-12 flex items-center justify-center">
+          <div
+            ref={donorNameAreaRef}
+            className="absolute top-[44.4%] left-[15.3%] flex h-[9%] w-[69.4%] -translate-y-1/2 items-center justify-center overflow-hidden px-[3%] text-center"
+          >
             <h2
               ref={donorNameRef}
-              className="w-full break-words font-sans text-[1.55rem] font-bold leading-tight tracking-tight text-[#1f1f1f] line-clamp-3 sm:text-[1.75rem]"
-              style={donorFontSize ? { fontSize: `${donorFontSize}px` } : undefined}
+              className="line-clamp-2 max-h-full min-w-0 w-full overflow-hidden break-words font-sans text-[18px] leading-tight tracking-tight text-[#1f1f1f] [overflow-wrap:anywhere]"
+              style={{ fontSize: `${donorFontSize ?? 18}px`, fontWeight: donorFontWeight }}
             >
               {donorName}
             </h2>
