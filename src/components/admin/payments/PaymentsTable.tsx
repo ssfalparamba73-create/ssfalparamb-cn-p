@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Search, ExternalLink, Receipt, Building, User } from "lucide-react";
+import { Search, ExternalLink, Receipt, Building, User, Check } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -10,8 +10,10 @@ import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { TablePagination } from "@/components/ui/table-pagination";
 
-import { getAdminPayments } from "@/lib/api/adminPaymentClient";
+import { getAdminPayments, transitionAdminPayment } from "@/lib/api/adminPaymentClient";
 import type { PaymentDTO } from "@/lib/backend/dto/payment.dto";
+import { useAuth } from "@/lib/admin/AuthContext";
+import { toast } from "sonner";
 
 const PAGE_SIZE = 10;
 
@@ -23,6 +25,9 @@ export function PaymentsTable() {
   const [payments, setPayments] = useState<PaymentDTO[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [reviewingPaymentId, setReviewingPaymentId] = useState<string | null>(null);
+  const { currentUser } = useAuth();
+  const canVerifyPayments = currentUser?.permissions.includes("payments.verify") ?? false;
 
   useEffect(() => {
     getAdminPayments({
@@ -63,6 +68,26 @@ export function PaymentsTable() {
     return method.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
   };
 
+  const canManuallyConfirm = (payment: PaymentDTO) =>
+    canVerifyPayments &&
+    payment.status === "pending" &&
+    (payment.method === "cash_handover" || payment.method === "admin_cash_entry") &&
+    !payment.gatewayOrderId &&
+    !payment.gatewayPaymentId;
+
+  const confirmCashPayment = async (paymentId: string) => {
+    setReviewingPaymentId(paymentId);
+    try {
+      const updated = await transitionAdminPayment(paymentId, "approve");
+      setPayments((current) => current.map((payment) => payment.id === paymentId ? updated : payment));
+      toast.success("Cash payment confirmed.");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Unable to confirm cash payment.");
+    } finally {
+      setReviewingPaymentId(null);
+    }
+  };
+
   const tablePayments = payments.map(p => ({
     id: p.id,
     receiptId: p.receiptId,
@@ -75,6 +100,7 @@ export function PaymentsTable() {
     date: new Date(p.paidAt || p.recordedAt).toLocaleDateString("en-GB", { day: '2-digit', month: 'short', year: 'numeric' }),
     eventName: p.eventName,
     voidedAt: p.voidedAt,
+    canManuallyConfirm: canManuallyConfirm(p),
   }));
 
   const filteredPayments = tablePayments.filter(payment => {
@@ -201,6 +227,17 @@ export function PaymentsTable() {
                   </td>
                   <td className="px-4 py-3 text-right">
                     <div className="flex justify-end gap-2">
+                      {payment.canManuallyConfirm && (
+                        <Button
+                          size="sm"
+                          disabled={reviewingPaymentId === payment.id}
+                          onClick={() => void confirmCashPayment(payment.id)}
+                          className="h-8 bg-green-600 px-3 text-white hover:bg-green-700"
+                        >
+                          <Check className="mr-1 size-4" />
+                          {reviewingPaymentId === payment.id ? "Confirming..." : "Confirm"}
+                        </Button>
+                      )}
                       <Link href={`/receipt/${payment.id}`} target="_blank">
                         <Button variant="ghost" size="icon" aria-label={`View public receipt for ${payment.receiptId}`} className="size-8 rounded-full text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20" title="View Public Receipt">
                           <ExternalLink className="size-4" />
@@ -250,6 +287,16 @@ export function PaymentsTable() {
             </div>
 
             <div className="flex gap-2 pt-2 border-t border-slate-100 dark:border-slate-700/50">
+              {payment.canManuallyConfirm && (
+                <Button
+                  disabled={reviewingPaymentId === payment.id}
+                  onClick={() => void confirmCashPayment(payment.id)}
+                  className="h-9 flex-1 bg-green-600 text-xs text-white hover:bg-green-700"
+                >
+                  <Check className="mr-1 size-4" />
+                  {reviewingPaymentId === payment.id ? "Confirming..." : "Confirm Cash"}
+                </Button>
+              )}
               <Link href={`/admin/payments/${payment.id}`} className="flex-1">
                 <Button variant="outline" className="w-full text-xs h-9 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-50 dark:hover:bg-slate-700">
                   View Details

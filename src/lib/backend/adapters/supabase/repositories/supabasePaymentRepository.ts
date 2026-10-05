@@ -350,30 +350,28 @@ export class SupabasePaymentRepository implements PaymentRepository {
 
   async approve(paymentId: string, actor: ActorContext, notes?: string): Promise<PaymentDTO> {
     const supabase = createSupabaseBackendClient();
-    const { data, error } = await supabase.from("payments").update({
-      status: "confirmed",
-      notes: notes,
-      verified_by_admin_id: actor.adminId,
-      verified_at: new Date().toISOString()
-    }).eq("id", paymentId).eq("status", "pending").eq("method", "cash_handover").select("*").maybeSingle();
+    const { data, error } = await supabase.rpc("review_manual_cash_payment_atomic", {
+      p_payment_id: paymentId,
+      p_actor_admin_id: actor.adminId,
+      p_action: "approve",
+      p_notes: notes?.trim() || null,
+    });
 
-    if (error) throw error;
-    if (!data) throw new Error("This payment is no longer a pending cash handover.");
-    return mapRowToPaymentDTO(data);
+    if (error || !data) throw error || new Error("Cash payment was not returned after approval.");
+    return mapRowToPaymentDTO(Array.isArray(data) ? data[0] : data);
   }
 
   async reject(paymentId: string, actor: ActorContext, reason?: string): Promise<PaymentDTO> {
     const supabase = createSupabaseBackendClient();
-    const { data, error } = await supabase.from("payments").update({
-      status: "rejected",
-      notes: reason,
-      verified_by_admin_id: actor.adminId,
-      verified_at: new Date().toISOString()
-    }).eq("id", paymentId).eq("status", "pending").eq("method", "cash_handover").select("*").maybeSingle();
+    const { data, error } = await supabase.rpc("review_manual_cash_payment_atomic", {
+      p_payment_id: paymentId,
+      p_actor_admin_id: actor.adminId,
+      p_action: "reject",
+      p_notes: reason?.trim() || null,
+    });
 
-    if (error) throw error;
-    if (!data) throw new Error("This payment is no longer a pending cash handover.");
-    return mapRowToPaymentDTO(data);
+    if (error || !data) throw error || new Error("Cash payment was not returned after rejection.");
+    return mapRowToPaymentDTO(Array.isArray(data) ? data[0] : data);
   }
 
   async cancel(paymentId: string, actor: ActorContext, reason?: string): Promise<PaymentDTO> {

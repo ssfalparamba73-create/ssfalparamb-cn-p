@@ -31,11 +31,25 @@ export function createAdminPaymentService(deps: {
     return ok(true);
   }
 
+  async function getPendingManualCashPayment(paymentId: string): Promise<BackendResult<PaymentDTO>> {
+    const payment = await paymentRepository.findById(paymentId);
+    if (!payment) return fail(validationError("Payment not found.", "paymentId"));
+    if (
+      payment.status !== "pending" ||
+      !["cash_handover", "admin_cash_entry"].includes(payment.method) ||
+      payment.gatewayOrderId ||
+      payment.gatewayPaymentId
+    ) {
+      return fail(validationError("Only pending cash payments can be reviewed manually.", "paymentId"));
+    }
+    return ok(payment);
+  }
+
   async function getPendingCashHandover(paymentId: string): Promise<BackendResult<PaymentDTO>> {
     const payment = await paymentRepository.findById(paymentId);
     if (!payment) return fail(validationError("Payment not found.", "paymentId"));
-    if (payment.status !== "pending" || payment.method !== "cash_handover" || payment.gatewayOrderId) {
-      return fail(validationError("Only a pending cash handover can be reviewed manually.", "paymentId"));
+    if (payment.status !== "pending" || payment.method !== "cash_handover" || payment.gatewayOrderId || payment.gatewayPaymentId) {
+      return fail(validationError("Only a pending cash handover can be cancelled.", "paymentId"));
     }
     return ok(payment);
   }
@@ -94,7 +108,7 @@ export function createAdminPaymentService(deps: {
         const validation = validatePaymentStatusTransitionInput(input);
         if (!validation.ok) return fail(validation.error!);
 
-        const current = await getPendingCashHandover(validation.data!.paymentId);
+        const current = await getPendingManualCashPayment(validation.data!.paymentId);
         if (!current.ok) return fail(current.error!);
 
         const payment = await paymentRepository.approve(validation.data!.paymentId, actor, validation.data!.notes);
@@ -116,7 +130,7 @@ export function createAdminPaymentService(deps: {
         const validation = validatePaymentStatusTransitionInput(input);
         if (!validation.ok) return fail(validation.error!);
 
-        const current = await getPendingCashHandover(validation.data!.paymentId);
+        const current = await getPendingManualCashPayment(validation.data!.paymentId);
         if (!current.ok) return fail(current.error!);
 
         const payment = await paymentRepository.reject(validation.data!.paymentId, actor, validation.data!.reason);

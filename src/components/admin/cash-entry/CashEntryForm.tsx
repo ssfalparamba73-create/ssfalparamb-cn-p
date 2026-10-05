@@ -1,14 +1,14 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Check, Search, ArrowLeft, AlertCircle } from "lucide-react";
+import { Clock3, Search, ArrowLeft, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
-import { PremiumReceiptCard } from "@/components/receipt/PremiumReceiptCard";
 import { getAdminMembers } from "@/lib/api/memberClient";
 import { recordAdminCashEntry } from "@/lib/api/adminPaymentClient";
 import { getCurrentSession } from "@/lib/api/authClient";
@@ -40,7 +40,7 @@ export function CashEntryForm() {
   const [isSaving, setIsSaving] = useState(false);
   const cashIdempotencyKey = useRef<string | null>(null);
   const cashIdempotencyPayload = useRef<string | null>(null);
-  const [generatedReceiptId, setGeneratedReceiptId] = useState("");
+  const [generatedPaymentId, setGeneratedPaymentId] = useState("");
 
   useEffect(() => {
     getCashReceivers()
@@ -121,12 +121,12 @@ export function CashEntryForm() {
         receivedByAdminId: adminId,
         notes,
       });
-      setGeneratedReceiptId(entry.receiptId ?? entry.id);
+      setGeneratedPaymentId(entry.paymentId);
       setShowConfirm(false);
       setShowSuccess(true);
       cashIdempotencyKey.current = null;
       cashIdempotencyPayload.current = null;
-      toast.success("Payment recorded successfully!");
+      toast.success("Cash entry saved and sent for approval.");
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Unable to record payment.");
     } finally {
@@ -160,31 +160,29 @@ export function CashEntryForm() {
   };
 
   if (showSuccess) {
-    const payerPhone = isGuest ? guestPhone : selectedMember?.phone || "";
     return (
       <div className="flex flex-col items-center justify-center space-y-6 animate-in fade-in zoom-in-95 duration-300 py-8">
         <div className="flex flex-col items-center text-center space-y-2">
-          <div className="size-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mb-2 shadow-sm">
-            <Check className="size-8" />
+          <div className="size-16 bg-amber-100 text-amber-700 rounded-full flex items-center justify-center mb-2 shadow-sm">
+            <Clock3 className="size-8" />
           </div>
-          <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">Payment Successful!</h2>
-          <p className="text-slate-500">The cash entry has been recorded in the ledger.</p>
+          <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">Cash entry awaiting approval</h2>
+          <p className="max-w-md text-center text-slate-500 dark:text-slate-400">
+            The cash entry is saved as pending. It will count as a confirmed payment and receive its final receipt after an admin approves it.
+          </p>
         </div>
 
-        <div className="w-full max-w-[400px]">
-          <PremiumReceiptCard 
-            receiptId={generatedReceiptId}
-            method="cash"
-            admin={admin}
-            phone={isGuest ? "Guest Member" : payerPhone}
-            amount={amount}
-            category={category}
-          />
+        <div className="flex w-full max-w-md flex-col gap-3 sm:flex-row">
+          <Link
+            href={`/admin/payments/${generatedPaymentId}`}
+            className="inline-flex min-h-10 flex-1 items-center justify-center rounded-xl bg-[#2563EB] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-700"
+          >
+            Open for approval
+          </Link>
+          <Button onClick={resetForm} variant="outline" className="flex-1">
+            Record Another Payment
+          </Button>
         </div>
-
-        <Button onClick={resetForm} variant="outline" className="mt-4">
-          Record Another Payment
-        </Button>
       </div>
     );
   }

@@ -24,9 +24,11 @@ export default function PaymentDetailPage() {
   const [isVoiding, setIsVoiding] = useState(false);
   const [voidReason, setVoidReason] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+  const [isTransitioning, setIsTransitioning] = useState(false);
   const { currentUser } = useAuth();
   const canVoid = currentUser?.permissions.includes("payments.void") ?? false;
-  const canEditNotes = currentUser?.permissions.includes("payments.verify") ?? false;
+  const canVerifyPayments = currentUser?.permissions.includes("payments.verify") ?? false;
+  const canEditNotes = canVerifyPayments;
 
   useEffect(() => {
     getAdminPayments()
@@ -60,6 +62,10 @@ export default function PaymentDetailPage() {
     recordedAt: new Date(actualPayment.recordedAt).toLocaleString(),
     notes: actualPayment.notes || "No notes provided."
   };
+  const isManualCashPayment =
+    (actualPayment.method === "cash_handover" || actualPayment.method === "admin_cash_entry") &&
+    !actualPayment.gatewayOrderId &&
+    !actualPayment.gatewayPaymentId;
 
   const handleSaveNotes = async () => {
     setIsSaving(true);
@@ -75,6 +81,7 @@ export default function PaymentDetailPage() {
   };
 
   const handleTransition = async (action: "approve" | "reject" | "cancel") => {
+    setIsTransitioning(true);
     try {
       const updated = await transitionAdminPayment(actualPayment.id, action, notes);
       setActualPayment(updated);
@@ -82,6 +89,8 @@ export default function PaymentDetailPage() {
       toast.success(`Payment ${action === "approve" ? "approved" : action === "reject" ? "rejected" : "cancelled"}.`);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Unable to update payment.");
+    } finally {
+      setIsTransitioning(false);
     }
   };
 
@@ -194,15 +203,17 @@ export default function PaymentDetailPage() {
            <Card className="p-4 border-slate-200 dark:border-slate-800 shadow-sm bg-white dark:bg-slate-900">
              <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100 mb-3">Actions</h3>
              
-             {paymentStatus === "pending" && actualPayment.method === "cash_handover" && (
+             {paymentStatus === "pending" && isManualCashPayment && canVerifyPayments && (
                <div className="space-y-2 mb-4 pb-4 border-b border-slate-100 dark:border-slate-800">
                  <Button 
+                   disabled={isTransitioning}
                    className="w-full bg-green-600 hover:bg-green-700 text-white shadow-none" 
                    onClick={() => void handleTransition("approve")}
                  >
-                   Approve Payment
+                   {isTransitioning ? "Saving review..." : actualPayment.method === "admin_cash_entry" ? "Confirm Cash Entry" : "Confirm Cash Handover"}
                  </Button>
                  <Button 
+                   disabled={isTransitioning}
                    variant="outline" 
                    className="w-full text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200 dark:border-red-900/50 dark:hover:bg-red-900/20 shadow-none"
                    onClick={() => void handleTransition("reject")}
@@ -222,6 +233,12 @@ export default function PaymentDetailPage() {
                    {isVoiding ? "Voiding..." : "Void Payment (Audit)"}
                  </Button>
                </div>
+             )}
+
+             {paymentStatus === "pending" && isManualCashPayment && !canVerifyPayments && (
+               <p className="mb-4 rounded-lg bg-amber-50 p-3 text-xs text-amber-800 dark:bg-amber-900/20 dark:text-amber-300">
+                 Payment verification permission is required to approve this cash payment.
+               </p>
              )}
 
              {actualPayment.voidedAt && (
