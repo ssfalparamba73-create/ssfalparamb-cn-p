@@ -64,7 +64,9 @@ export async function requestBackend<T>(
 
   const result = (await response.json()) as BackendResult<T>;
   if (!response.ok || !result.ok || result.data === null) {
-    if (response.status === 401 || response.status === 403) {
+    // A 403 means the signed-in actor lacks permission for this operation;
+    // it must not be treated as a logout or erase their valid session state.
+    if (response.status === 401) {
       clearProtectedCaches();
     }
     if (result.error) throw new BackendApiError(result.error, response.status);
@@ -86,7 +88,7 @@ export async function requestBackendVoid(
 
   const result = (await response.json()) as BackendResult<unknown>;
   if (!response.ok || !result.ok) {
-    if (response.status === 401 || response.status === 403) {
+    if (response.status === 401) {
       clearProtectedCaches();
     }
     if (result.error) throw new BackendApiError(result.error, response.status);

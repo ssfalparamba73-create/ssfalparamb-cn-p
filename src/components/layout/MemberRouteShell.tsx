@@ -10,6 +10,7 @@ import { memberSessionQuery } from "@/lib/client/memberQueries";
 import { PageContentSkeleton } from "@/components/ui/loading-skeletons";
 import { MemberDataWarmup } from "@/components/member/MemberDataWarmup";
 import { getCurrentSession } from "@/lib/api/authClient";
+import { BackendApiError } from "@/lib/api/backendClient";
 import { SESSION_REFRESH_INTERVAL_MS } from "@/lib/backend/auth/sessionConstants";
 
 const PROFILE_COMPLETION_PATH = "/member/complete-profile";
@@ -18,7 +19,8 @@ const MAX_BROWSER_TIMEOUT_MS = 2_147_000_000;
 export function MemberRouteShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { data: session, isPending, isError } = useQuery(memberSessionQuery);
+  const { data: session, isPending, isError, error, refetch } = useQuery(memberSessionQuery);
+  const sessionExpired = isError && error instanceof BackendApiError && error.status === 401;
 
   useEffect(() => {
     let active = true;
@@ -55,8 +57,8 @@ export function MemberRouteShell({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    if (isError) {
-      router.replace("/login");
+    if (sessionExpired) {
+      router.replace(`/login?next=${encodeURIComponent(pathname)}`);
       return;
     }
     if (!session) return;
@@ -70,9 +72,29 @@ export function MemberRouteShell({ children }: { children: ReactNode }) {
     } else if (session.profileComplete && isCompletionPage) {
       router.replace("/member/dashboard");
     }
-  }, [isError, pathname, router, session]);
+  }, [pathname, router, session, sessionExpired]);
 
   const isCompletionPage = pathname === PROFILE_COMPLETION_PATH;
+  if (!isPending && isError && !session && !sessionExpired) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-[#F6F8FC] px-4 dark:bg-slate-900">
+        <section className="w-full max-w-md rounded-2xl border border-[#D9E2EC] bg-white p-6 text-center shadow-sm dark:border-slate-700 dark:bg-slate-800">
+          <h1 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Connection issue</h1>
+          <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
+            Your session could not be checked right now. You have not been logged out. Please try again.
+          </p>
+          <button
+            type="button"
+            onClick={() => void refetch()}
+            className="mt-5 rounded-xl bg-[#2563EB] px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-blue-700"
+          >
+            Retry connection
+          </button>
+        </section>
+      </main>
+    );
+  }
+
   const isAllowed = session?.actorType === "member" &&
     ((session.profileComplete && !isCompletionPage) || (!session.profileComplete && isCompletionPage));
 
