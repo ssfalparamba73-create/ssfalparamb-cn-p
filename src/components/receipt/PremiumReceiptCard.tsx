@@ -157,9 +157,11 @@ export function PremiumReceiptCard({
           ? 0
           : Number.parseFloat(computedStyle.letterSpacing) || 0;
 
+        // Leave breathing room inside the white panel so long names don't
+        // visually touch its edges even when the measured line technically fits.
         const fittedSize = fitDonorNameFontSize(
           donorName,
-          maxWidth,
+          maxWidth * 0.9,
           (text, fontSize) => {
             context.font = `700 ${fontSize}px ${computedStyle.fontFamily}`;
             return context.measureText(text).width + Math.max(Array.from(text).length - 1, 0) * letterSpacing;
@@ -172,7 +174,7 @@ export function PremiumReceiptCard({
         );
 
         setDonorFontSize(fittedSize);
-        setDonorFontWeight(fittedSize < 16 ? 500 : fittedSize < 22 ? 600 : 700);
+        setDonorFontWeight(fittedSize < 13 ? 600 : 700);
       });
     };
 
