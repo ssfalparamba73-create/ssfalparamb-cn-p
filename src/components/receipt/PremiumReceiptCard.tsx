@@ -148,8 +148,11 @@ export function PremiumReceiptCard({
 
         const computedStyle = window.getComputedStyle(heading);
         const rootFontSize = Number.parseFloat(window.getComputedStyle(document.documentElement).fontSize) || 16;
-        const maxFontSize = rootFontSize * (window.matchMedia("(min-width: 640px)").matches ? 1.75 : 1.55);
-        const baseFontSize = Number.parseFloat(computedStyle.fontSize) || 18;
+        const maxFontSize = Math.min(
+          Number.parseFloat(computedStyle.fontSize) || 18,
+          rootFontSize * (window.matchMedia("(min-width: 640px)").matches ? 1.75 : 1.55),
+        );
+        const baseFontSize = maxFontSize;
         const lineHeight = computedStyle.lineHeight === "normal"
           ? 1.2
           : (Number.parseFloat(computedStyle.lineHeight) / baseFontSize) || 1.2;
