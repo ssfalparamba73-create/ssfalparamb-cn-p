@@ -18,6 +18,8 @@ export async function GET(request: NextRequest) {
       category: (params.get("category") || undefined) as PaymentFilters["category"],
       method: (params.get("method") || undefined) as PaymentFilters["method"],
       status: (params.get("status") || undefined) as PaymentFilters["status"],
+      from: params.get("from") || undefined,
+      to: params.get("to") || undefined,
     };
     return createBackendResponse(
       await getAdminPaymentService().listPayments(filters, {

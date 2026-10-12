@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, Droplets, Phone, Edit2, Download } from "lucide-react";
+import { Search, Droplets, Phone, Edit2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -14,6 +14,7 @@ import { BackendApiError } from "@/lib/api/backendClient";
 import { getAllAdminBloodDonors, updateAdminMember } from "@/lib/api/memberClient";
 import { TablePagination } from "@/components/ui/table-pagination";
 import { CardCollectionSkeleton, TableRowsSkeleton } from "@/components/ui/loading-skeletons";
+import { ExportActions } from "@/components/admin/exports/ExportActions";
 
 const BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"];
 const PAGE_SIZE = 10;
@@ -36,11 +37,6 @@ function mapDonor(member: MemberDTO): BloodDonorView {
     area: member.area,
     isAvailable: member.donorAvailable,
   };
-}
-
-function csvCell(value: string): string {
-  const safeValue = /^[=+\-@]/.test(value) ? `'${value}` : value;
-  return `"${safeValue.replaceAll('"', '""')}"`;
 }
 
 export function BloodDonorsManager() {
@@ -108,28 +104,6 @@ export function BloodDonorsManager() {
     }
   };
 
-  const handleExport = () => {
-    const rows = [
-      ["Name", "Phone", "Blood Group", "Area", "Availability"],
-      ...filteredDonors.map((donor) => [
-        donor.name,
-        donor.phone,
-        donor.bloodGroup ?? "",
-        donor.area ?? "",
-        donor.isAvailable ? "Available" : "Unavailable",
-      ]),
-    ];
-    const blob = new Blob([rows.map((row) => row.map(csvCell).join(",")).join("\n")], {
-      type: "text/csv;charset=utf-8",
-    });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = "blood-donors.csv";
-    link.click();
-    URL.revokeObjectURL(url);
-  };
-
   return (
     <div className="space-y-4">
       {/* Filters */}
@@ -177,9 +151,27 @@ export function BloodDonorsManager() {
             </SelectContent>
           </Select>
         </div>
-        <Button onClick={handleExport} disabled={filteredDonors.length === 0} variant="outline" className="hidden sm:flex bg-white dark:bg-slate-800 shrink-0">
-          <Download className="w-4 h-4 mr-2" /> Export CSV
-        </Button>
+        <ExportActions
+          filename="blood-donors"
+          title="Blood donors"
+          description="Donors matching the selected search, blood group, and availability filters."
+          className="hidden shrink-0 sm:inline-flex [&_button]:bg-white [&_button]:dark:bg-slate-800"
+          disabled={filteredDonors.length === 0}
+          columnWidths={[22, 18, 17, 21, 22]}
+          showDateFilters={false}
+          getData={async () => ({
+            headers: ["Name", "Phone", "Blood Group", "Area", "Availability"],
+            rows: filteredDonors.map((donor) => ({
+              values: [
+                donor.name,
+                donor.phone,
+                donor.bloodGroup ?? "",
+                donor.area ?? "",
+                donor.isAvailable ? "Available" : "Unavailable",
+              ],
+            })),
+          })}
+        />
       </div>
 
       {loadError && <p className="p-4 text-sm text-red-600 dark:text-red-400">{loadError}</p>}

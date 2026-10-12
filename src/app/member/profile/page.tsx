@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useTheme } from "next-themes";
+import { useTheme } from "@/components/theme/ThemeProvider";
 import { useRouter } from "next/navigation";
 import { MemberProfileDetails, MemberProfileData } from "@/components/profile/MemberProfileDetails";
 import { EditProfileDrawer } from "@/components/profile/EditProfileDrawer";

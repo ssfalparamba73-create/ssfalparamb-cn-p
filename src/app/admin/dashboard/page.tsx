@@ -15,7 +15,6 @@ import { DashboardExportButton } from "@/components/admin/exports/DashboardExpor
 import { StatsCard } from "@/components/admin/dashboard/StatsCard";
 import { RecentPayments } from "@/components/admin/dashboard/RecentPayments";
 import { RecentCashHandovers } from "@/components/admin/dashboard/RecentCashHandovers";
-import { AdminActionIcon } from "@/components/admin/layout/AdminActionIcon";
 import { CollectionTrendChart } from "@/components/admin/dashboard/CollectionTrendChart";
 import { PaymentMethodChart } from "@/components/admin/dashboard/PaymentMethodChart";
 import type { AdminDashboardDTO } from "@/lib/backend/dto/dashboard.dto";
@@ -69,22 +68,19 @@ export default function AdminDashboardPage() {
       )}
 
       {/* Header & Quick Actions */}
-      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+      <div className="flex flex-col justify-between gap-4 xl:flex-row xl:items-center">
         <div>
           <h2 className="text-2xl font-bold text-slate-900 tracking-tight dark:text-slate-50">Dashboard</h2>
           <p className="text-slate-500 mt-1 dark:text-slate-400">Overview of collections and community health.</p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="grid grid-cols-2 items-center gap-2 sm:flex sm:flex-wrap sm:justify-end">
           <DashboardExportButton />
-          <Button className="h-10 bg-blue-600 hover:bg-blue-700 text-white font-medium">
+          <Button className="h-10 w-full bg-blue-600 font-medium text-white hover:bg-blue-700 sm:w-auto">
             <Banknote className="w-4 h-4 mr-2" />
             Record Cash
           </Button>
-          <AdminActionIcon aria-label="Add Member" className="h-10 w-10 sm:hidden" onClick={() => router.push("/admin/members/new")}>
-            <UserPlus className="w-4 h-4" />
-          </AdminActionIcon>
-          <Button asChild variant="outline" className="hidden h-10 border-slate-200 font-medium text-slate-700 sm:flex">
+          <Button asChild variant="outline" className="h-10 w-full border-slate-200 font-medium text-slate-700 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800 sm:w-auto">
             <Link href="/admin/members/new">
               <UserPlus className="mr-2 h-4 w-4" />
               Add Member

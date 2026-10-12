@@ -95,12 +95,12 @@ export function resetAdminMemberPin(id: string): Promise<IssuedMemberPinDTO> {
   });
 }
 
-export async function getAllAdminMembers(): Promise<MemberDTO[]> {
+export async function getAllAdminMembers(filters: Omit<AdminMemberQuery, "page" | "pageSize"> = {}): Promise<MemberDTO[]> {
   const members: MemberDTO[] = [];
   let page = 1;
 
   while (true) {
-    const result = await getAdminMembers(page, 100);
+    const result = await getAdminMembers({ ...filters, page, pageSize: 100 });
     members.push(...result.items);
     if (!result.hasMore) return members;
     page += 1;

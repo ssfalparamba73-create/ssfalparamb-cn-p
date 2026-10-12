@@ -1,22 +1,50 @@
 "use client";
 
-import { useState } from "react";
-import { Download } from "lucide-react";
-import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
-import { getAllAdminMembers } from "@/lib/api/memberClient";
-import { downloadCsv } from "@/lib/client/downloadCsv";
+import { ExportActions } from "@/components/admin/exports/ExportActions";
+import { getOutstandingDuesExport } from "@/lib/api/adminPaymentExportClient";
+import type { ExportDateRange } from "@/components/admin/exports/ExportActions";
+
+function monthKey(date: Date) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+}
+
+function duesMonthsInRange(range: ExportDateRange): string[] {
+  if (range.mode === "all" || (!range.from && !range.to)) return [];
+  if (!range.from || !range.to) throw new Error("Choose both the first and last dues months.");
+  const start = new Date(range.from);
+  const end = new Date(range.to);
+  const cursor = new Date(start.getFullYear(), start.getMonth(), 1);
+  const last = new Date(end.getFullYear(), end.getMonth(), 1);
+  const months: string[] = [];
+  while (cursor <= last && months.length < 24) {
+    months.push(monthKey(cursor));
+    cursor.setMonth(cursor.getMonth() + 1);
+  }
+  if (cursor <= last) throw new Error("Choose a dues period of 24 months or less.");
+  return months;
+}
 
 export function DefaultersExportButton() {
-  const [isExporting, setIsExporting] = useState(false);
-  async function exportDefaulters() {
-    setIsExporting(true);
-    try {
-      const members = (await getAllAdminMembers()).filter((member) => member.duesPending > 0).sort((a, b) => b.duesPending - a.duesPending);
-      downloadCsv("ssf-pending-payments.csv", [["Member Code", "Name", "Phone", "Area", "Monthly Amount", "Pending Amount", "Last Paid"], ...members.map((member) => [member.memberCode, member.name, member.phone, member.area || "", String(member.monthlyAmount), String(member.duesPending), member.lastPaidAt || ""]) ]);
-      toast.success("Pending payments CSV downloaded.");
-    } catch (error) { toast.error(error instanceof Error ? error.message : "Unable to export pending payments."); }
-    finally { setIsExporting(false); }
-  }
-  return <Button variant="outline" onClick={exportDefaulters} disabled={isExporting} className="shrink-0"><Download className="mr-2 size-4" />{isExporting ? "Exporting…" : "Export CSV"}</Button>;
+  return (
+    <ExportActions
+      filename="ssf-pending-payments"
+      title="Pending payments"
+      description="Members without confirmed coverage for the selected dues months. Current balance is shown separately."
+      filterKind="dues-month"
+      filtersInPreview
+      initialDateMode="month"
+      columnWidths={[12, 18, 12, 13, 23, 12, 10]}
+      getData={async (range) => {
+        const months = duesMonthsInRange(range);
+        const members = await getOutstandingDuesExport(months[0], months.at(-1));
+        const rows = members.map((member) => ({
+          values: [member.memberCode, member.name, member.phone, member.area, member.unpaidMonths.join(", ") || "Current outstanding dues", String(member.currentBalance), member.lastPaidAt || ""],
+        }));
+        return {
+          headers: ["Member Code", "Name", "Phone", "Area", "Unpaid Dues Month(s)", "Current Balance", "Last Paid"],
+          rows,
+        };
+      }}
+    />
+  );
 }

@@ -29,9 +29,30 @@ export class SupabasePaymentRepository implements PaymentRepository {
     const supabase = createSupabaseBackendClient();
     let query = supabase.from("payments").select("*, payment_months(*)", { count: "exact" });
 
+    // Online intents are created before Razorpay checkout starts and remain
+    // pending while payment is in flight. They are not manual-review requests;
+    // keep the admin ledger's pending queue limited to cash payments.
+    query = query.or("status.neq.pending,method.in.(cash_handover,admin_cash_entry)");
+
     if (filters.status) query = query.eq("status", filters.status);
     if (filters.method) query = query.eq("method", filters.method);
     if (filters.category) query = query.eq("category", filters.category);
+    if (filters.status === "confirmed" && (filters.from || filters.to)) {
+      const paidAtBounds = [
+        "paid_at.not.is.null",
+        ...(filters.from ? [`paid_at.gte.${filters.from}`] : []),
+        ...(filters.to ? [`paid_at.lte.${filters.to}`] : []),
+      ];
+      const recordedAtFallbackBounds = [
+        "paid_at.is.null",
+        ...(filters.from ? [`recorded_at.gte.${filters.from}`] : []),
+        ...(filters.to ? [`recorded_at.lte.${filters.to}`] : []),
+      ];
+      query = query.or(`and(${paidAtBounds.join(",")}),and(${recordedAtFallbackBounds.join(",")})`);
+    } else {
+      if (filters.from) query = query.gte("recorded_at", filters.from);
+      if (filters.to) query = query.lte("recorded_at", filters.to);
+    }
     query = query.order("recorded_at", { ascending: false });
 
     const page = pagination.page || 1;

@@ -3,7 +3,7 @@
 import React, { useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useTheme } from "next-themes";
+import { useTheme } from "@/components/theme/ThemeProvider";
 import { X, LayoutDashboard, Users, Banknote, Wallet, AlertOctagon, BarChart3, Droplet, History, Settings, Moon, Sun, MessageSquare } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { AdminActionIcon } from "./AdminActionIcon";

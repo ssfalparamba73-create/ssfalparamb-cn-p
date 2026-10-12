@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { Moon, Search, Sun } from "lucide-react";
 import { AdminActionIcon } from "./AdminActionIcon";
-import { useTheme } from "next-themes";
+import { useTheme } from "@/components/theme/ThemeProvider";
 import { AdminBreadcrumbs } from "./AdminBreadcrumbs";
 import { AdminSearchModal } from "./AdminSearchModal";
 import { AdminNotificationMenu } from "./AdminNotificationMenu";

@@ -8,7 +8,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { useTheme } from "next-themes";
+import { useTheme } from "@/components/theme/ThemeProvider";
 import { logoutSession } from "@/lib/api/authClient";
 import { MEMBER_PAYMENTS_ENABLED } from "@/lib/featureFlags";
 import { memberSessionQuery, prefetchMemberRoute } from "@/lib/client/memberQueries";
