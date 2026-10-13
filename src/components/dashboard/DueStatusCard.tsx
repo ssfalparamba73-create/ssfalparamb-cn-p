@@ -15,26 +15,26 @@ export function DueStatusCard({ amountDue, paymentStatus }: DueStatusCardProps) 
   const label = isClear ? "All Clear" : isPending ? "Payment Pending" : isFailed ? "Payment Failed" : `₹${amountDue}`;
 
   return (
-    <div className="bg-white rounded-2xl border border-[#E5EAF3] p-5 shadow-sm overflow-hidden relative transition-colors duration-300 dark:border-slate-700 dark:bg-slate-800 dark:shadow-none">
+    <div className="relative overflow-hidden rounded-[20px] border border-[#E2E8F0] bg-white p-6 shadow-[0_1px_2px_rgba(15,23,42,0.04),0_4px_12px_rgba(15,23,42,0.06)] transition-colors duration-300 dark:border-slate-700 dark:bg-slate-800 dark:shadow-none">
       <div className="flex items-start justify-between">
         <div>
-          <h2 className="text-sm font-semibold text-slate-500 mb-1 dark:text-slate-400">
+          <h2 className="mb-1 text-sm font-semibold text-slate-500 dark:text-slate-400">
             {isClear || isPending || isFailed ? "Status" : "Outstanding subscriptions"}
           </h2>
           <div className="flex items-end gap-2">
-            <span className={`text-3xl font-bold ${isClear ? 'text-green-600 dark:text-green-300' : 'text-slate-900 dark:text-slate-50'}`}>
+            <span className={`text-[34px] leading-tight font-bold tracking-tight ${isClear ? 'text-green-600 dark:text-green-300' : 'text-slate-900 dark:text-slate-50'}`}>
               {label}
             </span>
           </div>
         </div>
         
-        <div className={`p-2 rounded-full ${isClear ? 'bg-green-50 dark:bg-green-500/10' : isPending ? 'bg-amber-50 dark:bg-amber-500/10' : 'bg-red-50 dark:bg-red-500/10'}`}>
+        <div className={`flex size-12 shrink-0 items-center justify-center rounded-full ${isClear ? 'bg-green-50 dark:bg-green-500/10' : isPending ? 'bg-amber-50 dark:bg-amber-500/10' : 'bg-red-50 dark:bg-red-500/10'}`}>
           {isClear ? (
-            <CheckCircle2 className="size-6 text-green-600 dark:text-green-300" />
+            <CheckCircle2 className="size-7 text-green-600 dark:text-green-300" />
           ) : isPending ? (
-            <AlertCircle className="size-6 text-amber-600 dark:text-amber-300" />
+            <AlertCircle className="size-7 text-amber-600 dark:text-amber-300" />
           ) : (
-            <AlertCircle className="size-6 text-red-500 dark:text-red-300" />
+            <AlertCircle className="size-7 text-red-500 dark:text-red-300" />
           )}
         </div>
       </div>
@@ -42,11 +42,11 @@ export function DueStatusCard({ amountDue, paymentStatus }: DueStatusCardProps) 
       {MEMBER_PAYMENTS_ENABLED && (
         <div className="mt-5">
           <Link href="/pay?source=member" className="block w-full">
-            <Button className="w-full bg-[#2563EB] hover:bg-blue-700 text-white rounded-xl h-12 text-base font-semibold shadow-sm transition-all flex items-center justify-center gap-2">
+            <Button className="flex h-14 w-full items-center justify-center gap-2 rounded-xl bg-[#2563EB] text-base font-semibold text-white shadow-sm transition-colors hover:bg-[#1D4ED8]">
               Pay Now <ChevronRight className="size-4" />
             </Button>
           </Link>
-          <p className="text-center text-xs text-slate-400 mt-3 font-medium dark:text-slate-500">
+          <p className="mt-3 text-center text-sm font-medium text-slate-400 dark:text-slate-500">
             {isClear ? "Make a payment or pay upcoming subscriptions" : isPending ? "Your payment is being verified" : isFailed ? "Retry the payment or contact support" : "Complete your payment"}
           </p>
         </div>

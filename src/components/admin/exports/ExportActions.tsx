@@ -109,7 +109,7 @@ export function ExportActions({
   showDateFilters = true,
   filtersInPreview = false,
   filterKind = "payment-date",
-  initialDateMode = filterKind === "dues-month" ? "month" : "all",
+  initialDateMode = filterKind === "dues-month" ? "month" : showDateFilters ? "range" : "all",
 }: ExportActionsProps) {
   const [dateMode, setDateMode] = useState<DateMode>(initialDateMode);
   const [month, setMonth] = useState(() => {
@@ -122,6 +122,18 @@ export function ExportActions({
   const [preview, setPreview] = useState<{ html: string; title: string } | null>(null);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [printFrame, setPrintFrame] = useState<HTMLIFrameElement | null>(null);
+  // Keep date inputs visible for payment exports even if an already-mounted tab
+  // retained the previous "all dates" state during hot reload.
+  const showRangeDates = dateMode === "range" || (dateMode === "all" && filterKind === "payment-date");
+
+  function changeDateMode(value: DateMode) {
+    setDateMode(value);
+    if (value === "all") {
+      setStartDate("");
+      setEndDate("");
+    }
+    setPreview(null);
+  }
 
   useEffect(() => {
     if (!previewOpen) return;
@@ -203,7 +215,7 @@ export function ExportActions({
     <div className={cn("flex flex-col gap-2", className)}>
       {showDateFilters && !filtersInPreview && <div className="flex flex-col gap-2 rounded-xl border border-slate-200 bg-white p-3 dark:border-slate-800 dark:bg-slate-900 sm:flex-row sm:items-center">
         <label className="sr-only" htmlFor={`${filename}-date-mode`}>{filterKind === "dues-month" ? "Filter dues by month" : "Filter export by date"}</label>
-        <Select value={dateMode} onValueChange={(value) => setDateMode(value as DateMode)}>
+        <Select value={dateMode} onValueChange={(value) => changeDateMode(value as DateMode)}>
           <SelectTrigger id={`${filename}-date-mode`} className="h-10 w-full border-slate-300 bg-white dark:border-slate-700 dark:bg-slate-950 sm:w-[150px]">
             <CalendarDays className="mr-2 size-4 text-slate-500" />
             <SelectValue />
@@ -215,14 +227,14 @@ export function ExportActions({
           </SelectContent>
         </Select>
         {dateMode === "month" && <input aria-label="Export month" type="month" value={month} onChange={(event) => setMonth(event.target.value)} className="h-10 rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-700 outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100" />}
-          {dateMode === "range" && <div className="flex min-w-0 flex-1 flex-col gap-2 sm:flex-row">
+          {showRangeDates && <div className="flex min-w-0 flex-1 flex-col gap-2 sm:flex-row">
             {filterKind === "dues-month" && <>
               <input aria-label="First dues month" type="month" value={startDate} onChange={(event) => setStartDate(event.target.value)} className="h-10 min-w-0 flex-1 rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-700 outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100" />
               <input aria-label="Last dues month" type="month" value={endDate} onChange={(event) => setEndDate(event.target.value)} className="h-10 min-w-0 flex-1 rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-700 outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100" />
             </>}
             {filterKind === "payment-date" && <>
-          <input aria-label="Export start date" type="date" value={startDate} onChange={(event) => setStartDate(event.target.value)} className="h-10 min-w-0 flex-1 rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-700 outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100" />
-          <input aria-label="Export end date" type="date" value={endDate} onChange={(event) => setEndDate(event.target.value)} className="h-10 min-w-0 flex-1 rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-700 outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100" />
+              <input aria-label="Export start date" type="date" value={startDate} onChange={(event) => { setStartDate(event.target.value); setDateMode("range"); }} className="h-10 min-w-0 flex-1 rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-700 outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100" />
+              <input aria-label="Export end date" type="date" value={endDate} onChange={(event) => { setEndDate(event.target.value); setDateMode("range"); }} className="h-10 min-w-0 flex-1 rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-700 outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100" />
             </>}
         </div>}
       </div>}
@@ -249,7 +261,7 @@ export function ExportActions({
           {filtersInPreview && showDateFilters && <>
             <div className="flex min-w-0 flex-1 flex-col gap-1.5 sm:flex-none">
               <label className="text-xs font-medium text-slate-600 dark:text-slate-300" htmlFor={`${filename}-date-mode`}>{filterKind === "dues-month" ? "Filter dues period" : "Filter by date"}</label>
-              <Select value={dateMode} onValueChange={(value) => { setDateMode(value as DateMode); setPreview(null); }}>
+              <Select value={dateMode} onValueChange={(value) => changeDateMode(value as DateMode)}>
                 <SelectTrigger id={`${filename}-date-mode`} className="h-10 w-full border-slate-300 bg-white dark:border-slate-700 dark:bg-slate-950 sm:w-[170px]">
                   <CalendarDays className="mr-2 size-4 text-slate-500" />
                   <SelectValue />
@@ -265,14 +277,14 @@ export function ExportActions({
               <label className="text-xs font-medium text-slate-600 dark:text-slate-300" htmlFor={`${filename}-month`}>Month</label>
               <input id={`${filename}-month`} aria-label="Export month" type="month" value={month} onChange={(event) => { setMonth(event.target.value); setPreview(null); }} className="h-10 min-w-0 rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-700 outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100" />
             </div>}
-            {dateMode === "range" && <div className="grid min-w-0 flex-1 grid-cols-1 gap-3 sm:grid-cols-2">
+            {showRangeDates && <div className="grid min-w-0 flex-1 grid-cols-1 gap-3 sm:grid-cols-2">
               <div className="flex min-w-0 flex-col gap-1.5">
                 <label className="text-xs font-medium text-slate-600 dark:text-slate-300" htmlFor={`${filename}-start-date`}>{filterKind === "dues-month" ? "First month" : "Start date"}</label>
-                <input id={`${filename}-start-date`} aria-label={filterKind === "dues-month" ? "First dues month" : "Export start date"} type={filterKind === "dues-month" ? "month" : "date"} value={startDate} onChange={(event) => { setStartDate(event.target.value); setPreview(null); }} className="h-10 min-w-0 rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-700 outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100" />
+                <input id={`${filename}-start-date`} aria-label={filterKind === "dues-month" ? "First dues month" : "Export start date"} type={filterKind === "dues-month" ? "month" : "date"} value={startDate} onChange={(event) => { setStartDate(event.target.value); setDateMode("range"); setPreview(null); }} className="h-10 min-w-0 rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-700 outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100" />
               </div>
               <div className="flex min-w-0 flex-col gap-1.5">
                 <label className="text-xs font-medium text-slate-600 dark:text-slate-300" htmlFor={`${filename}-end-date`}>{filterKind === "dues-month" ? "Last month" : "End date"}</label>
-                <input id={`${filename}-end-date`} aria-label={filterKind === "dues-month" ? "Last dues month" : "Export end date"} type={filterKind === "dues-month" ? "month" : "date"} value={endDate} onChange={(event) => { setEndDate(event.target.value); setPreview(null); }} className="h-10 min-w-0 rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-700 outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100" />
+                <input id={`${filename}-end-date`} aria-label={filterKind === "dues-month" ? "Last dues month" : "Export end date"} type={filterKind === "dues-month" ? "month" : "date"} value={endDate} onChange={(event) => { setEndDate(event.target.value); setDateMode("range"); setPreview(null); }} className="h-10 min-w-0 rounded-md border border-slate-300 bg-white px-3 text-sm text-slate-700 outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100" />
               </div>
             </div>}
           </>}

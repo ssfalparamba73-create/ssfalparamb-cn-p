@@ -75,6 +75,7 @@ export function MemberRouteShell({ children }: { children: ReactNode }) {
   }, [pathname, router, session, sessionExpired]);
 
   const isCompletionPage = pathname === PROFILE_COMPLETION_PATH;
+  const isMemberDashboard = pathname === "/member/dashboard";
   if (!isPending && isError && !session && !sessionExpired) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-[#F6F8FC] px-4 dark:bg-slate-900">
@@ -114,7 +115,7 @@ export function MemberRouteShell({ children }: { children: ReactNode }) {
     <div className="min-h-screen bg-[#F6F8FC] flex flex-col font-sans transition-colors duration-300 dark:bg-slate-900">
       <MemberHeader />
       <MemberDataWarmup />
-      <main className="flex-1 w-full max-w-md mx-auto md:max-w-4xl pb-24 md:pb-8 transition-colors duration-300">
+      <main className={`flex-1 w-full mx-auto pb-24 md:pb-8 transition-colors duration-300 ${isMemberDashboard ? "max-w-md md:max-w-6xl" : "max-w-md md:max-w-4xl"}`}>
         {children}
       </main>
       <MemberBottomNav />
