@@ -64,7 +64,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     title: "Atiyya",
-    statusBarStyle: "default",
+    statusBarStyle: "black-translucent",
   },
 };
 
@@ -73,7 +73,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   viewportFit: "cover",
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#2563EB" },
+    { media: "(prefers-color-scheme: light)", color: "#F6F8FC" },
     { media: "(prefers-color-scheme: dark)", color: "#0F172A" },
   ],
 };

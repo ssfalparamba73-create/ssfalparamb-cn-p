@@ -13,7 +13,8 @@ export default function manifest(): MetadataRoute.Manifest {
     description: "Digital Support Portal for Atiyya Group",
     start_url: "/member/dashboard?source=pwa",
     scope: "/",
-    display: "standalone",
+    display: "fullscreen",
+    display_override: ["fullscreen", "standalone"],
     launch_handler: {
       client_mode: "focus-existing",
     },
@@ -32,7 +33,7 @@ export default function manifest(): MetadataRoute.Manifest {
       },
     ],
     background_color: "#F6F8FC",
-    theme_color: "#2563EB",
+    theme_color: "#F6F8FC",
     orientation: "portrait-primary",
     categories: ["finance", "productivity"],
     icons: [
