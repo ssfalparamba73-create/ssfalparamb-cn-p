@@ -204,7 +204,7 @@ export function PwaRuntime({ currentVersion }: { currentVersion: string }) {
             {installMode === "android-help" && <p className="mt-1 text-sm leading-6 text-slate-600 dark:text-slate-300">Browser menu തുറന്ന് <strong>Install app</strong> അല്ലെങ്കിൽ <strong>Add to Home screen</strong> തിരഞ്ഞെടുക്കുക.</p>}
             {installMode === "embedded" && <p className="mt-1 text-sm leading-6 text-slate-600 dark:text-slate-300">ഈ page Chrome അല്ലെങ്കിൽ Safari-ൽ തുറന്ന് app install ചെയ്യുക.</p>}
           </div>
-          {installMode === "open-app" && <button type="button" onClick={openInstalledApp} className="mt-4 inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 font-semibold text-white hover:bg-blue-700">Open App</button>}
+          {installMode === "open-app" && <button type="button" onClick={openInstalledApp} className="mt-4 inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-green-600 px-4 font-semibold text-white hover:bg-green-700">Open App</button>}
           {installMode === "native" && <button type="button" onClick={() => void install()} className="mt-4 inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 font-semibold text-white hover:bg-blue-700"><Download className="size-4" /> Install App</button>}
         </aside>
       )}
