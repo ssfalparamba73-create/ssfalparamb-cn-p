@@ -25,6 +25,12 @@ export default function manifest(): MetadataRoute.Manifest {
         id: appId,
       },
     ],
+    protocol_handlers: [
+      {
+        protocol: "web+atiyya",
+        url: "/member/dashboard?source=protocol&launch=%s",
+      },
+    ],
     background_color: "#F6F8FC",
     theme_color: "#2563EB",
     orientation: "portrait-primary",

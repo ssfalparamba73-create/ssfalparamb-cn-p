@@ -12,7 +12,7 @@ Date: 2026-10-16
 - WhatsApp, Instagram, Facebook പോലുള്ള embedded browsers-ൽ Chrome/Safari-ൽ തുറക്കാനുള്ള guidance കാണിക്കും.
 - Already installed standalone app-ൽ install panel കാണിക്കില്ല.
 - Supported Chromium browsers installed PWA കണ്ടെത്തുമ്പോൾ website panel **Open App** action ആയി മാറും.
-- `Open App` member dashboard deep link ഉപയോഗിക്കും; browser link capture enable ചെയ്തിട്ടുണ്ടെങ്കിൽ installed app focus ചെയ്യും.
+- `Open App` normal same-origin navigation ഉപയോഗിക്കുന്നില്ല. Registered `web+atiyya` protocol handler വഴി installed PWA launch ചെയ്യും; Android-ൽ external intent dispatch ഉപയോഗിക്കും.
 - User dismiss ചെയ്താൽ മൂന്ന് ദിവസം വീണ്ടും panel കാണിക്കില്ല.
 - Manifest start URL member dashboard-ലേക്ക് മാറ്റി; unauthenticated user നിലവിലുള്ള auth redirect വഴി login screen-ലേക്ക് എത്തും.
 - Correct-size 192 px, 512 px, maskable 512 px, Apple 180 px icons ചേർത്തു.
