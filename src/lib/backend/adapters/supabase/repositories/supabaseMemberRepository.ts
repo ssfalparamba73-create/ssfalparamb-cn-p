@@ -158,34 +158,27 @@ export class SupabaseMemberRepository implements MemberRepository {
 
   async listDirectory(filters: MemberListFilters, pagination: PaginationInput): Promise<PaginatedResult<MemberDirectoryItemDTO>> {
     const supabase = createSupabaseBackendClient();
-    let query = supabase
-      .from("members")
-      .select("id, member_code, name, phone, area, blood_group, is_blood_donor, donor_available", { count: "exact" })
-      .eq("status", "active");
-
-    if (filters.bloodGroup) query = query.eq("blood_group", filters.bloodGroup);
-    if (filters.area) query = query.eq("area", filters.area);
-    if (filters.donorAvailable !== undefined) query = query.eq("donor_available", filters.donorAvailable);
-    if (filters.search) {
-      const search = filters.search.replace(/[,()%]/g, "").trim();
-      if (search) {
-        query = query.or(`name.ilike.%${search}%,phone.ilike.%${search}%,member_code.ilike.%${search}%`);
-      }
-    }
-
     const page = pagination.page || 1;
     const pageSize = pagination.pageSize || 20;
-    const { data, count, error } = await query
-      .order("name", { ascending: true })
-      .range((page - 1) * pageSize, page * pageSize - 1);
+    const sanitizedSearch = filters.search?.replace(/[%_\\]/g, "").trim() || null;
+    const { data, error } = await supabase.rpc("member_directory_with_progress", {
+      p_search: sanitizedSearch,
+      p_blood_group: filters.bloodGroup ?? null,
+      p_donor_available: filters.donorAvailable ?? null,
+      p_area: filters.area ?? null,
+      p_page: page,
+      p_page_size: pageSize,
+    });
     if (error) throw error;
+    const rows = (data || []) as Array<Record<string, unknown> & { total_count?: number | string }>;
+    const total = Number(rows[0]?.total_count ?? 0);
 
     return {
-      items: (data || []).map((row) => mapRowToMemberDirectoryItemDTO(row)),
-      total: count || 0,
+      items: rows.map((row) => mapRowToMemberDirectoryItemDTO(row)),
+      total,
       page,
       pageSize,
-      hasMore: (count || 0) > page * pageSize,
+      hasMore: total > page * pageSize,
     };
   }
 

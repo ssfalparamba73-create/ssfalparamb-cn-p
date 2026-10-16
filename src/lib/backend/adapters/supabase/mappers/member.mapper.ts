@@ -108,6 +108,8 @@ export function mapRowToMemberDirectoryItemDTO(row: any): MemberDirectoryItemDTO
     isBloodDonor: Boolean(row.is_blood_donor),
     donorAvailable: Boolean(row.donor_available),
     phone: row.phone,
-    paymentProgressPercent: row.payment_progress_percent,
+    paymentProgressPercent: row.payment_progress_percent == null
+      ? undefined
+      : Number(row.payment_progress_percent),
   };
 }

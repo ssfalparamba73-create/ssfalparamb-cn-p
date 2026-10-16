@@ -2,6 +2,8 @@
 
 import Image from "next/image";
 import { X } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { publicBannerQuery } from "@/lib/client/memberQueries";
 
 interface MemberWelcomeBannerProps {
   compact?: boolean;
@@ -9,13 +11,15 @@ interface MemberWelcomeBannerProps {
 }
 
 export function MemberWelcomeBanner({ compact = false, onDismiss }: MemberWelcomeBannerProps) {
+  const { data: banner } = useQuery(publicBannerQuery);
+
   return (
     <section
       aria-label="SSF Alparamba community welcome"
       className={`relative isolate aspect-[16/9] w-full overflow-hidden border border-[#D9E2EC] bg-[#172554] shadow-sm dark:border-slate-700 ${compact ? "rounded-[18px]" : "rounded-3xl"}`}
     >
       <Image
-        src="/social/ssf-alparamba-share.png"
+        src={banner?.url ?? "/social/ssf-alparamba-share.png"}
         alt="SSF Alparamba community portal"
         fill
         sizes={compact ? "(max-width: 767px) 100vw, 50vw" : "50vw"}

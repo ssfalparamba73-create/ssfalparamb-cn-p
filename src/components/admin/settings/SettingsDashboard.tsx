@@ -2,7 +2,7 @@
 
 import React from "react";
 import { Card } from "@/components/ui/card";
-import { ShieldCheck, Banknote, CalendarDays, Phone, ChevronRight, Building, Lock, MessageCircle } from "lucide-react";
+import { ShieldCheck, Banknote, CalendarDays, Phone, ChevronRight, Building, Lock, MessageCircle, ImageIcon } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@/lib/admin/AuthContext";
 import { canAccessAdminPath } from "@/lib/admin/accessControl";
@@ -14,6 +14,13 @@ const SETTINGS_PAGES = [
     icon: <Building className="w-6 h-6" />,
     href: "/admin/settings/unit",
     color: "text-indigo-600 bg-indigo-50 dark:text-indigo-400 dark:bg-indigo-900/20",
+  },
+  {
+    title: "Dashboard Banner",
+    description: "Upload the image shown on the member dashboard. Changes appear automatically.",
+    icon: <ImageIcon className="w-6 h-6" />,
+    href: "/admin/settings/banner",
+    color: "text-blue-600 bg-blue-50 dark:text-blue-400 dark:bg-blue-900/20",
   },
   {
     title: "Receipt Settings",

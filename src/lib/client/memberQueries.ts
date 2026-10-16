@@ -3,7 +3,7 @@ import { getCurrentSession } from "@/lib/api/authClient";
 import { getMemberDashboard } from "@/lib/api/dashboardClient";
 import { getCurrentMemberProfile, getMemberDirectory } from "@/lib/api/memberClient";
 import { getMemberPayments } from "@/lib/api/paymentClient";
-import { getPublicBlockOptions } from "@/lib/api/settingsClient";
+import { getPublicBanner, getPublicBlockOptions } from "@/lib/api/settingsClient";
 import { getSupportContacts } from "@/lib/api/supportClient";
 import type { BloodGroup } from "@/lib/backend/dto/member.dto";
 
@@ -18,6 +18,7 @@ export const memberQueryKeys = {
     ["member", "directory-v2", { search, bloodGroup: bloodGroup ?? null }] as const,
   supportContacts: ["member", "support-contacts"] as const,
   blockOptions: ["member", "block-options"] as const,
+  publicBanner: ["public", "dashboard-banner"] as const,
 };
 
 export const memberSessionQuery = queryOptions({
@@ -55,6 +56,14 @@ export const memberBlockOptionsQuery = queryOptions({
   queryKey: memberQueryKeys.blockOptions,
   queryFn: getPublicBlockOptions,
   staleTime: 24 * 60 * MINUTE,
+});
+
+export const publicBannerQuery = queryOptions({
+  queryKey: memberQueryKeys.publicBanner,
+  queryFn: getPublicBanner,
+  staleTime: 5 * MINUTE,
+  gcTime: 60 * MINUTE,
+  refetchOnWindowFocus: true,
 });
 
 export function memberDirectoryQuery(search: string, bloodGroup?: BloodGroup) {

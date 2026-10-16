@@ -1,10 +1,12 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import { Inter, Noto_Sans_Malayalam } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "sonner";
 import { ThemeProvider } from "@/components/theme/ThemeProvider";
 import { AppQueryProvider } from "@/components/providers/AppQueryProvider";
+import { PwaRuntime } from "@/components/pwa/PwaRuntime";
+import { getAppVersion } from "@/lib/appVersion";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -35,6 +37,9 @@ export const metadata: Metadata = {
   },
   description: "Digital Support Portal for Atiyya Group",
   manifest: "/manifest.webmanifest",
+  icons: {
+    apple: [{ url: "/icons/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
+  },
   openGraph: {
     type: "website",
     locale: "en_IN",
@@ -63,17 +68,29 @@ export const metadata: Metadata = {
   },
 };
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#2563EB" },
+    { media: "(prefers-color-scheme: dark)", color: "#0F172A" },
+  ],
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const appVersion = getAppVersion();
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} ${notoMalayalam.variable} ${cooper.variable} antialiased transition-colors duration-300`} suppressHydrationWarning>
         <ThemeProvider>
           <AppQueryProvider>
             {children}
+            <PwaRuntime currentVersion={appVersion} />
             <Toaster position="bottom-right" richColors />
           </AppQueryProvider>
         </ThemeProvider>

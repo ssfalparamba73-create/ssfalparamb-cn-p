@@ -73,15 +73,15 @@ export function MemberDetailDrawer({ isOpen, onClose, member }: MemberDetailDraw
         {/* Stats Panel */}
         <div className="bg-[#F6F8FC] rounded-2xl p-5 border border-[#E5EAF3] dark:border-slate-700 dark:bg-slate-900">
           <div className="flex justify-between items-center mb-3">
-            <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300">Collection Target</h3>
+            <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300">Monthly dues status</h3>
             <span className="text-sm font-bold text-slate-900 dark:text-slate-50">
-              {member.targetAmount === undefined ? "--" : `₹${member.targetAmount} / yr`}
+              Current year
             </span>
           </div>
 
           <div className="space-y-2">
             <div className="flex justify-between items-end">
-              <span className="text-xs text-slate-500 font-medium dark:text-slate-400">Progress</span>
+              <span className="text-xs text-slate-500 font-medium dark:text-slate-400">Paid</span>
               <span className="text-lg font-black text-[#2563EB]">
                 {member.paidPercentage === undefined ? "--" : `${member.paidPercentage}%`}
               </span>
@@ -95,6 +95,12 @@ export function MemberDetailDrawer({ isOpen, onClose, member }: MemberDetailDraw
                 style={{ width: `${member.paidPercentage ?? 0}%` }}
               />
             </div>
+            {member.paidPercentage !== undefined && (
+              <div className="flex justify-between text-xs font-medium text-slate-500 dark:text-slate-400">
+                <span>Paid {member.paidPercentage}%</span>
+                <span>Remaining {100 - member.paidPercentage}%</span>
+              </div>
+            )}
             <p className="text-[10px] text-slate-400 text-center mt-2 flex items-center justify-center gap-1 dark:text-slate-500">
               <ShieldCheck className="size-3" />
               {member.paidPercentage === undefined
