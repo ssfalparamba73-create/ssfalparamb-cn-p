@@ -172,6 +172,7 @@ export function AuditLogTable() {
               <SelectItem value="update">Updated (Edit)</SelectItem>
               <SelectItem value="delete">Deleted (Remove)</SelectItem>
               <SelectItem value="alert">Security / Alerts</SelectItem>
+              <SelectItem value="member.profile_completed">Member completed first-login profile</SelectItem>
             </SelectContent>
           </Select>
         </div>
