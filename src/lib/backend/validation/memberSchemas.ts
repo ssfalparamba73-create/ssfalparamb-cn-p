@@ -259,35 +259,33 @@ export function validateCompleteMemberProfileInput(
   const whatsapp = validatePhone(input.whatsapp, "whatsapp");
   if (!whatsapp.ok) return fail(whatsapp.error!);
 
-  const age = validateAge(input.age, "age");
-  if (!age.ok || age.data === undefined || age.data === null) {
-    return fail(age.error ?? validationError("Age is required.", "age"));
+  if (typeof input.dateOfBirth !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(input.dateOfBirth)) {
+    return fail(validationError("Date of birth is required.", "dateOfBirth"));
+  }
+  const [year, month, day] = input.dateOfBirth.split("-").map(Number);
+  const dateOfBirth = new Date(Date.UTC(year, month - 1, day));
+  const today = new Date(new Date().toISOString().slice(0, 10));
+  const age = today.getUTCFullYear() - year - (today.toISOString().slice(5, 10) < input.dateOfBirth.slice(5, 10) ? 1 : 0);
+  if (dateOfBirth.getUTCFullYear() !== year || dateOfBirth.getUTCMonth() !== month - 1 || dateOfBirth.getUTCDate() !== day || dateOfBirth > today || age > 130) {
+    return fail(validationError("Enter a valid date of birth that is not in the future.", "dateOfBirth"));
   }
 
   if (!input.bloodGroup || !includesValue(bloodGroups, input.bloodGroup)) {
     return fail(validationError("Blood group is required.", "bloodGroup"));
   }
-
-  const address = validateRequiredString(input.address, "address", "Address");
-  if (!address.ok) return fail(address.error!);
-  if (address.data!.length > 500) {
-    return fail(validationError("Address is too long.", "address"));
+  if (typeof input.donorAvailable !== "boolean") {
+    return fail(validationError("Please select whether you are ready to donate.", "donorAvailable"));
   }
-
-  const area = validateRequiredString(input.area, "area", "Block");
-  if (!area.ok) return fail(area.error!);
-  if (area.data!.length > 80) return fail(validationError("Block is too long.", "area"));
-
-  const structuredProfile = validateStructuredProfile(input);
-  if (!structuredProfile.ok) return fail(structuredProfile.error!);
+  if (typeof input.isStudent !== "boolean") {
+    return fail(validationError("Please select whether you are a student.", "isStudent"));
+  }
 
   return ok({
     whatsapp: whatsapp.data!,
-    age: age.data,
+    dateOfBirth: input.dateOfBirth,
     bloodGroup: input.bloodGroup,
-    address: address.data!,
-    area: area.data!,
-    ...structuredProfile.data!,
+    donorAvailable: input.donorAvailable,
+    isStudent: input.isStudent,
   });
 }
 

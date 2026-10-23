@@ -72,18 +72,10 @@ export interface UpdateMemberProfileInput {
 
 export interface CompleteMemberProfileInput {
   whatsapp: string;
-  age: number;
+  dateOfBirth: string;
   bloodGroup: string;
-  address: string;
-  area: string;
-  occupation?: string;
+  donorAvailable: boolean;
   isStudent: boolean;
-  studentClass?: string;
-  studentCourse?: string;
-  studentInstitution?: string;
-  isMuthaallim: boolean;
-  muthaallimInstitution?: string;
-  workLocation?: MemberDTO["workLocation"];
 }
 
 export interface MemberRepository {

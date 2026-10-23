@@ -10,9 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { logoutSession } from "@/lib/api/authClient";
 import { completeCurrentMemberProfile } from "@/lib/api/memberClient";
 import { FormPageSkeleton } from "@/components/ui/loading-skeletons";
-import { StudyEmploymentFields, type StudyEmploymentValue } from "@/components/profile/StudyEmploymentFields";
 import {
-  memberBlockOptionsQuery,
   memberDashboardQuery,
   memberProfileQuery,
   memberQueryKeys,
@@ -22,23 +20,20 @@ import {
 const BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"] as const;
 const INPUT_CLASS = "min-h-11 w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 outline-none transition-colors focus:border-blue-500 focus:ring-2 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-50 dark:focus:ring-blue-500/20";
 
-interface CompletionFormState extends StudyEmploymentValue {
+interface CompletionFormState {
   whatsapp: string;
-  age: string;
+  dateOfBirth: string;
   bloodGroup: string;
-  address: string;
-  block: string;
+  donorAvailable: boolean | null;
+  isStudent: boolean | null;
 }
 
 export default function CompleteProfilePage() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const profileQuery = useQuery(memberProfileQuery);
-  const blockOptionsQuery = useQuery(memberBlockOptionsQuery);
   const [form, setForm] = useState<CompletionFormState>({
-    whatsapp: "", age: "", bloodGroup: "", address: "", block: "",
-    isStudent: null, studentClass: "", studentCourse: "", studentInstitution: "",
-    isMuthaallim: null, muthaallimInstitution: "", occupation: "", workLocation: "",
+    whatsapp: "", dateOfBirth: "", bloodGroup: "", donorAvailable: true, isStudent: null,
   });
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -50,43 +45,23 @@ export default function CompleteProfilePage() {
     hasInitializedForm.current = true;
     setForm({
       whatsapp: result.whatsapp || result.phone,
-      age: result.age == null ? "" : String(result.age),
+      dateOfBirth: result.dateOfBirth || "",
       bloodGroup: result.bloodGroup || "",
-      address: result.address || "",
-      block: result.area || "",
+      donorAvailable: true,
       isStudent: result.isStudent,
-      studentClass: result.studentClass || "",
-      studentCourse: result.studentCourse || "",
-      studentInstitution: result.studentInstitution || "",
-      isMuthaallim: result.isMuthaallim,
-      muthaallimInstitution: result.muthaallimInstitution || "",
-      occupation: result.occupation || "",
-      workLocation: result.workLocation || "",
     });
   }, [profileQuery.data]);
 
   const profile = profileQuery.data;
-  const configuredBlocks = blockOptionsQuery.data?.blocks ?? [];
-  const blockOptions = profile?.area && !configuredBlocks.includes(profile.area)
-    ? [profile.area, ...configuredBlocks]
-    : configuredBlocks;
 
   const updateField = <K extends keyof CompletionFormState>(field: K, value: CompletionFormState[K]) => {
     setForm((current) => ({ ...current, [field]: value }));
     setError(null);
   };
 
-  const updateStudyEmploymentField = <K extends keyof StudyEmploymentValue>(field: K, value: StudyEmploymentValue[K]) => {
-    setForm((current) => ({ ...current, [field]: value }));
-    setError(null);
-  };
-
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    const age = Number(form.age);
-    if (!form.whatsapp.trim() || !Number.isInteger(age) || age < 0 || age > 130 || !form.bloodGroup || !form.address.trim() || !form.block || form.isStudent === null || form.isMuthaallim === null ||
-      (form.isStudent && (!form.studentClass.trim() || !form.studentCourse.trim() || !form.studentInstitution.trim())) ||
-      (form.isMuthaallim && !form.muthaallimInstitution.trim())) {
+    if (!form.whatsapp.trim() || !form.dateOfBirth || !form.bloodGroup || form.donorAvailable === null || form.isStudent === null) {
       setError("Please complete every required field with valid information.");
       return;
     }
@@ -95,18 +70,10 @@ export default function CompleteProfilePage() {
     try {
       const completedProfile = await completeCurrentMemberProfile({
         whatsapp: form.whatsapp,
-        age,
+        dateOfBirth: form.dateOfBirth,
         bloodGroup: form.bloodGroup,
-        address: form.address,
-        area: form.block,
-        occupation: !form.isStudent && !form.isMuthaallim ? form.occupation.trim() || undefined : undefined,
+        donorAvailable: form.donorAvailable,
         isStudent: form.isStudent,
-        studentClass: form.isStudent ? form.studentClass : undefined,
-        studentCourse: form.isStudent ? form.studentCourse : undefined,
-        studentInstitution: form.isStudent ? form.studentInstitution : undefined,
-        isMuthaallim: form.isMuthaallim,
-        muthaallimInstitution: form.isMuthaallim ? form.muthaallimInstitution : undefined,
-        workLocation: !form.isStudent && !form.isMuthaallim ? form.workLocation || undefined : undefined,
       });
       queryClient.setQueryData(memberQueryKeys.profile, completedProfile);
       queryClient.setQueryData(memberSessionQuery.queryKey, (current) =>
@@ -127,11 +94,11 @@ export default function CompleteProfilePage() {
     router.refresh();
   };
 
-  if (profileQuery.isPending || blockOptionsQuery.isPending || !profile) {
+  if (profileQuery.isPending || !profile) {
     return (
       <div className="min-h-screen px-4 py-6 md:px-6 md:py-10">
-        {profileQuery.error || blockOptionsQuery.error
-          ? <p className="text-sm text-red-600">{profileQuery.error?.message ?? blockOptionsQuery.error?.message}</p>
+        {profileQuery.error
+          ? <p className="text-sm text-red-600">{profileQuery.error.message}</p>
           : <FormPageSkeleton />}
       </div>
     );
@@ -150,11 +117,13 @@ export default function CompleteProfilePage() {
 
       <form onSubmit={handleSubmit} className="rounded-[20px] border border-[#E2E8F0] bg-white p-4 shadow-sm md:p-6 dark:border-slate-700 dark:bg-slate-800">
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-          <ReadOnlyField label="Full Name" value={profile.name} />
-          <ReadOnlyField label="Phone Number" value={profile.phone} />
+          <ReadOnlyField label="Name" value={profile.name} />
 
-          <FormField label="Age" required>
-            <input type="number" min="0" max="130" value={form.age} onChange={(event) => updateField("age", event.target.value)} className={INPUT_CLASS} required />
+          <FormField label="WhatsApp Number" required>
+            <input type="tel" inputMode="tel" value={form.whatsapp} onChange={(event) => updateField("whatsapp", event.target.value)} className={INPUT_CLASS} required />
+          </FormField>
+          <FormField label="Date of Birth" required>
+            <input type="date" max={new Date().toISOString().slice(0, 10)} value={form.dateOfBirth} onChange={(event) => updateField("dateOfBirth", event.target.value)} className={INPUT_CLASS} required />
           </FormField>
           <FormField label="Blood Group" required>
             <Select value={form.bloodGroup} onValueChange={(value) => updateField("bloodGroup", value)}>
@@ -162,27 +131,18 @@ export default function CompleteProfilePage() {
               <SelectContent>{BLOOD_GROUPS.map((group) => <SelectItem key={group} value={group}>{group}</SelectItem>)}</SelectContent>
             </Select>
           </FormField>
-          <FormField label="WhatsApp Number" required>
-            <input type="tel" inputMode="tel" value={form.whatsapp} onChange={(event) => updateField("whatsapp", event.target.value)} className={INPUT_CLASS} required />
-          </FormField>
-          <FormField label="Block" required>
-            <Select value={form.block} onValueChange={(value) => updateField("block", value)}>
-              <SelectTrigger className="h-11 w-full rounded-xl border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900"><SelectValue placeholder="Select Block" /></SelectTrigger>
-              <SelectContent>{blockOptions.map((block) => <SelectItem key={block} value={block}>{block}</SelectItem>)}</SelectContent>
+          <FormField label="Ready to donate?" required>
+            <Select value={form.donorAvailable === null ? "" : String(form.donorAvailable)} onValueChange={(value) => updateField("donorAvailable", value === "true")}>
+              <SelectTrigger className={`h-11 w-full rounded-xl border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900 ${form.donorAvailable ? "text-red-600 dark:text-red-400" : ""}`}><SelectValue placeholder="Choose Yes or No" /></SelectTrigger>
+              <SelectContent><SelectItem value="true" className="text-red-600 focus:text-red-700 dark:text-red-400">Yes</SelectItem><SelectItem value="false">No</SelectItem></SelectContent>
             </Select>
           </FormField>
-          <StudyEmploymentFields value={form} onChange={updateStudyEmploymentField} />
-          <div className="md:col-span-2">
-            <FormField label="Address / House Name" required>
-              <textarea rows={4} maxLength={500} value={form.address} onChange={(event) => updateField("address", event.target.value)} className={`${INPUT_CLASS} resize-none`} required />
-            </FormField>
-          </div>
-          {(profile.unit || profile.sector) && (
-            <>
-              <ReadOnlyField label="Unit" value={profile.unit || "--"} />
-              <ReadOnlyField label="Sector" value={profile.sector || "--"} />
-            </>
-          )}
+          <FormField label="Are you a student?" required>
+            <Select value={form.isStudent === null ? "" : String(form.isStudent)} onValueChange={(value) => updateField("isStudent", value === "true")}>
+              <SelectTrigger className="h-11 w-full rounded-xl border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900"><SelectValue placeholder="Choose Yes or No" /></SelectTrigger>
+              <SelectContent><SelectItem value="true">Yes</SelectItem><SelectItem value="false">No</SelectItem></SelectContent>
+            </Select>
+          </FormField>
         </div>
         {error && <p className="mt-4 text-sm text-red-600 dark:text-red-400" role="alert">{error}</p>}
         <button type="submit" disabled={isSaving} className="mt-6 flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#2563EB] px-4 font-semibold text-white shadow-sm transition-colors hover:bg-[#1D4ED8] disabled:cursor-not-allowed disabled:opacity-60"><Save className="size-5" /> {isSaving ? "Saving..." : "Save & Continue"}</button>

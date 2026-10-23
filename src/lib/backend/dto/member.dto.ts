@@ -75,7 +75,9 @@ export interface MemberProfileDTO {
   phone: string;
   whatsapp?: string;
   age?: number;
+  dateOfBirth?: string;
   bloodGroup?: string;
+  donorAvailable: boolean;
   address?: string;
   area?: string;
   unit?: string;
