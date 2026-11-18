@@ -13,6 +13,7 @@ export class SupabaseAdminDashboardRepository implements AdminDashboardRepositor
     // Fallback/stub structure that is type-safe
     const stats: AdminDashboardStatsDTO = {
       totalCollected: 0,
+      yearCollected: 0,
       monthlyDues: 0,
       specialEvents: 0,
       pendingAmount: 0,

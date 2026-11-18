@@ -52,17 +52,19 @@ interface PaymentMonthRow {
   month_key: string;
 }
 
+interface MonthlyCollectionRow {
+  month_key: string;
+  total_collected: number | string;
+  monthly_dues: number | string;
+  special_events: number | string;
+  upi_amount: number | string;
+  cash_amount: number | string;
+  admin_amount: number | string;
+}
+
 function toNumber(value: number | string | null | undefined): number {
   const parsed = Number(value ?? 0);
   return Number.isFinite(parsed) ? parsed : 0;
-}
-
-function monthStart(date: Date): Date {
-  return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), 1));
-}
-
-function addUtcMonths(date: Date, amount: number): Date {
-  return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth() + amount, 1));
 }
 
 function paymentDate(row: PaymentRow): string {
@@ -102,41 +104,19 @@ function mapMemberActivity(row: PaymentRow): MemberDashboardActivityDTO {
   };
 }
 
-function paymentChannel(method: PaymentMethod): "UPI" | "Cash" | "Admin" {
-  if (method === "admin_cash_entry") return "Admin";
-  if (method === "cash_handover") return "Cash";
-  return "UPI";
-}
-
 export class SupabaseDashboardRepository implements DashboardRepository {
-  async getAdminDashboard(): Promise<AdminDashboardDTO> {
+  async getAdminDashboard(monthKey: string): Promise<AdminDashboardDTO> {
     const supabase = createSupabaseBackendClient();
-    const currentMonthStart = monthStart(new Date());
-    const nextMonthStart = addUtcMonths(currentMonthStart, 1);
-    const trendStart = addUtcMonths(currentMonthStart, -5);
+    const year = Number(monthKey.slice(0, 4));
 
     const [
-      currentPaymentsResult,
-      trendPaymentsResult,
+      collectionResult,
       membersResult,
       cashCountResult,
       recentPaymentsResult,
       recentCashResult,
     ] = await Promise.all([
-      supabase
-        .from("payments")
-        .select("id,receipt_id,payer_name,category,method,amount,status,paid_at,recorded_at")
-        .eq("status", "confirmed")
-        .is("voided_at", null)
-        .gte("recorded_at", currentMonthStart.toISOString())
-        .lt("recorded_at", nextMonthStart.toISOString()),
-      supabase
-        .from("payments")
-        .select("id,receipt_id,payer_name,category,method,amount,status,paid_at,recorded_at")
-        .eq("status", "confirmed")
-        .is("voided_at", null)
-        .gte("recorded_at", trendStart.toISOString())
-        .lt("recorded_at", nextMonthStart.toISOString()),
+      supabase.rpc("admin_dashboard_monthly_collections", { p_year: year }),
       supabase
         .from("members")
         .select("id,dues_pending,is_blood_donor,donor_available")
@@ -165,8 +145,7 @@ export class SupabaseDashboardRepository implements DashboardRepository {
     ]);
 
     const firstError = [
-      currentPaymentsResult.error,
-      trendPaymentsResult.error,
+      collectionResult.error,
       membersResult.error,
       cashCountResult.error,
       recentPaymentsResult.error,
@@ -188,8 +167,8 @@ export class SupabaseDashboardRepository implements DashboardRepository {
       ((receiverResult.data ?? []) as CashReceiverRow[]).map((row) => [row.id, row.name])
     );
 
-    const currentPayments = (currentPaymentsResult.data ?? []) as PaymentRow[];
-    const trendPayments = (trendPaymentsResult.data ?? []) as PaymentRow[];
+    const monthlyCollections = (collectionResult.data ?? []) as MonthlyCollectionRow[];
+    const selectedMonth = monthlyCollections.find((row) => row.month_key === monthKey);
     const members = (membersResult.data ?? []) as Array<{
       id: string;
       dues_pending: number | string;
@@ -197,13 +176,9 @@ export class SupabaseDashboardRepository implements DashboardRepository {
       donor_available: boolean;
     }>;
 
-    const totalCollected = currentPayments.reduce((sum, row) => sum + toNumber(row.amount), 0);
-    const monthlyDues = currentPayments
-      .filter((row) => row.category === "monthly_dues")
-      .reduce((sum, row) => sum + toNumber(row.amount), 0);
-    const specialEvents = currentPayments
-      .filter((row) => row.category === "special_event")
-      .reduce((sum, row) => sum + toNumber(row.amount), 0);
+    const totalCollected = toNumber(selectedMonth?.total_collected);
+    const monthlyDues = toNumber(selectedMonth?.monthly_dues);
+    const specialEvents = toNumber(selectedMonth?.special_events);
     const pendingAmount = members.reduce((sum, row) => sum + toNumber(row.dues_pending), 0);
     const paidMembers = members.filter((row) => toNumber(row.dues_pending) <= 0).length;
     const defaulters = members.filter((row) => toNumber(row.dues_pending) > 0).length;
@@ -211,31 +186,17 @@ export class SupabaseDashboardRepository implements DashboardRepository {
       (row) => row.is_blood_donor && row.donor_available
     ).length;
 
-    const collectionTrend = Array.from({ length: 6 }, (_, index) => {
-      const start = addUtcMonths(trendStart, index);
-      const end = addUtcMonths(start, 1);
-      const amount = trendPayments
-        .filter((row) => {
-          const date = Date.parse(row.recorded_at);
-          return date >= start.getTime() && date < end.getTime();
-        })
-        .reduce((sum, row) => sum + toNumber(row.amount), 0);
-
-      return {
-        label: new Intl.DateTimeFormat("en", { month: "short", timeZone: "UTC" }).format(start),
-        amount,
-      };
-    });
+    const collectionTrend = monthlyCollections.map((row) => ({
+      label: new Intl.DateTimeFormat("en", { month: "short", timeZone: "UTC" })
+        .format(new Date(`${row.month_key}-01T00:00:00Z`)),
+      amount: toNumber(row.total_collected),
+    }));
 
     const channelAmounts = new Map<string, number>([
-      ["UPI", 0],
-      ["Cash", 0],
-      ["Admin", 0],
+      ["UPI", toNumber(selectedMonth?.upi_amount)],
+      ["Cash", toNumber(selectedMonth?.cash_amount)],
+      ["Admin", toNumber(selectedMonth?.admin_amount)],
     ]);
-    currentPayments.forEach((row) => {
-      const channel = paymentChannel(row.method);
-      channelAmounts.set(channel, (channelAmounts.get(channel) ?? 0) + toNumber(row.amount));
-    });
 
     const colors: Record<string, string> = {
       UPI: "bg-blue-500",
@@ -251,6 +212,7 @@ export class SupabaseDashboardRepository implements DashboardRepository {
     return {
       stats: {
         totalCollected,
+        yearCollected: monthlyCollections.reduce((sum, row) => sum + toNumber(row.total_collected), 0),
         monthlyDues,
         specialEvents,
         pendingAmount,

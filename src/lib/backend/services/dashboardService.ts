@@ -1,6 +1,6 @@
 import type { DashboardRepository, DashboardService } from "../contracts/dashboard.contract";
 import type { ActorContext, BackendResult } from "../contracts/common.contract";
-import { notFoundError, permissionError } from "../errors/createBackendError";
+import { notFoundError, permissionError, validationError } from "../errors/createBackendError";
 import { ERROR_CODES } from "../errors/errorCodes";
 import { fail, fromThrowable, ok } from "../errors/resultHelpers";
 
@@ -14,7 +14,7 @@ export function createDashboardService(deps: {
   const { dashboardRepository, requireAdminPermission } = deps;
 
   return {
-    async getAdminDashboard(actor) {
+    async getAdminDashboard(actor, monthKey) {
       try {
         if (actor.actorType !== "admin" || !actor.adminId) {
           return fail(permissionError("Admin access required."));
@@ -22,7 +22,11 @@ export function createDashboardService(deps: {
 
         const permission = await requireAdminPermission(actor, "dashboard.view");
         if (!permission.ok) return fail(permission.error!);
-        return ok(await dashboardRepository.getAdminDashboard());
+        const monthMatch = /^(\d{4})-(0[1-9]|1[0-2])$/.exec(monthKey);
+        if (!monthMatch || Number(monthMatch[1]) < 1) {
+          return fail(validationError("A valid dashboard month is required.", "month"));
+        }
+        return ok(await dashboardRepository.getAdminDashboard(monthKey));
       } catch (error) {
         return fail(fromThrowable(error));
       }

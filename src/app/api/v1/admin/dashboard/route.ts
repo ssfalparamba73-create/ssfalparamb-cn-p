@@ -11,8 +11,9 @@ export async function GET(request: NextRequest) {
   try {
     const actorResult = await resolveAuthenticatedActor(request, requestContext.requestId);
     if (!actorResult.ok) return createBackendResponse(actorResult, requestContext.requestId);
+    const monthKey = request.nextUrl.searchParams.get("month") ?? "";
     return createBackendResponse(
-      await getDashboardService().getAdminDashboard(actorResult.data!),
+      await getDashboardService().getAdminDashboard(actorResult.data!, monthKey),
       requestContext.requestId
     );
   } catch {

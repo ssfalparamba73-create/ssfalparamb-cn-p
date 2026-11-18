@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useEffect } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Users,
@@ -25,9 +25,21 @@ import { Button } from "@/components/ui/button";
 import { PageContentSkeleton } from "@/components/ui/loading-skeletons";
 import { useCachedQuery } from "@/lib/client/useCachedQuery";
 
+function currentMonthKey(): string {
+  return new Date().toISOString().slice(0, 7);
+}
+
 export default function AdminDashboardPage() {
   const router = useRouter();
-  const loadDashboard = useCallback(() => getAdminDashboard(), []);
+  const [selectedMonth, setSelectedMonth] = useState(currentMonthKey);
+  const selectedMonthDate = new Date(`${selectedMonth}-01T00:00:00Z`);
+  const selectedMonthLabel = new Intl.DateTimeFormat("en", {
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  }).format(selectedMonthDate);
+  const selectedYearLabel = selectedMonth.slice(0, 4);
+  const loadDashboard = useCallback(() => getAdminDashboard(selectedMonth), [selectedMonth]);
   const {
     data: dashboard,
     error,
@@ -35,7 +47,7 @@ export default function AdminDashboardPage() {
     isRefreshing,
     refetch,
   } = useCachedQuery<AdminDashboardDTO>({
-    key: "admin:dashboard",
+    key: `admin:dashboard:${selectedMonth}`,
     queryFn: loadDashboard,
     staleTime: 30_000,
   });
@@ -86,6 +98,26 @@ export default function AdminDashboardPage() {
               Add Member
             </Link>
           </Button>
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-3 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:flex-row sm:items-center">
+        <label htmlFor="dashboard-month" className="flex flex-wrap items-center gap-2 text-sm font-medium text-slate-600 dark:text-slate-300">
+          <span>Collection month</span>
+          <input
+            id="dashboard-month"
+            type="month"
+            value={selectedMonth}
+            max={currentMonthKey()}
+            onChange={(event) => setSelectedMonth(event.target.value || currentMonthKey())}
+            className="h-10 min-w-0 rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:focus:ring-blue-500/20"
+          />
+        </label>
+        <div className="rounded-lg bg-slate-50 px-3 py-2 sm:ml-auto sm:text-right dark:bg-slate-800">
+          <p className="text-xs text-slate-500 dark:text-slate-400">{selectedYearLabel} total collected</p>
+          <p className="font-mono text-lg font-bold tabular-nums text-slate-900 dark:text-slate-50">
+            ₹{stats.yearCollected.toLocaleString("en-IN")}
+          </p>
         </div>
       </div>
 
@@ -141,7 +173,7 @@ export default function AdminDashboardPage() {
         <StatsCard
           label="Total Collected"
           metric={`₹${stats.totalCollected.toLocaleString("en-IN")}`}
-          helper="This month"
+          helper={selectedMonthLabel}
           icon={TrendingUp}
           variant="success"
           href="/admin/payments"

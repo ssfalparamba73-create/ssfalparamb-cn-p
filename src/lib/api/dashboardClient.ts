@@ -4,8 +4,9 @@ import type {
 } from "@/lib/backend/dto/dashboard.dto";
 import { requestBackend } from "./backendClient";
 
-export function getAdminDashboard(): Promise<AdminDashboardDTO> {
-  return requestBackend<AdminDashboardDTO>("/api/v1/admin/dashboard");
+export function getAdminDashboard(monthKey: string): Promise<AdminDashboardDTO> {
+  const params = new URLSearchParams({ month: monthKey });
+  return requestBackend<AdminDashboardDTO>(`/api/v1/admin/dashboard?${params}`);
 }
 
 export function getMemberDashboard(): Promise<MemberDashboardViewDTO> {

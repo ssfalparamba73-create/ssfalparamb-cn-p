@@ -45,6 +45,7 @@ export interface AdminSessionDTO {
 
 export interface AdminDashboardStatsDTO {
   totalCollected: number;
+  yearCollected: number;
   monthlyDues: number;
   specialEvents: number;
   pendingAmount: number;

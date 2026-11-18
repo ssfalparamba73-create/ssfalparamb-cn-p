@@ -17,7 +17,8 @@ export function prefetchAdminRouteData(href: string, permissions: string[]): voi
   if (!canAccessAdminPath(permissions, href)) return;
 
   if (href === "/admin/dashboard") {
-    void fetchQuery("admin:dashboard", getAdminDashboard, { staleTime: 30_000 }).catch(() => undefined);
+    const monthKey = new Date().toISOString().slice(0, 7);
+    void fetchQuery(`admin:dashboard:${monthKey}`, () => getAdminDashboard(monthKey), { staleTime: 30_000 }).catch(() => undefined);
     return;
   }
 
